@@ -1,14 +1,47 @@
----@section LIFEBOATAPI_MC_REQUIREALL_BOILERPLATE
 -- Author: Nameous Changey
 -- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
 -- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
+--
 --- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
---- "Require All" file to make life easier on the end-user
----@endsection
 
+LifeBoatAPI = LifeBoatAPI or {}
 
--- The addon library is currently in development
--- If you keep this in your project, it will automatically update itself when released.
+-- type data only
+require("LifeBoatAPI.Util.Constants")
+require("LifeBoatAPI.Util.CoroutineUtils")
+require("LifeBoatAPI.Util.Disposable")
+require("LifeBoatAPI.Util.Empty")
 
--- Thank you for your patience
+require("LifeBoatAPI.Missions.Mission")
+
+require("LifeBoatAPI.Maths.Colliders")
+require("LifeBoatAPI.Maths.Matrix")
+require("LifeBoatAPI.Maths.RollingAverage")
+require("LifeBoatAPI.Maths.Vector")
+
+require("LifeBoatAPI.Core.Objects.Fire")
+require("LifeBoatAPI.Core.Objects.GameObject")
+require("LifeBoatAPI.Core.Objects.Object")
+require("LifeBoatAPI.Core.Objects.Player")
+require("LifeBoatAPI.Core.Objects.Vehicle")
+require("LifeBoatAPI.Core.Objects.Zone")
+
+require("LifeBoatAPI.Core.UIObjects.UIElement")
+require("LifeBoatAPI.Core.UIObjects.UIMapLabel")
+require("LifeBoatAPI.Core.UIObjects.UIMapObject")
+require("LifeBoatAPI.Core.UIObjects.UIPopup")
+require("LifeBoatAPI.Core.UIObjects.UIScreenPopup")
+
+require("LifeBoatAPI.Core.AddonManager")
+require("LifeBoatAPI.Core.CollisionManager")
+require("LifeBoatAPI.Core.Coroutine")
+require("LifeBoatAPI.Core.Event")
+require("LifeBoatAPI.Core.EventManager")
+require("LifeBoatAPI.Core.ObjectManager")
+require("LifeBoatAPI.Core.PlayerManager")
+require("LifeBoatAPI.Core.TickManager")
+require("LifeBoatAPI.Core.UIManager")
+
+-- instantiates live data
+require("LifeBoatAPI.Core.LB")

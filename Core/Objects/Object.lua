@@ -1,0 +1,150 @@
+-- Author: Nameous Changey
+-- GitHub: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension
+-- Workshop: https://steamcommunity.com/id/Bilkokuya/myworkshopfiles/?appid=573090
+--
+--- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
+--- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
+
+---@class LifeBoatAPI.Object : LifeBoatAPI.GameObject
+---@field onLoaded LifeBoatAPI.Event
+LifeBoatAPI.Object = {
+    ---@param cls LifeBoatAPI.Object
+    fromSavedata = function(cls, savedata)
+        local self = {
+            savedata = savedata,
+            
+            id = savedata.id,
+            transform = savedata.transform,
+
+            -- events
+            onLoaded = LifeBoatAPI.Event:new(),
+            onDespawn = LifeBoatAPI.Event:new(),
+            onCollision = LifeBoatAPI.Event:new(),
+            
+            -- methods
+            awaitLoaded = cls.awaitLoaded,
+            getTransform = not savedata.isStatic and cls.getTransform or nil,
+            attach = LifeBoatAPI.lb_attachDisposable,
+            despawn = LifeBoatAPI.GameObject.despawn,
+            onDispose = cls.onDispose,
+            isLoaded = cls.isLoaded,
+            toggleCollision = LifeBoatAPI.GameObject.toggleCollision
+        }
+        
+        -- ensure position is up to date
+        if self.getTransform then
+            self:getTransform()
+        end
+
+        -- run init script (before enabling collision detection, so it can be cancelled if wanted)
+        local script = LB.objects.onInitScripts[self.savedata.onInitScript]
+        if script then
+            script(self)
+        end
+
+        if self.collisionLayers then
+            LB.collision:trackObject(self)
+        end
+
+        return self
+    end;
+
+    ---@param cls LifeBoatAPI.Object
+    ---@param component LifeBoatAPI.AddonComponent
+    ---@param spawnData SWAddonComponentSpawned
+    fromAddonSpawn = function(cls, component, spawnData)
+        local obj = cls:fromSavedata({
+            id = spawnData.id,
+            type = "object",
+            isAddonSpawn = true,
+            tags = component.tags,
+            dynamicType = component.rawdata.dynamic_object_type,
+            name = component.rawdata.display_name,
+            transform = spawnData.transform,
+            isStatic = component.tags["isStatic"],
+            collisionLayers = component:parseSequentialTag("collisionLayer"),
+            onInitScript = component.tags["onInitScript"]
+        })
+
+        LB.objects:trackEntity(obj)
+
+        return obj
+    end;
+
+    ---@param cls LifeBoatAPI.Object
+    ---@param objectID number
+    ---@param isStatic boolean
+    ---@param collisionLayers string[]|nil leave nil if this shouldn't perform collision checks, e.g. static objects
+    ---@return LifeBoatAPI.Object
+    fromUntrackedSpawn = function(cls, objectID, isStatic, collisionLayers, onInitScript)
+        local obj = cls:fromSavedata({
+            id = objectID,
+            type = "object",
+            isAddonSpawn = false,
+            isStatic = isStatic,
+            collisionLayers = collisionLayers,
+            onInitScript = onInitScript
+        })
+
+        LB.objects:trackEntity(obj)
+        
+        return obj
+    end;
+
+    ---@param self LifeBoatAPI.Object
+    ---@return LifeBoatAPI.Matrix
+    getTransform = function(self)
+        local matrix, success = server.getObjectPos(self.id)
+        if success then
+            self.transform = matrix
+            self.lastTickUpdated = LB.ticks.ticks
+        else
+            -- object has despawned already
+            self:despawn()
+        end
+        return self.transform
+    end;
+
+    ---@param self LifeBoatAPI.Object
+    ---@return LifeBoatAPI.Coroutine
+    awaitLoaded = function(self)
+        local isLoaded = server.getObjectSimulating(self.id)
+        if isLoaded then
+            return LifeBoatAPI.Coroutine:start()
+
+        elseif LB.objects.enableVehicleCallbacks then
+            return self.onLoaded:await()
+
+        else
+            local cr = LifeBoatAPI.Coroutine:start(nil, true)
+            cr:attach(LB.events.onVehicleLoad:register(function (l, context, vehicle_id)
+                if vehicle_id == self.id then
+                    cr:trigger()
+                    l.isDisposed = true
+                end
+            end,nil,nil) )
+            return cr
+        end
+    end;
+
+    ---@param self LifeBoatAPI.Object
+    ---@return boolean
+    isLoaded = function(self)
+        -- objects can be despawned without callback, we can check that here
+        local isLoaded, isSpawned = server.getObjectSimulating(self.id)
+        if not isSpawned then
+            self:despawn()
+            return false
+        end
+        return isLoaded
+    end;
+
+    ---@param self LifeBoatAPI.Object
+    onDispose = function(self)
+        if self.onDespawn.hasListeners then
+            self.onDespawn:trigger(self)
+        end
+        LB.objects:stopTracking(self)
+        server.despawnObject(self.id, true)
+    end;
+}

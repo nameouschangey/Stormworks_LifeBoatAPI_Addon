@@ -1,1 +1,1 @@
-Library for MC development in Stormworks
+Library for Addon development in Stormworks
