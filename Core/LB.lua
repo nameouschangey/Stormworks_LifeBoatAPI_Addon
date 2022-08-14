@@ -19,6 +19,7 @@ LifeBoatAPI.LB = {
     new = function(cls)
         ---@type LifeBoatAPI.LB
         local self = {
+            init = cls.init
         }
 
         self.collision = LifeBoatAPI.CollisionManager:new(); -- fair, specific purpose
