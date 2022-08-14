@@ -25,7 +25,7 @@ LifeBoatAPI.LB = {
         self.players = LifeBoatAPI.PlayerManager:new();
         self.events = LifeBoatAPI.EventManager:new(); -- necessary? yes (using events multiple places in coroutines etc.)
         self.ticks = LifeBoatAPI.TickManager:new();
-        self.addons = LifeBoatAPI.AddonMananger:new();
+        self.addons = LifeBoatAPI.AddonManager:new();
         self.objects = LifeBoatAPI.ObjectManager:new();
         self.ui = LifeBoatAPI.UIManager:new();
         return self
