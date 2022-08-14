@@ -23,6 +23,14 @@ LifeBoatAPI.UIManager = {
             uiBySteamID = { -- id: object[]
                 all = {}
             };
+
+            --- methods
+            init = cls.init,
+            trackEntity = cls.trackEntity,
+            stopTracking = cls.stopTracking,
+            getUIByID = cls.getUIByID,
+            getUIBySteamID = cls.getUIBySteamID,
+            _onPlayerJoin = cls._onPlayerJoin
         }
 
         return self

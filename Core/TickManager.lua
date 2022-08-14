@@ -20,7 +20,6 @@ LifeBoatAPI.TickFrequency = {
 ---@field ticks number
 ---@field gameTicks number
 ---@field tickables LifeBoatAPI.ITickable[]
----@field isOnTickRegistered boolean allows us to avoid listening to onTick when nothing listens to us
 ---@field onTick function own implementation of the onTick function
 LifeBoatAPI.TickManager = {
 
@@ -31,11 +30,9 @@ LifeBoatAPI.TickManager = {
             tickables = {};
             ticks = 0;
             gameTicks = 0;
-            isOnTickRegistered = false;
-
             --methods
             register = cls.register;
-            onTick = cls:_onTickClosure()
+            _onTickClosure = cls._onTickClosure
         }
 
         return self
@@ -45,8 +42,9 @@ LifeBoatAPI.TickManager = {
     init = function(self)
         -- if we should have already set onTick, but then something has overwritten it
         -- steal it back (i.e. player defined onTick after LB was intantiated, AND something registered before onCreate ran ~ low probability but saves a nightmare error to debug)
-		if self.onTick ~= _ENV["onTick"] and self.isOnTickRegistered then
+		if self.onTick and self.onTick ~= _ENV["onTick"] then
             onTick = self:_onTickClosure()
+            self.onTick = onTick
 		end
     end;
 
@@ -77,8 +75,9 @@ LifeBoatAPI.TickManager = {
         -- as such, new tickables will *never* be evaluated during the tick they are added (hence setting nextTick to ticks+1)
         self.tickables[#self.tickables + 1] = tickable
 
-        if not self.isOnTickRegistered then
+        if not self.onTick then
             onTick = self:_onTickClosure()
+            self.onTick = onTick
             self.isOnTickRegistered = true
         end
 

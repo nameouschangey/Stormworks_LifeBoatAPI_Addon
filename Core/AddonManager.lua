@@ -12,6 +12,7 @@
 ---@field addons LifeBoatAPI.Addon[]
 ---@field addonsByName table<string, LifeBoatAPI.Addon>
 LifeBoatAPI.AddonManager = {
+    ---@param cls LifeBoatAPI.AddonManager
     ---@return LifeBoatAPI.AddonManager
     new = function(cls)
         local self = {
@@ -111,6 +112,7 @@ LifeBoatAPI.Addon = {
 ---@field rawdata SWLocationData
 ---@field index number
 LifeBoatAPI.AddonLocation = {
+    ---@param cls LifeBoatAPI.AddonLocation
     ---@param location_data SWLocationData
     ---@param parent LifeBoatAPI.Addon
     ---@return LifeBoatAPI.AddonLocation
@@ -191,6 +193,7 @@ LifeBoatAPI.AddonLocation = {
 ---@field children LifeBoatAPI.AddonComponent[]
 LifeBoatAPI.AddonComponent = {
 
+    ---@param cls LifeBoatAPI.AddonComponent
     ---@param componentData SWAddonComponentData
     ---@return LifeBoatAPI.AddonComponent 
     new = function(cls, location, index, componentData)

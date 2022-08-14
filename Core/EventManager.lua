@@ -130,7 +130,7 @@
 ---@field onButtonPress             EventTypes.OnButtonPress           
 ---@field onSpawnAddonComponent     EventTypes.OnSpawnAddonComponent   
 ---@field onVehicleDamaged          EventTypes.OnVehicleDamaged        
----@field httpReply                 EventTypes.OttpReply               
+---@field httpReply                 LifeBoatAPI.Event               
 ---@field onFireExtinguished        EventTypes.OnFireExtinguished      
 ---@field onForestFireSpawned       EventTypes.OnForestFireSpawned     
 ---@field onForestFireExtinguised   EventTypes.OnForestFireExtinguised 
@@ -167,7 +167,11 @@ LifeBoatAPI.EventManager = {
 
     ---@return LifeBoatAPI.EventManager
 	new = function(cls)
-        local self = {}
+        local self = {
+            --- methods
+            init = cls.init,
+            _setupAdditionalEvents = cls._setupAdditionalEvents
+        }
         for i=1, #cls.callbacksList do
             local callbackName = cls.callbacksList[i]
             self[callbackName] = LifeBoatAPI.ENVCallbackEvent:new(callbackName)

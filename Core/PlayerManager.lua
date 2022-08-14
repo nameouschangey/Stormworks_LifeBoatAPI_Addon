@@ -33,9 +33,11 @@ LifeBoatAPI.PlayerManager = {
 
             -- methods
             init = cls.init;
-            onPlayerJoin = cls._onPlayerJoin;
-            onPlayerLeave = cls._onPlayerLeave;
+            _onPlayerJoin = cls._onPlayerJoin;
+            _onPlayerLeave = cls._onPlayerLeave;
             getSaveDataBySteamID = cls.getSaveDataBySteamID;
+            getPlayerBySteamID = cls.getPlayerBySteamID,
+            getPlayerByPeerID = cls.getPlayerByPeerID
         }
 
         return self

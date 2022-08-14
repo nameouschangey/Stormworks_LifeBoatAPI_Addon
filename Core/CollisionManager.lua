@@ -48,7 +48,7 @@ LifeBoatAPI.Collision = {
 ---@field partitionSizeMassive number
 ---@field collisions table<any, table<LifeBoatAPI.Zone, LifeBoatAPI.Collision>>
 ---@field objects LifeBoatAPI.GameObject[]
----@field lastObjectPositions table<LifeBoatAPI.Collider, LifeBoatAPI.Matrix>
+---@field lastObjectPositions table<LifeBoatAPI.GameObject, LifeBoatAPI.Matrix>
 ---@field tickFrequency number frequency to update collisions, default is 30ticks (twice per second - which is going to be more than enough for 99.9% of cases)
 LifeBoatAPI.CollisionManager = {
 
@@ -68,6 +68,8 @@ LifeBoatAPI.CollisionManager = {
 
             ---methods
             init = cls.init;
+            trackZone = cls.trackZone;
+            trackObject = cls.trackObject;
             _onTick = cls._onTick;
             _buildDynamicPartitions = cls._buildDynamicPartitions;
             _storeObjectPositionsForNextTick = cls._storeObjectPositionsForNextTick;

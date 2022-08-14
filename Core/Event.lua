@@ -17,6 +17,7 @@ LifeBoatAPI.Event = {
 
             --methods
 			await = cls.await;
+			awaitIf = cls.awaitIf;
             register = cls.register;
             trigger = cls.trigger;
         }
@@ -112,7 +113,9 @@ LifeBoatAPI.ENVCallbackEvent = {
 			transformFunc = transformFunc;
 
 			--methods
+			init = cls.init;
 			await = LifeBoatAPI.Event.await;
+			awaitIf = LifeBoatAPI.Event.awaitIf;
 			register = cls.register;
 			trigger = LifeBoatAPI.Event.trigger;
 		}

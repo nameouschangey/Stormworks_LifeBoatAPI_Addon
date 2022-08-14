@@ -37,6 +37,18 @@ LifeBoatAPI.ObjectManager = {
             firesByID = {};
             zonesByID = {};
             scripts = {};
+
+            --- methods
+            init = cls.init,
+            registerScript = cls.registerScript,
+            trackEntity = cls.trackEntity,
+            stopTracking = cls.stopTracking,
+            getByType = cls.getByType,
+            getVehicle = cls.getVehicle,
+            getZone = cls.getZone,
+            getNPC = cls.getNPC,
+            getObject = cls.getObject,
+            getFire = cls.getFire
         }
 
         return self
