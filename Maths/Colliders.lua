@@ -1,3 +1,6 @@
+
+---@section Colliders
+
 LifeBoatAPI.Colliders = {
 
     ---@param point LifeBoatAPI.Vector|LifeBoatAPI.Matrix
@@ -203,24 +206,4 @@ LifeBoatAPI.Colliders = {
     end;
 }
 
---[[
-require("useful.Maths.Matrix")
-
--- line in sphere
-assert(LifeBoatAPI.Colliders.isLineInSphere({0,0,0}, {10,10,10}, {5,5,5}, 1))
-assert(LifeBoatAPI.Colliders.isLineInSphere({0,0,0}, {0,10,0}, {0,5,1}, 1))
-assert(not LifeBoatAPI.Colliders.isLineInSphere({0,0,0}, {0,10,0}, {0,5,1}, 0.99))
-
--- line in aabb
-assert(LifeBoatAPI.Colliders.isLineInAABB({0,0,0}, {10,10,10}, {5,5,5}, 1,1,1))
-assert(LifeBoatAPI.Colliders.isLineInAABB({0,0,0}, {0,10,0}, {0,5,1}, 1,1,1))
-assert(not LifeBoatAPI.Colliders.isLineInAABB({0,0,0}, {0,10,0}, {0,5,1}, 1,1,0.99))
-
--- line in zone
--- using "complex"/compound matrix to prove it works
-local m = LifeBoatAPI.Matrix.multiplyMatrix(LifeBoatAPI.Matrix.newMatrix(0,0,10), LifeBoatAPI.Matrix.newMatrix(0,0,0, 0,math.rad(45),0))
-assert(not LifeBoatAPI.Colliders.isLineInZone({0,0,10}, {0,0,-10}, m, 1,1,1))
-assert(not LifeBoatAPI.Colliders.isLineInZone({0,0,-10}, {0,0,10}, m, 1,1,1))
-assert(LifeBoatAPI.Colliders.isLineInZone({0,0,0}, {0,14,14}, m, 5,5,5))
-local a = 1
-]]
+---@endsection

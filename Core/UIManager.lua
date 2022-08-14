@@ -1,11 +1,6 @@
 
 
 
-
-
-
-
-
 -- Manager for handling UI popups/map markers
 -- Ensures those meant for all players, are added whenever a player connects
 -- Ensures those meant for a single player, are added when that player re-connects etc.

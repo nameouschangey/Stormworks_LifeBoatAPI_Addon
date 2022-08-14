@@ -1,9 +1,11 @@
+
+---@section Vector
+
 ---@class LifeBoatAPI.Vector
 ---@field [1] number conventionally: mapX axis
 ---@field [2] number conventionally: altitude
 ---@field [3] number conventionally: mapZ axis
 ---@field [4] number 0 = orientation only, 1 = position, used by matrix calculations only
-
 LifeBoatAPI.Vector = {
 
     ---@param x number x component
@@ -265,3 +267,5 @@ LifeBoatAPI.Vector = {
                 length
     end;
 }
+
+---@endsection

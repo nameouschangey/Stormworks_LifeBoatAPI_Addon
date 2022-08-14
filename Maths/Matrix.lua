@@ -1,3 +1,5 @@
+---@section Matrix
+
 ---@class TempToBeMovedIntoAddonDocs
 ---@field [1] number leftAxis x
 ---@field [2] number leftAxis y
@@ -521,39 +523,4 @@ LifeBoatAPI.Matrix = {
     end;
 }
 
---[[
-local m = LifeBoatAPI.Matrix.newMatrix(1,1,1, math.rad(30), math.rad(30), math.rad(30))
-
-for i=1,1000 do
-    m = LifeBoatAPI.Matrix.multiplyMatrix(m,m)
-    if i%50==0 then
-        m = LifeBoatAPI.Matrix.reduceOrthographicError(m)
-    end
-    local error = LifeBoatAPI.Matrix.calculateOrthographicError(m)
-
-    print(i .. ": " .. error)
-end
-]]
-
-
---[[
-local m = LifeBoatAPI.Matrix.newMatrix(0,0,9, 0, 0, 0)
-local m2 = LifeBoatAPI.Matrix.newMatrix(0,0,0, 0,math.rad(45),0)
-local m3 = LifeBoatAPI.Matrix.multiplyMatrix(m, m2)
-
-v1 = LifeBoatAPI.Matrix.multiplyVector(m, {0,0,1})
-vb = LifeBoatAPI.Matrix.multiplyVector(m2, v1)
-
-v3 = LifeBoatAPI.Matrix.multiplyVector(m3, {0,0,1})
-
-i1 = invert(m)--LifeBoatAPI.Matrix.fullInvert(m)
-i2 = invert(m3)
-i3 = invert(m3)
-
-ii = LifeBoatAPI.Matrix.multiplyMatrix(i1, m)
-
-
-vi1 = LifeBoatAPI.Matrix.multiplyVector(i1, v1)
-vi3 = LifeBoatAPI.Matrix.multiplyVector(i3, v3)
-
-a = 1]]
+---@endsection

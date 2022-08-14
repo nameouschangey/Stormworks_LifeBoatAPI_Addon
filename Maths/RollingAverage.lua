@@ -1,4 +1,6 @@
----@section LBRollingAverage 1 LBROLLINGAVERAGECLASS
+
+---@section RollingAverage
+
 ---A rolling average across a given number of values
 ---Useful for filtering noisey values
 ---@class LifeBoatAPI.RollingAverage
@@ -21,7 +23,6 @@ LifeBoatAPI.RollingAverage = {
         }
     end;
 
-    ---@section lbrollingaverage_addValue 
     ---Add a value to the rolling average
     ---@param self LifeBoatAPI.RollingAverage
     ---@param value number value to add into the rolling average
@@ -38,6 +39,5 @@ LifeBoatAPI.RollingAverage = {
         self.average = self.sum / self.count
         return self.average
     end;
-    ---@endsection
 }
----@endsection LBROLLINGAVERAGECLASS
+---@endsection
