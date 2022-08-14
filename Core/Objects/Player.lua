@@ -23,6 +23,7 @@
 ---@field onToggleMap LifeBoatAPI.Event
 LifeBoatAPI.Player = {
     ---@param cls LifeBoatAPI.Player
+    ---@return LifeBoatAPI.Player
     new = function (cls, peerID, steamID, isAdmin, isAuth, name, savedata)
         savedata.collisionLayers = savedata.collisionLayers or {"player"} 
         local self = {

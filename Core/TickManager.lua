@@ -30,7 +30,9 @@ LifeBoatAPI.TickManager = {
             tickables = {};
             ticks = 0;
             gameTicks = 0;
+            
             --methods
+            init = cls.init,
             register = cls.register;
             _onTickClosure = cls._onTickClosure
         }

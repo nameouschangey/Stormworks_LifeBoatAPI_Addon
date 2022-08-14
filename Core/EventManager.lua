@@ -72,7 +72,7 @@
 ---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle_id:number, peer_id:number, button_name:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnSpawnAddonComponent : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle_or_object_id:number, component_name:string, TYPE_STRING:string, addon_index:addon_index), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle_or_object_id:number, component_name:string, TYPE_STRING:string, addon_index:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnVehicleDamaged : LifeBoatAPI.ENVCallbackEvent
 ---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle_id:number, damage_amount:number, voxel_x:number, voxel_y:number, voxel_z:number, body_index:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
@@ -168,12 +168,13 @@ LifeBoatAPI.EventManager = {
     ---@return LifeBoatAPI.EventManager
 	new = function(cls)
         local self = {
+            callbacksList = cls.callbacksList,
             --- methods
             init = cls.init,
             _setupAdditionalEvents = cls._setupAdditionalEvents
         }
-        for i=1, #cls.callbacksList do
-            local callbackName = cls.callbacksList[i]
+        for i=1, #self.callbacksList do
+            local callbackName = self.callbacksList[i]
             self[callbackName] = LifeBoatAPI.ENVCallbackEvent:new(callbackName)
         end
 

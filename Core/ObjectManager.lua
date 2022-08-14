@@ -27,6 +27,7 @@ LifeBoatAPI.ObjectManager = {
                 objectsByID = {},
                 npcsByID = {},
                 zonesByID = {},
+                firesByID = {},
                 nextZoneID = 0
             };
 

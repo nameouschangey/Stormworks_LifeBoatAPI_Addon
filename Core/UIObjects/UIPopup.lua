@@ -66,7 +66,7 @@ LifeBoatAPI.UIPopup = {
         local save = self.savedata
 
         if save.parentID then
-            server.setPopup(peerID, save.id, nil, true, save.text, save.x, save.y, save.z, save.renderDistance, save.parentType == "vehicle" and parentID or nil, save.parentType ~= "vehicle" and parentID or nil)
+            server.setPopup(peerID, save.id, nil, true, save.text, save.x, save.y, save.z, save.renderDistance, save.parentType == "vehicle" and save.parentID or nil, save.parentType ~= "vehicle" and save.parentID or nil)
         else
             server.setPopup(peerID, save.id, nil, true, save.text, save.x, save.y, save.z, save.renderDistance, nil, nil)
         end

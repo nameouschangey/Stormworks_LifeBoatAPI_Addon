@@ -83,7 +83,7 @@ LifeBoatAPI.PlayerManager = {
     _onPlayerJoin = function (l, self, steamID, name, peerId, isAdmin, isAuth)
         steamID = tostring(steamID)
 
-        local savedata = self.savedata.playersBySteamID[steamID]
+        local savedata = self.savedata.playersBySteamID[steamID] or {}
         local isFirstTimeJoining = false;
 
         -- first time player has joined the server
@@ -95,7 +95,7 @@ LifeBoatAPI.PlayerManager = {
 
         local player = LifeBoatAPI.Player:new(peerId, steamID, isAdmin, isAuth, name, savedata)
 
-        self.playersByPeerID[player.peerID] = player
+        self.playersByPeerID[player.id] = player
         self.playersBySteamID[player.steamID] = player
         self.players[#self.players+1] = player
 
