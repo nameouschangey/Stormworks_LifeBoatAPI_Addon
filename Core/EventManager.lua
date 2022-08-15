@@ -186,11 +186,6 @@ LifeBoatAPI.EventManager = {
 	init = function(self)
 		for i=1, #self.callbacksList do
 			local callbackName = self.callbacksList[i]
-			local func = _ENV[callbackName]
-            if func then
-                ---@type LifeBoatAPI.ENVCallbackEvent
-                self[callbackName]:register(func) -- assume these "global" events will never be de-registered. Allows original onTick etc. to still function
-            end
 			self[callbackName]:init()
 		end
 

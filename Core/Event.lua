@@ -53,13 +53,13 @@ LifeBoatAPI.Event = {
 	end;
 
 	---@param self LifeBoatAPI.Event
-	---@param predicate fun(commandArgs:...):boolean predicate that returns true, if the condition is met - e.g. "if peerID == <something>". May be performance heavy if overused.
+	---@param predicate fun(l:LifeBoatAPI.IEventListener, context:any, ...:any):boolean predicate that returns true, if the condition is met - e.g. "if peerID == <something>". May be performance heavy if overused.
 	---@return LifeBoatAPI.Coroutine
 	awaitIf = function(self, predicate)
 		local cr = LifeBoatAPI.Coroutine:start(nil, true)
 
 		self:register(function(l, ctx, ...)
-			if predicate(...) then
+			if predicate(l, ctx, ...) then
 				l.isDisposed = true
 				cr.lastResult = {...}
 				cr:trigger()
@@ -160,6 +160,7 @@ LifeBoatAPI.ENVCallbackEvent = {
 					newListeners[#newListeners+1] = listener
 				end
 			end
+			
         	self.listeners = newListeners
 			self.hasListeners = #self.listeners > 0
 
@@ -177,7 +178,7 @@ LifeBoatAPI.ENVCallbackEvent = {
 	---@return LifeBoatAPI.IEventListener
 	register = function(self, func, context, timesToExecute)
 		-- if something starts listening for the 
-		if not self.hasListeners then
+		if not self.hasListeners and self.onExecute ~= _ENV[self.callbackName] then
 			self.originalExecute = _ENV[self.callbackName]
 			_ENV[self.callbackName] = self.onExecute
 		end

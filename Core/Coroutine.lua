@@ -5,7 +5,7 @@
 ---@field onExecute LifeBoatAPI.ICoroutineFunc
 ---@field isImmediate boolean
 
----@class LifeBoatAPI.Coroutine : LifeBoatAPI.IDisposable
+---@class LifeBoatAPI.Coroutine : LifeBoatAPI.ITickable, LifeBoatAPI.IDisposable
 ---@field yield number (or nil) move onto the next stage
 ---@field terminate number terminate permanently, should only be used for non-recoverable failure conditions
 ---@field loop number repeat current stage again
@@ -13,7 +13,7 @@
 --
 ---@field stages LifeBoatAPI.ICoroutineStage[]
 ---@field current number
----@field onTickListener LifeBoatAPI.ITickable
+---@field isTickRegistered boolean
 ---@field tickFrequency number
 ---@field lastResult any|nil 
 ---@field listeners table
@@ -43,20 +43,8 @@ LifeBoatAPI.Coroutine = {
 			trigger = cls.trigger;
 			andThen = cls.andThen;
 			andImmediately = cls.andImmediately;
-			setTickFrequency = cls.setTickFrequency;
 		}
 		return self
-	end;
-
-	---@param self LifeBoatAPI.Coroutine
-	---@param tickFrequency number
-	---@return LifeBoatAPI.Coroutine
-	setTickFrequency = function(self, tickFrequency)
-		self.tickFrequency = tickFrequency
-		if self.onTickListener then
-			self.onTickListener.tickFrequency = tickFrequency
-		end
-		return self -- potentially allows chaining
 	end;
 
 	---Adds a step that will be run asynchronously at the next available tick
@@ -76,9 +64,10 @@ LifeBoatAPI.Coroutine = {
 			end
 
 			-- register with tick
-			if not self.onTickListener then
-				self.onTickListener = LB.ticks:register(self.trigger, self, self.tickFrequency)
-				self.onTickListener.isPaused = not self.status == 0
+			if not self.isTickRegistered then
+				self.isTickRegistered = true
+				LB.ticks:register(self.trigger, self, self.tickFrequency, nil, true)
+				self.isPaused = self.status ~= 1
 			end
 
 		end
@@ -107,7 +96,7 @@ LifeBoatAPI.Coroutine = {
 	end;
 
 	---@param self LifeBoatAPI.Coroutine
-	trigger = function (self)
+	trigger = function(self)
 
 		-- no further triggers should do anything
 		if self.isDisposed then
@@ -121,9 +110,7 @@ LifeBoatAPI.Coroutine = {
 		self.lastTick = currentTick
 
 		self.isTriggered = true
-		if self.onTickListener then
-			self.onTickListener.isPaused = false
-		end
+		self.isPaused = false
 
 		local shouldDispose = false;
 		repeat
@@ -153,11 +140,8 @@ LifeBoatAPI.Coroutine = {
 				if not coroutine.isDisposed or not coroutine.isTriggered then
 					-- if we're given a coroutine (eventually will be the only way)
 					coroutine.listeners[#coroutine.listeners + 1] = self
-
-					if self.onTickListener then
-						self.onTickListener.isPaused = true
-					end
-
+					self.isPaused = true
+					self.current = self.current + 1
 					return; -- no more processing while we wait for the awaitable to trigger
 				else
 					-- awaitable has already terminated, we need to grab the last result it had; and move onto the next stage

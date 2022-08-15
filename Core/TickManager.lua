@@ -1,5 +1,5 @@
 
----@alias LifeBoatAPI.ITickableFunc fun(listener:LifeBoatAPI.ITickable, deltaGameTicks:number)
+---@alias LifeBoatAPI.ITickableFunc fun(listener:LifeBoatAPI.ITickable, context:any, deltaGameTicks:number)
 
 ---@class LifeBoatAPI.ITickable : LifeBoatAPI.IDisposable
 ---@field tickFrequency number
@@ -52,26 +52,36 @@ LifeBoatAPI.TickManager = {
 
     ---@param self LifeBoatAPI.TickManager
     ---@param func LifeBoatAPI.ITickableFunc
-    ---@param tickFrenquency number|nil
-    ---@param firstTickDelay number|nil 
+    ---@param tickFrequency number
+    ---@param firstTickDelay number|nil if nil, will run at a random interval between now and tickFrequency, so that it spaces out evenly
     ---@param context any|nil
+    ---@param contextIsTickable boolean|nil if true, the provided context is used as the tickable, directly. (mainly for coroutine simplification)
     ---@return LifeBoatAPI.ITickable
-    register = function (self, func, context, tickFrenquency, firstTickDelay)
-        tickFrenquency = tickFrenquency or -1
+    register = function (self, func, context, tickFrequency, firstTickDelay, contextIsTickable)
+        tickFrequency = tickFrequency or -1
         
         -- if not explicitly provided, first tick delay should be randomly spread out across the tick frequency
         -- this avoids having tons of tickables all running on the exact same tick, and removing any benefit of the tickable system
-        if not firstTickDelay and tickFrenquency > 0 then
-            firstTickDelay = math.floor(math.random() * math.min(60, tickFrenquency)) + 1
+        if not firstTickDelay and tickFrequency > 0 then
+            firstTickDelay = math.floor(math.random() * math.min(60, tickFrequency)) + 1
         end
 
-        local tickable = {
-            onExecute = func,
-            tickFrenquency = tickFrenquency,
-            nextTick = self.ticks + (firstTickDelay or 1),
-            lastTick = self.ticks,
-            context = context
-        }
+        local tickable;
+        
+        if contextIsTickable then
+            tickable = context
+            tickable.onExecute = func
+            tickable.nextTick = self.ticks + (firstTickDelay or 1)
+            tickable.lastTick = self.ticks
+        else
+            tickable = {
+                onExecute = func,
+                tickFrequency = tickFrequency,
+                nextTick = self.ticks + (firstTickDelay or 1),
+                lastTick = self.ticks,
+                context = context
+            }
+        end
 
         -- safe during iteration, as the loop is fixed length
         -- as such, new tickables will *never* be evaluated during the tick they are added (hence setting nextTick to ticks+1)
@@ -85,7 +95,7 @@ LifeBoatAPI.TickManager = {
 
         -- allow tickables to be run instantly in the tick they're registered, unlikely to be used
         if firstTickDelay == 0 then
-            tickable:onExecute(0)
+            tickable:onExecute(tickable.context, 0)
         end
 
         return tickable
@@ -110,23 +120,21 @@ LifeBoatAPI.TickManager = {
 
                 if not tickable.isDisposed and tickable.nextTick == self.ticks and not tickable.isPaused then
 
-                    if tickable.tickFrequency and tickable.tickFrequency > 0 then
+                    if tickable.tickFrequency > 0 then
                         tickable.nextTick = self.ticks + tickable.tickFrequency
-                    else
-                        -- todo: decision to make after real-world use: does tickManager need to lb_dispose the tickables, or not
-                        if tickable.disposables then
-                            LifeBoatAPI.lb_dispose(tickable) -- necessary?
-                        else
-                            if tickable.disposables or tickable.onDispose then
-                                LifeBoatAPI.lb_dispose(tickable)
-                            else
-                                tickable.isDisposed = true
-                            end
-                        end
                     end
 
-                    tickable:onExecute(self.gameTicks - tickable.lastTick)
+                    tickable:onExecute(tickable.context, self.gameTicks - tickable.lastTick)
                     tickable.lastTick = self.gameTicks
+
+                    if tickable.tickFrequency <= 0 then
+                        -- todo: decision to make after real-world use: does tickManager need to lb_dispose the tickables, or not
+                        if tickable.disposables or tickable.onDispose then
+                            LifeBoatAPI.lb_dispose(tickable)
+                        else
+                            tickable.isDisposed = true
+                        end
+                    end
                 end
 
                 if tickable.isDisposed then
