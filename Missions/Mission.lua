@@ -7,13 +7,18 @@
 
 ---@section Mission
 
+
+-- not 100% confident that this does what we want
+-- does it self-init? or only on mission:start()?
+
+
 ---@class LifeBoatAPI.Mission
 ---@field cr LifeBoatAPI.Coroutine
 ---@field savedata table
 ---@field name string
 ---@field stages LifeBoatAPI.Mission[]
----@field init function
----@field cleanup function
+---@field onInit function
+---@field onCleanup function
 ---@field parentSaveData table
 ---@field parent LifeBoatAPI.Mission
 ---@field onComplete LifeBoatAPI.Event
@@ -22,12 +27,12 @@
 LifeBoatAPI.Mission = {
     ---@param cls LifeBoatAPI.Mission
     ---@param name string unique name for this mission part, used in g_savedata
-    ---@param init fun(self:LifeBoatAPI.Mission)
-    ---@param cleanup fun(self:LifeBoatAPI.Mission)
+    ---@param onInit fun(self:LifeBoatAPI.Mission)
+    ---@param onCleanup fun(self:LifeBoatAPI.Mission)
     ---@param parentSaveData table|nil (default: g_savedata) Allows for non-global missions, provide any persistence table as the parent of this mission (e.g. player save-data for per-player missions etc.)
     ---@param parent LifeBoatAPI.Mission|nil (default: nil) if you're setting this, you'll likely be better using mission:addStage() instead
     ---@return LifeBoatAPI.Mission
-    new = function(cls, name, init, cleanup, parentSaveData, parent)
+    new = function(cls, name, onInit, onCleanup, parentSaveData, parent)
         local self = {
             parentSaveData = parentSaveData;
             parent = parent;
@@ -41,8 +46,8 @@ LifeBoatAPI.Mission = {
             --- methods
             start = cls.start;
             next = cls.next;
-            init = init;
-            cleanup = cleanup;
+            onInit = onInit;
+            onCleanup = onCleanup;
         }
 
         -- improve the onComplete await function, to take into account savedata/isComplete
@@ -119,7 +124,7 @@ LifeBoatAPI.Mission = {
             return    
         end
 
-        self:init()
+        self:onInit()
         self.isInitialized = true
         self.stages[self.current]:start()
     end;
@@ -132,8 +137,8 @@ LifeBoatAPI.Mission = {
             self.onComplete:trigger(self)
         end
 
-        if self.isInitialized and self.cleanup then
-            self:cleanup()
+        if self.isInitialized and self.onCleanup then
+            self:onCleanup()
             self.isInitialized = false
         end
 

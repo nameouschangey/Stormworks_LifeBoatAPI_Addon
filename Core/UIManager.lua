@@ -87,10 +87,8 @@ LifeBoatAPI.UIManager = {
     end;
 
     _onPlayerJoin = function(l, self, player)
-        -- do we want to load everything?
-        -- the plus side, is easier to do
-        -- the downside, is stuff that relies only on a certain player is not good
-        -- but then it's really hard to dispose of stuff that's no longer wanted if it happens while the player is offline
+        -- when the player joins, give them all the UI they are entitled to
+        -- this will generally be used for when you want popups to display for all players
         local uiForAll = self.uiBySteamID["all"]
         for i=1, #uiForAll do
             local ui = uiForAll[i]
@@ -104,6 +102,7 @@ LifeBoatAPI.UIManager = {
         end
     end;
 
+    --- Tracks this entity, so that it exists "permanently"
     ---@param self LifeBoatAPI.UIManager
     ---@param uiElement LifeBoatAPI.UIElement
     trackEntity = function(self, uiElement)
