@@ -52,7 +52,7 @@ LifeBoatAPI.TickManager = {
 
     ---@param self LifeBoatAPI.TickManager
     ---@param func LifeBoatAPI.ITickableFunc
-    ---@param tickFrequency number
+    ---@param tickFrequency number|nil if nil, will run ONE TIME only and then dispose of itself
     ---@param firstTickDelay number|nil if nil, will run at a random interval between now and tickFrequency, so that it spaces out evenly
     ---@param context any|nil
     ---@param contextIsTickable boolean|nil if true, the provided context is used as the tickable, directly. (mainly for coroutine simplification)

@@ -66,7 +66,7 @@ LifeBoatAPI.Coroutine = {
 			-- register with tick
 			if not self.isTickRegistered then
 				self.isTickRegistered = true
-				LB.ticks:register(self.trigger, self, self.tickFrequency, nil, true)
+				LB.ticks:register(self.trigger, nil, self.tickFrequency, nil, true)
 				self.isPaused = self.status ~= 1
 			end
 
@@ -76,6 +76,7 @@ LifeBoatAPI.Coroutine = {
 
 	---Adds a step that will be run immediately after the previously one, synchronously
 	--- Useful for "follow-up" style work; e.g. "await this, THEN STRAIGHT AFTER -> do this other work"
+	--- There are fewer times you want to use this than andThen - otherwise you often just want to call the function directly
 	---@param self LifeBoatAPI.Coroutine
 	---@param func LifeBoatAPI.ICoroutineFunc
 	---@return LifeBoatAPI.Coroutine
@@ -83,20 +84,22 @@ LifeBoatAPI.Coroutine = {
 		if not self.isDisposed then
 			self.stages[#self.stages+1] = {onExecute = func, isImmediate = true}
 
-			-- status 2: has run out of instructions to run, so restart it
+			-- status 2: has run out of instructions to run, so restart it, status 0: hasn't started yet?
 			if self.status == 2 then
 				self.status = 1
 				self.current = #self.stages -- ensures that if we've run all stages, and current is now not pointing at anything - when we add a stage; it runs that stage
+			end
 
-				-- start running instructions again
+			if self.status ~= 0 and self.current == #self.stages then
+				-- if we've added onto the end, or this is the first thing added - run immediately
 				self:trigger()
 			end
 		end
 		return self
 	end;
 
-	---@param self LifeBoatAPI.Coroutine
-	trigger = function(self)
+	---@param self LifeBoatAPI.Coroutine note, for Tickable the listener (first param) IS this Coroutine
+	trigger = function(self, _ctx, _delta)
 
 		-- no further triggers should do anything
 		if self.isDisposed then
@@ -175,12 +178,6 @@ LifeBoatAPI.Coroutine = {
 			-- clear existing listeners, in case it's resurrected
 			if #self.listeners > 0 then
 				self.listeners = {}
-			end
-
-			-- disposal
-			if self.onTickListener then
-				self.onTickListener.isDisposed = true
-				self.onTickListener = nil
 			end
 
 			self.status = 2 -- end of current instructions
