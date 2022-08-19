@@ -55,11 +55,6 @@ LifeBoatAPI.UIPopup = {
         return obj
     end;
 
-    setText = function(self, text)
-        self.savedata.text = text
-        self:show()
-    end;
-
     ---@param self LifeBoatAPI.UIElement
     ---@param peerID number
     show = function(self, peerID)
