@@ -8,6 +8,7 @@
 ---@class LifeBoatAPI.UIMapLabel : LifeBoatAPI.UIElement
 LifeBoatAPI.UIMapLabel = {
     ---@param cls LifeBoatAPI.UIMapLabel
+    ---@return LifeBoatAPI.UIMapLine
     fromSavedata = function(cls, savedata)
         local self = {
             savedata = savedata,
@@ -21,6 +22,7 @@ LifeBoatAPI.UIMapLabel = {
         return self
     end;
 
+    ---@return LifeBoatAPI.UIMapLine
     new = function(cls, player, labelType, name, x, z, isTemporary)
         local obj = cls:fromSavedata({
             id = server.getMapID(),
@@ -41,13 +43,13 @@ LifeBoatAPI.UIMapLabel = {
         return obj
     end;
 
-    ---@param self LifeBoatAPI.UIElement
+    ---@param self LifeBoatAPI.UIMapLine
     show = function(self, peerID)
         local save = self.savedata
         server.addMapLabel(peerID, self.id, save.labelType, save.name, save.x, save.z)
     end;
 
-    ---@param self LifeBoatAPI.UIElement
+    ---@param self LifeBoatAPI.UIMapLine
     onDispose = function(self)
         server.removeMapLabel(-1, self.id)
         LB.ui:stopTracking(self)

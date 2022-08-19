@@ -18,6 +18,8 @@
 ---@field id number uiID
 ---@field isPopup boolean
 LifeBoatAPI.UIScreenPopup = {
+
+    ---@return LifeBoatAPI.UIScreenPopup
     fromSavedata = function(cls, savedata, isTemporary)
         local self = {
             savedata = savedata,
@@ -31,6 +33,7 @@ LifeBoatAPI.UIScreenPopup = {
         return self
     end;
 
+    ---@return LifeBoatAPI.UIScreenPopup
     new = function(cls, player, text, screenX, screenY, isTemporary)
         local obj = cls:fromSavedata({
             id = server.getMapID(),

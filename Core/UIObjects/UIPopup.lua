@@ -6,11 +6,13 @@
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
 
----@class LifeBoatAPI.UIElement : LifeBoatAPI.IDisposable
+---@class LifeBoatAPI.UIPopup : LifeBoatAPI.UIElement
 ---@field savedata table
 ---@field id number uiID
 ---@field isPopup boolean
 LifeBoatAPI.UIPopup = {
+
+    ---@return LifeBoatAPI.UIPopup
     fromSavedata = function(cls, savedata, isTemporary)
         local self = {
             savedata = savedata,
@@ -34,6 +36,7 @@ LifeBoatAPI.UIPopup = {
         return self
     end;
 
+    ---@return LifeBoatAPI.UIPopup
     new = function(cls, player, text, x, y, z, renderDistance, parent, isTemporary)
         local obj = cls:fromSavedata({
             id = server.getMapID(),
@@ -55,7 +58,7 @@ LifeBoatAPI.UIPopup = {
         return obj
     end;
 
-    ---@param self LifeBoatAPI.UIElement
+    ---@param self LifeBoatAPI.UIPopup
     ---@param peerID number
     show = function(self, peerID)
         local save = self.savedata
@@ -67,7 +70,7 @@ LifeBoatAPI.UIPopup = {
         end
     end;
 
-    ---@param self LifeBoatAPI.UIElement
+    ---@param self LifeBoatAPI.UIPopup
     onDispose = function(self)
         server.removePopup(-1, self.id)
         LB.ui:stopTracking(self)

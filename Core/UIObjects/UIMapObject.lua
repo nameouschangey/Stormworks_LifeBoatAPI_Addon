@@ -6,11 +6,12 @@
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
 
----@class LifeBoatAPI.UIElement : LifeBoatAPI.IDisposable
+---@class LifeBoatAPI.UIMapObject : LifeBoatAPI.UIElement
 ---@field savedata table
 ---@field id number uiID
 ---@field isPopup boolean
 LifeBoatAPI.UIMapObject = {
+    ---@return LifeBoatAPI.UIMapObject
     fromSavedata = function(cls, savedata)
         local self = {
             savedata = savedata,
@@ -34,6 +35,7 @@ LifeBoatAPI.UIMapObject = {
         return self
     end;
 
+    ---@return LifeBoatAPI.UIMapObject
     new = function(cls, player, positionType, markerType, x, z, radius, label, hoverLabel, parent, isTemporary)
         local obj = cls:fromSavedata({
             id = server.getMapID(),
@@ -57,7 +59,7 @@ LifeBoatAPI.UIMapObject = {
         return obj
     end;
 
-    ---@param self LifeBoatAPI.UIElement
+    ---@param self LifeBoatAPI.UIMapObject
     ---@param peerID number
     show = function(self, peerID)
         local save = self.savedata
@@ -69,7 +71,7 @@ LifeBoatAPI.UIMapObject = {
         end
     end;
 
-    ---@param self LifeBoatAPI.UIElement
+    ---@param self LifeBoatAPI.UIMapObject
     onDispose = function(self)
         server.removeMapObject(-1, self.id)
         LB.ui:stopTracking(self)
