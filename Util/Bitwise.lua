@@ -7,23 +7,23 @@
 
 LifeBoatAPI.Bitwise = {
 
-    --- Compacts 32 booleans to a single number, that can be sent to SW keypads
+    --- Compacts 24 booleans to a single number, that can be sent to SW keypads
     ---@param flags boolean[]
     ---@return number
     bitFlagsToNumber = function(flags)
         local result = 0;
-        for i=1, 32 do
+        for i=1, 24 do
             result = result | (flags[i] and 1 or 0) << (i-1)
         end
         return result
     end;
 
-    --- Unpacks a number into 32 boolean flags, for recieving compacted data from vehicle dials
+    --- Unpacks a number into 24 boolean flags, for recieving compacted data from vehicle dials
     ---@param bytes number
     ---@return boolean[]
     numberToBitFlags = function(bytes)
         local flags = {}
-        for i=1, 32 do
+        for i=1, 24 do
             local bitVal = bytes & (1 << (i-1))
             flags[i] = bitVal > 0 -- convert back to bool
         end
