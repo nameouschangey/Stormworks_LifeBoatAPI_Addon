@@ -22,6 +22,12 @@ LifeBoatAPI.UIMapLabel = {
         return self
     end;
 
+    ---@param labelType SWLabelTypeEnum
+    ---@param name string
+    ---@param x number
+    ---@param z number
+    ---@param isTemporary boolean if true, this will not persist between reload_scripts
+    ---@param player LifeBoatAPI.Player|nil nil displays to all players
     ---@return LifeBoatAPI.UIMapLine
     new = function(cls, player, labelType, name, x, z, isTemporary)
         local obj = cls:fromSavedata({

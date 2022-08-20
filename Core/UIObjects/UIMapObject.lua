@@ -35,6 +35,15 @@ LifeBoatAPI.UIMapObject = {
         return self
     end;
 
+    ---@param positionType SWPositionTypeEnum
+    ---@param markerType SWMarkerTypeEnum
+    ---@param x number
+    ---@param z number
+    ---@param radius number
+    ---@param label string
+    ---@param hoverLabel string
+    ---@param isTemporary boolean if true, this will not persist between reload_scripts
+    ---@param player LifeBoatAPI.Player|nil nil displays to all players
     ---@return LifeBoatAPI.UIMapObject
     new = function(cls, player, positionType, markerType, x, z, radius, label, hoverLabel, parent, isTemporary)
         local obj = cls:fromSavedata({
@@ -55,6 +64,8 @@ LifeBoatAPI.UIMapObject = {
         if not isTemporary then
             LB.ui:trackEntity(obj)
         end
+
+        obj:show(player and player.id or -1)
 
         return obj
     end;

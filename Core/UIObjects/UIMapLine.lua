@@ -25,6 +25,11 @@ LifeBoatAPI.UIMapLine = {
         return self
     end;
 
+    ---@param startMatrix LifeBoatAPI.Matrix
+    ---@param endMatrix LifeBoatAPI.Matrix
+    ---@param width number
+    ---@param isTemporary boolean if true, this will not persist between reload_scripts
+    ---@param player LifeBoatAPI.Player|nil nil displays to all players
     ---@return LifeBoatAPI.UIMapLine
     new = function(cls, player, startMatrix, endMatrix, width, isTemporary)
         local obj = cls:fromSavedata({

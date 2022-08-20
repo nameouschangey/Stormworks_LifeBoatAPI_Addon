@@ -51,6 +51,8 @@ LifeBoatAPI.UIManager = {
                 element = LifeBoatAPI.UIPopup:fromSavedata(elementSave)
             elseif elementSave.type == "screenpopup" then
                 element = LifeBoatAPI.UIScreenPopup:fromSavedata(elementSave)
+            elseif elementSave.type == "mapcollection" then
+                element = LifeBoatAPI.UIMapCollection:fromSavedata(elementSave)
             end
 
             if element and not element.isDisposed then
