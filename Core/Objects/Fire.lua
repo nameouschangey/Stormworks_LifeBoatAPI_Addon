@@ -5,11 +5,21 @@
 --- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
+---@class EventTypes.LBOnCollisionStart_Fire : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, fire:LifeBoatAPI.Fire, collision:LifeBoatAPI.Collision,  zone:LifeBoatAPI.Zone), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+---@class EventTypes.LBOnDespawn_Fire : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, fire:LifeBoatAPI.Fire), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+
 ---@class LifeBoatAPI.Fire : LifeBoatAPI.GameObject
 ---@field parent LifeBoatAPI.GameObject
+---@field onCollision EventTypes.LBOnCollisionStart_Fire
+---@field onDespawn EventTypes.LBOnDespawn_Fire
 LifeBoatAPI.Fire = {
     ---@param cls LifeBoatAPI.Fire
     ---@param savedata LifeBoatAPI.GameObjectSaveData
+    ---@return LifeBoatAPI.Fire
     fromSavedata = function(cls, savedata)
         -- get parent, if it still exists
         local parentID = savedata.parentID
@@ -65,8 +75,10 @@ LifeBoatAPI.Fire = {
         return self
     end;
 
+    ---@param cls LifeBoatAPI.Fire
     ---@param spawnData SWAddonComponentSpawned
     ---@param component LifeBoatAPI.AddonComponent
+    ---@return LifeBoatAPI.Fire
     fromAddonSpawn = function(cls, component, spawnData, parent)
         local obj = cls:fromSavedata({
             id = spawnData.id,

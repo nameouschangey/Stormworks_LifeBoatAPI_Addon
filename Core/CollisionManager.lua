@@ -5,6 +5,22 @@
 --- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
+---@class EventTypes.LBOnCollisionEnd : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, collision:LifeBoatAPI.Collision), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+---@class LifeBoatAPI.Collision : LifeBoatAPI.IDisposable
+---@field zone LifeBoatAPI.GameObject
+---@field object LifeBoatAPI.GameObject
+---@field onCollisionEnd EventTypes.LBOnCollisionEnd
+LifeBoatAPI.Collision = {
+    ---@param self LifeBoatAPI.Collision
+    onDispose = function(self)
+        if self.onCollisionEnd.hasListeners then
+            self.onCollisionEnd:trigger(self)
+        end
+    end;
+}
+
 ---@class LifeBoatAPI.CollisionLayer
 ---@field staticPartitionsSmall table<number< table<number,LifeBoatAPI.Zone[]>>> 
 ---@field staticPartitionsBig table<number< table<number,LifeBoatAPI.Zone[]>>>
@@ -25,19 +41,6 @@ LifeBoatAPI.CollisionLayer = {
             dynamicZones = {};
             objectsOnLayer = 0;
         }
-    end;
-}
-
----@class LifeBoatAPI.Collision : LifeBoatAPI.IDisposable
----@field zone LifeBoatAPI.GameObject
----@field object LifeBoatAPI.GameObject
----@field onCollisionEnd LifeBoatAPI.Event
-LifeBoatAPI.Collision = {
-    ---@param self LifeBoatAPI.Collision
-    onDispose = function(self)
-        if self.onCollisionEnd.hasListeners then
-            self.onCollisionEnd:trigger(self)
-        end
     end;
 }
 
@@ -182,11 +185,12 @@ LifeBoatAPI.CollisionManager = {
         for iObject=#objects, 1, -1 do
             local object = objects[iObject]
             local objsave = object.savedata
-            if object.isDisposed then
+            local layerNames = objsave.collisionLayers
+            
+            if object.isDisposed or not layerNames then
                 -- remove from objects list, performance less of a concern as it'll happen infrequently
                 table.remove(objects, iObject)
             else
-                local layerNames = objsave.collisionLayers
                 for iLayerName=1, #layerNames do
                     local layerName = layerNames[iLayerName]
                     if not layersWithObjectsSet[layerName] then
@@ -494,19 +498,26 @@ LifeBoatAPI.CollisionManager = {
                                             collisions[zone][object] = collisionObject
 
                                             if object.onCollision.hasListeners then
-                                                object.onCollision:trigger(object, zone, collisionObject)
+                                                object.onCollision:trigger(object, collisionObject, zone)
                                             end
                                             if zone.onCollision.hasListeners then
-                                                zone.onCollision:trigger(zone, object, collisionObject)
+                                                zone.onCollision:trigger(zone, collisionObject, object)
                                             end
                                         end
                                     elseif existingCollision  then
                                         -- no longer colliding
+                                        if existingCollision.onCollisionEnd.hasListeners then
+                                            existingCollision.onCollisionEnd:trigger(existingCollision)
+                                        end
+
                                         LifeBoatAPI.lb_dispose(existingCollision)
                                     end
                                     
                                 -- if the zone is disabled, or disposed of; and we *were* colliding - we need to handle that exit
-                                elseif existingCollision and existingCollision.onCollisionEnd.hasListeners then
+                                elseif existingCollision then
+                                    if existingCollision.onCollisionEnd.hasListeners then
+                                        existingCollision.onCollisionEnd:trigger(existingCollision)
+                                    end
                                     -- check if the collider was turned off/killed while an object was inside it
                                     LifeBoatAPI.lb_dispose(existingCollision)
                                 end

@@ -10,7 +10,6 @@
 ---@field terminate number terminate permanently, should only be used for non-recoverable failure conditions
 ---@field loop number repeat current stage again
 ---@field await number await the given coroutine/awaitable
---
 ---@field stages LifeBoatAPI.ICoroutineStage[]
 ---@field current number
 ---@field isTickRegistered boolean

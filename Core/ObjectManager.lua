@@ -5,8 +5,6 @@
 --- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
-
-
 ---@class LifeBoatAPI.ObjectManager
 ---@field savedata table
 ---@field vehiclesByID table<number, LifeBoatAPI.Vehicle>
@@ -15,8 +13,6 @@
 ---@field firesByID table<number, LifeBoatAPI.Fire>
 ---@field zonesByID table<number, LifeBoatAPI.Zone>
 ---@field onInitScripts table<string, fun(obj:LifeBoatAPI.GameObject)>
----@field enableVehicleCallbacks boolean
----@field enableVehicleDamageCallback boolean
 LifeBoatAPI.ObjectManager = {
     ---@param cls LifeBoatAPI.ObjectManager
     new = function(cls)

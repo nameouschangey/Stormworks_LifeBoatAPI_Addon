@@ -9,9 +9,6 @@
 ---@field savedata table
 ---@field uiByID table<number, LifeBoatAPI.UIElement>
 ---@field uiBySteamID table<string, LifeBoatAPI.UIElement[]>
----@field onInitScripts table<string, fun(obj:LifeBoatAPI.GameObject)>
----@field enableVehicleCallbacks boolean
----@field enableVehicleDamageCallback boolean
 LifeBoatAPI.UIManager = {
     ---@param cls LifeBoatAPI.UIManager
     new = function(cls)

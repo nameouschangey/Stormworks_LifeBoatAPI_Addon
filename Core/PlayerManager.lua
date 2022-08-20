@@ -8,7 +8,7 @@
 
 ---Handles all players join/leave status
 ---@class LifeBoatAPI.PlayerManager
----@field enablePlayerTracking boolean (default false) whether to track players in g_savedata or not, and whether each player should have it's own savedata
+---@field enablePlayerSaveTracking boolean (default false) whether to track players in g_savedata or not, and whether each player should have it's own savedata
 ---@field savedata table
 ---@field playersByPeerID table<number, LifeBoatAPI.Player>
 ---@field playersBySteamID table<string, LifeBoatAPI.Player>
@@ -87,7 +87,7 @@ LifeBoatAPI.PlayerManager = {
         local isFirstTimeJoining = false;
 
         -- first time player has joined the server
-        if self.enablePlayerTracking and not savedata then
+        if self.enablePlayerSaveTracking and not savedata then
             savedata = {}
             self.savedata.playersBySteamID[steamID] = savedata
             isFirstTimeJoining = true

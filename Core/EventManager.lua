@@ -6,88 +6,88 @@
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
 ---@class EventTypes.OnTick : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, game_ticks:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, gameTicks:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnCreate : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, is_world_create:boolean), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, isWorldCreate:boolean), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnDestroy : LifeBoatAPI.ENVCallbackEvent
 ---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnCustomCommand : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, full_message:string, peer_id:number, is_admin:boolean, is_auth:boolean, command:string, ...:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, fullMessage:string, peerID:number, isAdmin:boolean, isAuth:boolean, command:string, ...:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnChatMessage : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, peer_id:number, sender_name:string, message:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, peerID:number, senderName:string, message:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnPlayerJoin : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, steam_id:number, name:number, peer_id:number, is_admin:boolean, is_auth:boolean), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, steamID:number, name:number, peerID:number, isAdmin:boolean, isAuth:boolean), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnPlayerSit : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, peer_id:number, vehicle_id:number, seat_name:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, peerID:number, vehicleID:number, seatName:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnPlayerUnsit : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, peer_id:number, vehicle_id:number, seat_name:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, peerID:number, vehicleID:number, seatName:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnCharacterSit : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, object_id:number, vehicle_id:number, seat_name:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, objectID:number, vehicleID:number, seatName:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnCharacterUnsit : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, object_id:number, vehicle_id:number, seat_name:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, objectID:number, vehicleID:number, seatName:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnPlayerRespawn : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, peer_id:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, peerID:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnPlayerLeave : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, steam_id:number, name:string, peer_id:number, is_admin:boolean, is_auth:boolean), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, steamID:number, name:string, peerID:number, isAdmin:boolean, isAuth:boolean), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnToggleMap : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, peer_id:number, is_open:boolean), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, peerID:number, isOpen:boolean), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnPlayerDie : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, steam_id:number, name:string, peer_id:number, is_admin:boolean, is_auth:boolean), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, steamID:number, name:string, peerID:number, isAdmin:boolean, isAuth:boolean), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnVehicleSpawn : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle_id:number, peer_id:number, x:number, y:number, z:number, cost:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicleID:number, peerID:number, x:number, y:number, z:number, cost:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnVehicleDespawn : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle_id:number, peer_id:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicleID:number, peerID:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnVehicleLoad : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle_id:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicleID:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnVehicleUnload : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle_id:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicleID:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnVehicleTeleport : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle_id:number, peer_id:number, x:number, y:number, z:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicleID:number, peerID:number, x:number, y:number, z:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnObjectLoad : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, object_id:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, objectID:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnObjectUnload : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, object_id:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, objectID:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnButtonPress : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle_id:number, peer_id:number, button_name:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicleID:number, peerID:number, buttonName:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnSpawnAddonComponent : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle_or_object_id:number, component_name:string, TYPE_STRING:string, addon_index:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicleOrObjectID:number, componentName:string, componentType:string, addonIndex:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnVehicleDamaged : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle_id:number, damage_amount:number, voxel_x:number, voxel_y:number, voxel_z:number, body_index:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicleID:number, damageAmount:number, voxelX:number, voxelZ:number, voxelZ:number, bodyIndex:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class httpReply : LifeBoatAPI.ENVCallbackEvent
 ---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, port:number, request:string, reply:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnFireExtinguished : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, fire_x:number, fire_y:number, fire_z:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, fireX:number, fireY:number, fireZ:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnForestFireSpawned : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, fire_objective_id:number, fire_x:number, fire_y:number, fire_z:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, fireObjectiveID:number, fireX:number, fireY:number, fireZ:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnForestFireExtinguised : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, fire_objective_id:number, fire_x:number, fire_y:number, fire_z:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, fireObjectiveID:number, fireX:number, fireY:number, fireZ:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnTornado : LifeBoatAPI.ENVCallbackEvent
 ---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, transform:SWMatrix), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
@@ -140,6 +140,7 @@
 ---@field onWhirlpool               EventTypes.OnWhirlpool             
 ---@field onVolcano                 EventTypes.OnVolcano
 ---
+---@field trackObjectLoad boolean whether to track objects loading
 ---@field trackSitUnsit boolean whether to track sitting/unsitting from vehicle object API
 ---@field trackVehicleDamage boolean whether to track vehicle damage from vehicle object API; potentially performance heavy
 ---@field trackVehicleLoad boolean whether to track vehicles loading and unloading, via vehicle object API
@@ -198,6 +199,14 @@ LifeBoatAPI.EventManager = {
         local players = LB.players;
         local objects = LB.objects;
 
+        if self.trackObjectLoad then
+            LB.events.onObjectLoad:register(function (l, context, object_id)
+                local object = objects.objectsByID[object_id]
+                if object and object.onLoaded.hasListeners then
+                    object.onLoaded:trigger(object)
+                end
+            end)
+        end
 
 		if self.trackVehicleLoad then
             LB.events.onVehicleLoad:register(function (l, context, vehicle_id)
@@ -256,7 +265,7 @@ LifeBoatAPI.EventManager = {
                 local vehicle = objects.vehiclesByID[vehicle_id]
                 local player = players.playersByPeerID[peer_id]
                 if vehicle and vehicle.onSeatedChange.hasListeners then
-                    vehicle.onSeatedChange:trigger(vehicle, player, nil, seat_name, false)
+                    vehicle.onSeatedChange:trigger(vehicle, player, nil,  seat_name, false)
                 end
 
                 if player and player.onSeatedChange.hasListeners then
@@ -275,7 +284,7 @@ LifeBoatAPI.EventManager = {
             LB.events.onCharacterUnsit:register(function (l, context, object_id, vehicle_id, seat_name)
                 local vehicle = objects.vehiclesByID[vehicle_id]
                 if vehicle and vehicle.onSeatedChange.hasListeners then
-                    vehicle.onSeatedChange:trigger(vehicle, nil, object_id, seat_name, false)
+                    vehicle.onSeatedChange:trigger(vehicle, object_id, seat_name, false)
                 end
             end)
 		end

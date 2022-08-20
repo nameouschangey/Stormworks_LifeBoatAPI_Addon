@@ -5,12 +5,35 @@
 --- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
+---@class EventTypes.LBOnCollisionStart_Vehicle : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle:LifeBoatAPI.Vehicle, collision:LifeBoatAPI.Collision, zone:LifeBoatAPI.Zone), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+---@class EventTypes.LBOnDespawn_Vehicle : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle:LifeBoatAPI.Vehicle), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+---@class EventTypes.LBOnLoaded_Vehicle : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle:LifeBoatAPI.Vehicle), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+---@class EventTypes.LBOnTeleport_Vehicle : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle:LifeBoatAPI.Vehicle, player: LifeBoatAPI.Player, x:number, y:number, z:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+---@class EventTypes.LBOnButtonPress_Vehicle : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle:LifeBoatAPI.Vehicle, player:LifeBoatAPI.Player, buttonName:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+---@class EventTypes.LBOnSeatedChange_Vehicle : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle:LifeBoatAPI.Vehicle, player:LifeBoatAPI.Player|nil, objectID:number|nil, seatName:string, isSitting:boolean), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+---@class EventTypes.LBOnDamaged_Vehicle : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, vehicle:LifeBoatAPI.Vehicle, damageAmount:number, voxelX:number, voxelY:number, voxelZ:number, bodyIndex:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
 ---@class LifeBoatAPI.Vehicle : LifeBoatAPI.GameObject
----@field onLoaded LifeBoatAPI.Event
----@field onDamaged LifeBoatAPI.Event
----@field onTeleport LifeBoatAPI.Event
----@field onButtonPress LifeBoatAPI.Event 
----@field onSeatedChange LifeBoatAPI.Event
+---@field onCollision EventTypes.LBOnCollisionStart_Vehicle
+---@field onDespawn EventTypes.LBOnDespawn_Vehicle
+---@field onLoaded EventTypes.LBOnLoaded_Vehicle
+---@field onDamaged EventTypes.LBOnDamaged_Vehicle
+---@field onTeleport EventTypes.LBOnTeleport_Vehicle 
+---@field onButtonPress EventTypes.LBOnButtonPress_Vehicle
+---@field onSeatedChange EventTypes.LBOnSeatedChange_Vehicle
 LifeBoatAPI.Vehicle = {
     ---@param cls LifeBoatAPI.Vehicle
     fromSavedata = function(cls, savedata)
@@ -26,7 +49,6 @@ LifeBoatAPI.Vehicle = {
             onSeatedChange = LifeBoatAPI.Event:new(),
             onLoaded = LifeBoatAPI.Event:new(),
             onDespawn = LifeBoatAPI.Event:new(),
-
             onCollision = LifeBoatAPI.Event:new(),
 
             -- methods

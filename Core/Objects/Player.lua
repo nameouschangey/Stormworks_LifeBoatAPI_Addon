@@ -5,6 +5,34 @@
 --- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
+---@class EventTypes.LBOnCollisionStart_Player : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, player:LifeBoatAPI.Player, collision:LifeBoatAPI.Collision, zone:LifeBoatAPI.Zone), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+---@class EventTypes.LBOnTeleport_Player : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, player:LifeBoatAPI.Player, vehicle:LifeBoatAPI.Vehicle, x:number, y:number, z:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+---@class EventTypes.LBOnButtonPress_Player : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, player:LifeBoatAPI.Player, vehicle:LifeBoatAPI.Vehicle,  buttonName:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+---@class EventTypes.LBOnSeatedChange_Player : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, player:LifeBoatAPI.Player, vehicle:LifeBoatAPI.Vehicle, seatName:string, isSitting:boolean), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+---@class EventTypes.LBOnSpawnVehicle_Player : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, player:LifeBoatAPI.Player, vehicleID:number, x:number, y:number, z:number, cost:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+---@class EventTypes.LBOnAliveChanged_Player : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, player:LifeBoatAPI.Player, isAlive:boolean), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+---@class EventTypes.LBOnCommand_Player : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, player:LifeBoatAPI.Player, fullMessage:string, commandName:string, ...:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+---@class EventTypes.LBOnChat_Player : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, player:LifeBoatAPI.Player, message:string), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+---@class EventTypes.LBOnToggleMap_Player : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, player:LifeBoatAPI.Player, isOpen:boolean), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+
 ---@class LifeBoatAPI.Player : LifeBoatAPI.GameObject
 ---@field id number peerID
 ---@field steamID string
@@ -12,15 +40,16 @@
 ---@field isAuth boolean
 ---@field displayName string
 ---@field savedata table persistent data for this specific player
----
----@field onTeleport LifeBoatAPI.Event
----@field onButtonPress LifeBoatAPI.Event 
----@field onSeatedChange LifeBoatAPI.Event
----@field onSpawnVehicle LifeBoatAPI.Event
----@field onAliveChanged LifeBoatAPI.Event
----@field onCommand LifeBoatAPI.Event
----@field onChat LifeBoatAPI.Event
----@field onToggleMap LifeBoatAPI.Event
+---@field onCollision EventTypes.LBOnCollisionStart_Player
+---@field onTeleport EventTypes.LBOnTeleport_Player
+---@field onButtonPress EventTypes.LBOnButtonPress_Player
+---@field onSeatedChange EventTypes.LBOnSeatedChange_Player
+---@field onSpawnVehicle EventTypes.LBOnSpawnVehicle_Player
+---@field onAliveChanged EventTypes.LBOnAliveChanged_Player
+---@field onCommand EventTypes.LBOnCommand_Player
+---@field onChat EventTypes.LBOnChat_Player
+---@field onToggleMap EventTypes.LBOnToggleMap_Player
+---@field onDespawn nil
 LifeBoatAPI.Player = {
     ---@param cls LifeBoatAPI.Player
     ---@return LifeBoatAPI.Player
@@ -44,8 +73,6 @@ LifeBoatAPI.Player = {
             onCommand = LifeBoatAPI.Event:new();
             onChat = LifeBoatAPI.Event:new();
             onToggleMap = LifeBoatAPI.Event:new();
-
-            onDespawn = LifeBoatAPI.Event:new();
             onCollision = LifeBoatAPI.Event:new();
 
             -- methods

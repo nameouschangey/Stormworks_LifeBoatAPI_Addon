@@ -67,12 +67,12 @@ LifeBoatAPI.AddonManager = {
 ---@field componentsByID LifeBoatAPI.AddonComponent global lists of components in this addon, by id
 ---@field isLoaded boolean prevent loading the same component twice
 LifeBoatAPI.Addon = {
-    ---@param addon_data SWAddonData
+    ---@param addonData SWAddonData
     ---@return LifeBoatAPI.Addon
-    new = function(cls, index, addon_data)
+    new = function(cls, index, addonData)
         return {
-            rawdata = addon_data,
-            name = addon_data.name,
+            rawdata = addonData,
+            name = addonData.name,
             index = index;
             locations = {};
             locationsByName = {};
@@ -113,14 +113,14 @@ LifeBoatAPI.Addon = {
 ---@field index number
 LifeBoatAPI.AddonLocation = {
     ---@param cls LifeBoatAPI.AddonLocation
-    ---@param location_data SWLocationData
+    ---@param locationData SWLocationData
     ---@param parent LifeBoatAPI.Addon
     ---@return LifeBoatAPI.AddonLocation
-    new = function(cls, parent, index, location_data)
+    new = function(cls, parent, index, locationData)
         local self = {
             addon = parent,
             index = index,
-            rawdata = location_data,
+            rawdata = locationData,
             components = {};
             componentsByID = {};
             componentsByName = {};
@@ -136,7 +136,7 @@ LifeBoatAPI.AddonLocation = {
         }
 
         -- component index starts at 0
-        for i=0, location_data.component_count-1 do
+        for i=0, locationData.component_count-1 do
             local componentData = server.getLocationComponentData(self.addon.index, self.index, i)
             local component = LifeBoatAPI.AddonComponent:new(self, i, componentData)
 

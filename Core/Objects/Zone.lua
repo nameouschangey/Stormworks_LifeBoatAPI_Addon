@@ -5,6 +5,10 @@
 --- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
+---@class EventTypes.LBOnCollisionStart_Zone : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, zone:LifeBoatAPI.Zone, collision:LifeBoatAPI.Collision, object:LifeBoatAPI.GameObject), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+
 ---@class LifeBoatAPI.ZoneSaveData : LifeBoatAPI.GameObjectSaveData
 ---@field sizeX number
 ---@field sizeY number
@@ -17,6 +21,7 @@
 ---@class LifeBoatAPI.Zone : LifeBoatAPI.GameObject
 ---@field savedata LifeBoatAPI.ZoneSaveData
 ---@field parent LifeBoatAPI.GameObject
+---@field onCollision EventTypes.LBOnCollisionStart_Zone
 LifeBoatAPI.Zone = {
     _generateZoneID = function()
         g_savedata.lb_nextZoneID = g_savedata.lb_nextZoneID and (g_savedata.lb_nextZoneID + 1) or 0

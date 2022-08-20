@@ -7,9 +7,8 @@
 
 ---@section Mission
 
-
--- not 100% confident that this does what we want
--- does it self-init? or only on mission:start()?
+---@class EventTypes.LBOnMissionComplete : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, mission:LifeBoatAPI.Mission, isFirstComplete:boolean), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 
 ---@class LifeBoatAPI.Mission
@@ -18,17 +17,17 @@
 ---@field name string
 ---@field stages LifeBoatAPI.Mission[]
 ---@field onInit function
----@field onCleanup function
+---@field onCleanup function|nil
 ---@field parentSaveData table
 ---@field parent LifeBoatAPI.Mission
----@field onComplete LifeBoatAPI.Event
+---@field onComplete EventTypes.LBOnMissionComplete second param is "true" if it's the first time completion, or "false" if it's notifying completion after script-reload
 ---@field isInitialized boolean
 ---@field current number
 LifeBoatAPI.Mission = {
     ---@param cls LifeBoatAPI.Mission
     ---@param name string unique name for this mission part, used in g_savedata
     ---@param onInit fun(self:LifeBoatAPI.Mission)
-    ---@param onCleanup fun(self:LifeBoatAPI.Mission)
+    ---@param onCleanup fun(self:LifeBoatAPI.Mission)|nil
     ---@param parentSaveData table|nil (default: g_savedata) Allows for non-global missions, provide any persistence table as the parent of this mission (e.g. player save-data for per-player missions etc.)
     ---@param parent LifeBoatAPI.Mission|nil (default: nil) if you're setting this, you'll likely be better using mission:addStage() instead
     ---@return LifeBoatAPI.Mission
@@ -69,10 +68,10 @@ LifeBoatAPI.Mission = {
 
     ---@param self LifeBoatAPI.Mission
     ---@param name string unique name for this mission part, used in g_savedata
-    ---@param init fun(self:LifeBoatAPI.Mission)
-    ---@param cleanup fun(self:LifeBoatAPI.Mission)
-    addStage = function(self, name, init, cleanup)
-        local mission = LifeBoatAPI.Mission:new(name, init, cleanup, nil, self)
+    ---@param onInitFunction fun(self:LifeBoatAPI.Mission)
+    ---@param onCleanupFunction fun(self:LifeBoatAPI.Mission)|nil
+    addStage = function(self, name, onInitFunction, onCleanupFunction)
+        local mission = LifeBoatAPI.Mission:new(name, onInitFunction, onCleanupFunction, nil, self)
         self.stages[#self.stages+1] = mission
         return mission
     end;
@@ -131,11 +130,11 @@ LifeBoatAPI.Mission = {
 
     ---@param self LifeBoatAPI.Mission
     complete = function(self)
-        self.savedata.isComplete = true
-
         if self.onComplete.hasListeners then
-            self.onComplete:trigger(self)
+            self.onComplete:trigger(self, not self.savedata.isComplete) -- triggers with "true" if it's the first time the mission has completed, false if it's just notifying that it *is* complete
         end
+
+        self.savedata.isComplete = true
 
         if self.isInitialized and self.onCleanup then
             self:onCleanup()

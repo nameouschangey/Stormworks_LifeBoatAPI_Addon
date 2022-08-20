@@ -9,7 +9,7 @@
 ---@field id number
 ---@field type string
 ---@field transform LifeBoatAPI.Matrix
----@field collisionLayers string[]
+---@field collisionLayers string[]|nil nil means "not collidable"
 ---@field isCollisionDisabled boolean
 ---@field parentID number
 ---@field parentType string
