@@ -125,7 +125,7 @@ LifeBoatAPI.Vehicle = {
         local isLoaded = server.getVehicleSimulating(self.id)
         if isLoaded then
             return LifeBoatAPI.Coroutine:start()
-        elseif LB.objects.enableVehicleCallbacks then
+        elseif LB.events.trackVehicleLoad then
             return self.onLoaded:await()
         else
             local cr = LifeBoatAPI.Coroutine:start(nil, true)
