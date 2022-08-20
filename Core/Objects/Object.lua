@@ -5,8 +5,20 @@
 --- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
+---@class EventTypes.LBOnCollisionStart_Object : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, object:LifeBoatAPI.Object, collision:LifeBoatAPI.Collision, zone:LifeBoatAPI.Zone), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+---@class EventTypes.LBOnDespawn_Object : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, object:LifeBoatAPI.Object), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+---@class EventTypes.LBOnLoaded_Object : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, object:LifeBoatAPI.Object), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+
 ---@class LifeBoatAPI.Object : LifeBoatAPI.GameObject
----@field onLoaded LifeBoatAPI.Event
+---@field onLoaded EventTypes.LBOnLoaded_Object
+---@field onCollision EventTypes.LBOnCollisionStart_Object
+---@field onDespawn EventTypes.LBOnDespawn_Object
 LifeBoatAPI.Object = {
     ---@param cls LifeBoatAPI.Object
     fromSavedata = function(cls, savedata)
@@ -112,7 +124,7 @@ LifeBoatAPI.Object = {
         if isLoaded then
             return LifeBoatAPI.Coroutine:start()
 
-        elseif LB.objects.enableVehicleCallbacks then
+        elseif LB.events.trackObjectLoad then
             return self.onLoaded:await()
 
         else
