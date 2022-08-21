@@ -46,3 +46,6 @@ require("LifeBoatAPI.Core.UIManager")
 
 -- instantiates live data
 require("LifeBoatAPI.Core.LB")
+
+-- fake addon api, to allow quick testing
+require("LifeBoatAPI.AddonSimulator")
