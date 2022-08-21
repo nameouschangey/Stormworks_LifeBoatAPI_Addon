@@ -33,7 +33,7 @@ LifeBoatAPI.ObjectManager = {
             npcsByID = {};
             firesByID = {};
             zonesByID = {};
-            scripts = {};
+            onInitScripts = {};
 
             --- methods
             init = cls.init,
