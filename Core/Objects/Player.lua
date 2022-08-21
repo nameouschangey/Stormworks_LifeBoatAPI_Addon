@@ -54,7 +54,7 @@ LifeBoatAPI.Player = {
     ---@param cls LifeBoatAPI.Player
     ---@return LifeBoatAPI.Player
     new = function (cls, peerID, steamID, isAdmin, isAuth, name, savedata)
-        savedata.collisionLayers = savedata.collisionLayers or {"player"} 
+        savedata.collisionLayer = savedata.collisionLayer or "player"
         local self = {
             savedata = savedata;
             type = "player";
@@ -81,19 +81,15 @@ LifeBoatAPI.Player = {
             -- methods
             getTransform = cls.getTransform;
             attach = LifeBoatAPI.lb_attachDisposable,
-            toggleCollision = LifeBoatAPI.GameObject.toggleCollision;
             awaitLoaded = cls.awaitLoaded;
+            onDispose = cls.onDispose;
         }
 
         -- ensure position is up to date
-        if self.getTransform then
-            self:getTransform()
-        end
+        self:getTransform()
 
         -- by default all players are collision enabled
-        if self.savedata.collisionLayers then
-            LB.collision:trackObject(self)
-        end
+        LB.collision:trackEntity(self)
         
         return self
     end;
@@ -137,7 +133,12 @@ LifeBoatAPI.Player = {
             self.velocityOffset = (matrix[13]-self.transform[13]) + (matrix[14]-self.transform[14]) + (matrix[15]-self.transform[15]) > 1 and 60 or 0
             self.transform = matrix
             self.lastTickUpdated = LB.ticks.ticks
+            self.collisionXYZFloor = self.transform[13] + self.transform[14] + self.transform[15]
         end
         return self.transform
+    end;
+
+    onDispose = function(self)
+        self.isCollisionStopped = true
     end;
 }

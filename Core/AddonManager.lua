@@ -149,7 +149,7 @@ LifeBoatAPI.AddonLocation = {
             self.componentsByID[componentData.id] = component
 
             if (component.rawdata.type == "zone" or component.rawdata.type == "fire")
-                and (component.tags["parentID"] or component.rawdata.vehicle_parent_component_id) then
+                and (component.tags["parentID"]) then
 
                 withParent[#withParent+1] = component
             else
@@ -164,7 +164,7 @@ LifeBoatAPI.AddonLocation = {
         -- todo: manage parented items
         for i=1, #withParent do
             local component = withParent[i]
-            local parentID = tonumber(component.tags["parentID"] or component.rawdata.vehicle_parent_component_id)
+            local parentID = tonumber(component.tags["parentID"])
 
             if parentID then
                 local parent = self.componentsByID[parentID]

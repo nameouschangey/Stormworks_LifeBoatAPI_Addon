@@ -22,37 +22,24 @@ LifeBoatAPI.Collision = {
 }
 
 ---@class LifeBoatAPI.CollisionLayer
----@field staticPartitionsSmall table<number< table<number,LifeBoatAPI.Zone[]>>> 
----@field staticPartitionsBig table<number< table<number,LifeBoatAPI.Zone[]>>>
----@field staticPartitionsMassive table<number< table<number,LifeBoatAPI.Zone[]>>>
----@field dynamicPartitionsSmall table<number< table<number,LifeBoatAPI.Zone[]>>> 
----@field dynamicPartitionsBig table<number< table<number,LifeBoatAPI.Zone[]>>>
----@field dynamicPartitionsMasive table<number< table<number,LifeBoatAPI.Zone[]>>>
----@field dynamicZones LifeBoatAPI.Zone[]
----@field hadObjects boolean for dynamic calculation, whether there *was* objects on this layer or not (saves 3 table rebuilds)
+---@field objects LifeBoatAPI.GameObject[]
+---@field zones LifeBoatAPI.Zone[]
+---@field name string
 LifeBoatAPI.CollisionLayer = {
     ---@return LifeBoatAPI.CollisionLayer
-    new = function(cls)
+    new = function(cls, name)
         return {
-            staticPartitionsSmall = {}; -- 100m
-            staticPartitionsBig = {}; -- 1000m is the size of a tile, is that going to be really used?
-            dynamicPartitionsSmall = {};
-            dynamicPartitionsBig = {};
-            dynamicPartitionsMassive = {};
-            dynamicZones = {};
-            objectsOnLayer = 0;
+            name = name,
+            zones = {},
+            objects = {}
         }
     end;
 }
 
 ---@class LifeBoatAPI.CollisionManager
----@field layers table<string, LifeBoatAPI.CollisionLayer>
----@field partitionSizeSmall number size of the small partitions, 
----@field partitionSizeBig number
----@field partitionSizeMassive number
+---@field layers LifeBoatAPI.CollisionLayer[]
+---@field layersByName table<string, LifeBoatAPI.CollisionLayer>
 ---@field collisions table<any, table<LifeBoatAPI.Zone, LifeBoatAPI.Collision>>
----@field objects LifeBoatAPI.GameObject[]
----@field lastObjectPositions table<LifeBoatAPI.GameObject, LifeBoatAPI.Matrix>
 ---@field tickFrequency number frequency to update collisions, default is 30ticks (twice per second - which is going to be more than enough for 99.9% of cases)
 LifeBoatAPI.CollisionManager = {
 
@@ -62,23 +49,15 @@ LifeBoatAPI.CollisionManager = {
         ---@type LifeBoatAPI.CollisionManager
         local self = {
             layers = {};
-            partitionSizeSmall = 100;
-            partitionSizeBig = 1000;
-            partitionSizeMassive = 10000;
-            objects = {};
+            layersByName = {};
             collisions = {};
-            lastObjectPositions = {};
             tickFrequency = tickFrequency or 1; -- twice per second seems pretty reasonable really. Not sure why you'd need it much higher, especially as we're checking by line
 
             ---methods
             init = cls.init;
-            trackZone = cls.trackZone;
-            trackObject = cls.trackObject;
+            trackEntity = cls.trackEntity;
+            stopTracking = cls.stopTracking;
             _onTick = cls._onTick;
-            _buildDynamicPartitions = cls._buildDynamicPartitions;
-            _storeObjectPositionsForNextTick = cls._storeObjectPositionsForNextTick;
-            _removeDeadObjectsAndCalulateActiveLayers = cls._removeDeadObjectsAndCalulateActiveLayers;
-            _handleCollisions = cls._handleCollisions;
         }
         return self
     end;
@@ -89,226 +68,166 @@ LifeBoatAPI.CollisionManager = {
     end;
 
     ---@param self LifeBoatAPI.CollisionManager
-    ---@param zone LifeBoatAPI.Zone
-    trackZone = function(self, zone)
-        local save = zone.savedata
+    ---@param entity LifeBoatAPI.GameObject
+    trackEntity = function(self, entity)
+        local layerName = entity.savedata.collisionLayer
 
-        if not save.collisionLayer then
-            return
-        end
+        if not entity.isCollisionRegistered and layerName then
+            if not self.layersByName[layerName] then
+                local layer = LifeBoatAPI.CollisionLayer:new(layerName)
+                self.layers[#self.layers+1] = layer
+                self.layersByName[layerName] = layer
+            end
 
-        self.layers[save.collisionLayer] = self.layers[save.collisionLayer] or LifeBoatAPI.CollisionLayer:new()
-        local layer = self.layers[save.collisionLayer]
+            local layer = self.layersByName[layerName]
 
-        -- static zones have no getTransform
-        if not zone.getTransform then
-            
-            local partitions;
-            local partitionSize;
-            local diameter = save.radius * 2
-            if save.overrideIsBig or diameter > self.partitionSizeBig then
-                partitionSize = self.partitionSizeMassive
-                partitions = layer.staticPartitionsMassive
-            elseif save.overrideIsBig or diameter > self.partitionSizeSmall then
-                partitionSize = self.partitionSizeBig
-                partitions = layer.dynamicPartitionsBig
+            if entity.savedata.type == "zone" then
+                ---@cast entity LifeBoatAPI.Zone
+                layer.zones[#layer.zones+1] = entity
             else
-                partitionSize = self.partitionSizeSmall
-                partitions = layer.dynamicPartitionsSmall
+                layer.objects[#layer.objects+1] = entity
             end
-            local partitionSizeReciprocal = 1/partitionSize
-            local Zx,Zz = zone.transform[13], zone.transform[15]
-            local x,z = Zx-((Zx* partitionSizeReciprocal)%1),  (Zz - (Zz * partitionSizeReciprocal)%1)
 
-            -- find if it spills on the x axis
-            local iXstart = (Zx-save.radius < x) and (x-partitionSize) or x
-            local iXend = (Zx+save.radius > (x+partitionSize)) and (x+partitionSize) or x
-            
-            -- find if it spills on the z axis
-            local iZstart = (Zz-save.radius < z) and (z-partitionSize) or z
-            local iZend = (Zz+save.radius > (z+partitionSize)) and (z+partitionSize) or z
-
-            -- add reference to all applicable zones (will be between 1 and at most 4 in 2D)
-            -- no need to care about removal, we can do that while iterating later; anytime we end up in a bucket with a dead zone, we can clear it
-            -- otherwise, no need at all
-            for iX=iXstart, iXend, partitionSize do
-                partitions[iX] = partitions[iX] or {}
-
-                for iZ=iZstart, iZend, partitionSize do
-                    partitions[iX][iZ] = partitions[iX][iZ] or {}
-                    local partition = partitions[iX][iZ]
-                    partition[#partition+1] = zone
-                end
-            end
-        else
-            layer.dynamicZones[#layer.dynamicZones+1] = zone
+            entity.isCollisionRegistered = true
         end
-    end;
-
-    ---@param self LifeBoatAPI.CollisionManager
-    ---@param object LifeBoatAPI.GameObject
-    trackObject = function(self, object)
-        self.objects[#self.objects+1] = object
-
-        server.announce("obj added", "added obj on layer ")
-    end;
-
-    ---@param listener LifeBoatAPI.ITickable
-    _onTick = function(listener)
-        ---@type LifeBoatAPI.CollisionManager
-        local self = listener.context
-        --local layersWithObjects = self:_removeDeadObjectsAndCalulateActiveLayers()
-        --self:_buildDynamicPartitions(layersWithObjects)
-        self:_handleCollisions()
-    end;
-
-    --- Remove any objects that are now disposed
-    --- Which in turn, needs to clear layers off that no longer have objects on them - so we don't build dynamic partitions for these
-    --- is there a reason to do it this way?
-    ---@param self LifeBoatAPI.CollisionManager
-    ---@return LifeBoatAPI.CollisionLayer[]
-    _removeDeadObjectsAndCalulateActiveLayers = function(self)
-        local objects = self.objects
-        local layersWithObjects = {}
-        local layersWithObjectsSet = {}
-
-        for iObject=#objects, 1, -1 do
-            local object = objects[iObject]
-            local objsave = object.savedata
-            local layerNames = objsave.collisionLayers
-            
-            if object.isDisposed or not layerNames then
-                -- remove from objects list, performance less of a concern as it'll happen infrequently
-                table.remove(objects, iObject)
-            elseif not object.internalCollisionDisabled and not objsave.isCollisionDisabled then
-                for iLayerName=1, #layerNames do
-                    local layerName = layerNames[iLayerName]
-                    if not layersWithObjectsSet[layerName] then
-                        layersWithObjectsSet[layerName] = true -- store true, even if there layer doesn't exist, to save checking it again
-                        local layer = self.layers[layerName]
-                        
-                        if layer then
-                            layersWithObjects[#layersWithObjects+1] = layer
-                        end
-                    end
-                end
-            end
-        end
-
-        return layersWithObjects
-    end;
-
-    ---@param self LifeBoatAPI.CollisionManager
-    ---@param layerWithObjects LifeBoatAPI.CollisionLayer[]
-    _buildDynamicPartitions = function(self, layerWithObjects)
-        local currentTick = LB.ticks.ticks
-
-        for iLayer=1, #layerWithObjects do
-            local layer = layerWithObjects[iLayer]
-        
-            if layer.hadObjects then
-                layer.dynamicPartitionsBig = {}
-                layer.dynamicPartitionsSmall = {}
-                layer.dynamicPartitionsMassive = {}
-                layer.hadObjects = false
-            end
-
-            local dynamicZones = layer.dynamicZones
-            local numDynamicZones = #dynamicZones
-            if numDynamicZones > 0 then
-                -- rebuild the dynamic tree from scratch each time
-                layer.hadObjects = true
-
-                for iZone=#dynamicZones, 1, -1 do
-                    local zone = dynamicZones[iZone]
-                    local zonesave = zone.savedata
-
-                    if zone.isDisposed then
-                        table.remove(dynamicZones, iZone)
-
-                    elseif not zonesave.isCollisionDisabled then
-                        -- ensure zone is fully updated, as it is "dynamic" and moves
-                        if zone.parent.lastTickUpdated + zone.parent.velocityOffset < currentTick then
-                            zone.transform = LifeBoatAPI.Matrix.multiplyMatrix(zone.parent:getTransform(), zone.savedata.transform)
-                            zone.lastTickUpdated = LB.ticks.ticks
-                        end
-
-                        --[[Build Dynamic Paritions for This Layer. Duplicate of addZone (but for dynamic zones)]]
-                        local partitions;
-                        local partitionSize;
-                        local diameter = zonesave.radius * 2
-                        if zonesave.overrideIsBig or diameter > self.partitionSizeBig then
-                            partitionSize = self.partitionSizeMassive
-                            partitions = layer.dynamicPartitionsMassive
-                        elseif zonesave.overrideIsBig or diameter > self.partitionSizeSmall then
-                            partitionSize = self.partitionSizeBig
-                            partitions = layer.dynamicPartitionsBig
-                        else
-                            partitionSize = self.partitionSizeSmall
-                            partitions = layer.dynamicPartitionsSmall
-                        end
-                        local partitionSizeReciprocal = 1/partitionSize
-                        local Zx,Zz = zone.transform[13], zone.transform[15]
-                        local x,z = Zx - ((Zx * partitionSizeReciprocal)%1),  (Zz - (Zz * partitionSizeReciprocal)%1)
-
-                        -- find if it spills on the x axis
-                        local iXstart = (Zx-zonesave.radius < x) and (x-partitionSize) or x
-                        local iXend = (Zx+zonesave.radius > (x+partitionSize)) and (x+partitionSize) or x
-
-                        -- find if it spills on the z axis
-                        local iZstart = (Zz-zonesave.radius < z) and (z-partitionSize) or z
-                        local iZend = (Zz+zonesave.radius > (z+partitionSize)) and (z+partitionSize) or z
-
-                        -- add reference to all applicable zones (will be between 1 and at most 4 in 2D)
-                        for iX=iXstart, iXend, partitionSize do
-                            partitions[iX] = partitions[iX] or {}
-
-                            for iZ=iZstart, iZend, partitionSize do
-                                partitions[iX][iZ] = partitions[iX][iZ] or {}
-                                local partition = partitions[iX][iZ]
-                                partition[#partition+1] = zone
-                            end
-                        end
-
-                    end
-                end
-            end
-        end
+        server.announce("obj added", "added object on layer " .. tostring(layerName))
     end;
     
     ---@param self LifeBoatAPI.CollisionManager
-    _handleCollisions = function(self)
+    ---@param entity LifeBoatAPI.GameObject
+    stopTracking = function(self, entity)
+        entity.isCollisionStopped = false
+    end;
+
+    ---@param listener LifeBoatAPI.ITickable
+    _onTick = function(listener, self)
+        for i=1, 100 do
+            LifeBoatAPI.CollisionManager.run(self, i)
+        end
+    end;
+
+    run = function(self, runtime)
+        ---@type LifeBoatAPI.CollisionManager
         local collisions = self.collisions
 
-        local objects = self.objects
         local currentTick = LB.ticks.ticks
-        local partitionSizeSmall = self.partitionSizeSmall
-        local partitionSizeBig = self.partitionSizeBig
-        local partitionSizeMassive = self.partitionSizeMassive
-
-        local smallReciprocal = 1/partitionSizeSmall
-        local bigReciprocal = 1/partitionSizeBig
-        local massiveReciprocal = 1/partitionSizeMassive
 
         local isLineInZone = LifeBoatAPI.Colliders.isLineInZone
         local isLineInSphere = LifeBoatAPI.Colliders.isLineInSphere
+        local isPointInZone = LifeBoatAPI.Colliders.isPointInZone
+        local isPointInSphere = LifeBoatAPI.Colliders.isPointInSphere
 
         local layers = self.layers
+        for iLayer=#self.layers, 1, -1  do
+            local layer = self.layers[iLayer]
+            local objects = layer.objects
+            local zones = layer.zones
 
-        --server.announce("num objects", tostring(#objects))
+            -- remove any completely dead layers
+            local numObjects = #objects
+            local numZones = #zones
 
-        for iObject=1, #objects do
-            local object = objects[iObject]
-            local objsave = object.savedata
+            if runtime == 1 and currentTick % 60 ==0 then
+                server.announce("num in layer", tostring(layer.name) .. " -> objs: " .. tostring(numObjects) .. " + zones: " .. tostring(numZones))
+            end
 
-            if not object.internalCollisionDisabled and not objsave.isCollisionDisabled then
-                local lastPosition = self.lastObjectPositions[object] or object.transform -- no movement default
+            if numZones == 0 and numObjects == 0 then
+                server.announce("removing layer", layer.name)
+                table.remove(layers, iLayer)
+                self.layersByName[layer.name] = nil
+            else
+                for iObject = numObjects, 1, -1 do
+                    local object = objects[iObject]
+                    if object.isDisposed or object.isCollisionStopped then
+                        object.isCollisionRegistered = false
+                        object.isCollisionStopped = false
+                        table.remove(objects, iObject)
+                        numObjects = numObjects - 1
 
-                -- make sure position is updated
-                -- this is likely the most performance heavy call; as it can end up needing 2 function calls for e.g. players
-                if object.getTransform and object.lastTickUpdated + object.velocityOffset < currentTick then
-                    object:getTransform()
+                        -- we should check for collisions ending here
+
+                    elseif object.lastTickUpdated + object.velocityOffset < currentTick then
+                        object:getTransform()
+                    end
                 end
+
+                for iZone = numZones, 1, -1 do
+                    local zone = zones[iZone]
+                    if zone.isDisposed or zone.isCollisionStopped then
+                        zone.isCollisionRegistered = false
+                        zone.isCollisionStopped = false
+                        table.remove(zones, iZone)
+                        numZones = numZones - 1
+
+                        --check for existing collisions to end
+
+                    elseif zone.parent and zone.parent.lastTickUpdated + zone.parent.velocityOffset < currentTick then
+                        zone:getTransform()
+                    end
+                end
+
+                if numObjects > 0 and numZones > 0 then
+
+                    -- must be objects
+                    for iObject = numObjects, 1, -1 do
+                        local object = objects[iObject]
+
+                        for iZone = numZones, 1, -1 do -- this kind of nested loop gives me severe heebie jeebies
+                            local zone = layer.zones[iZone]
+                            if iZone==1 and runtime == 1 and currentTick % 60 == 0 then
+                                server.announce("collisionXYZFloor", tostring(zone.collisionXYZFloor) .. " -> objs: " .. tostring(object.collisionXYZFloor) .. " - radius3: " .. tostring(zone.radiusTripled))
+                            end
+
+                            local isCollision;
+                            -- is concentric rings a terrible idea? (probably)
+                            if object.velocityOffset == 59 then -- static (hack)
+                                if object.collisionRadius > zone.collisionRadiusMin and object.collisionRadius < zone.collisionRadiusMax then
+                                    if zone.savedata.collisionType == "sphere" then
+                                        isCollision = isPointInSphere(object.transform, zone.transform, zone.savedata.radius)
+                                    else
+                                        isCollision = isPointInZone(object.transform, zone.transform, zone.savedata.sizeX, zone.savedata.sizeY, zone.savedata.sizeZ)
+                                    end
+                                end
+                            else -- moving object
+                                if (object.collisionRadius > zone.collisionRadiusMin and object.collisionRadius < zone.collisionRadiusMax)
+                                or (object.collisionRadiusLast > zone.collisionRadiusMax and object.collisionRadiusLast < zone.collisionRadiusMax)
+                                or (object.collisionRadiusLast < zone.collisionRadiusMax and object.collisionRadius > zone.collisionRadiusMax)
+                                then
+                                    if zone.savedata.collisionType == "sphere" then
+                                        isCollision = isLineInSphere(object.lastTransform, object.transform, zone.transform, zone.savedata.radius)
+                                    else
+                                        isCollision = isLineInZone(object.lastTransform, object.transform, zone.transform, zone.savedata.sizeX, zone.savedata.sizeY, zone.savedata.sizeZ)
+                                    end
+                                end
+                            end
+                            
+                            if isCollision then
+                                if iZone==1 and runtime == 1 and currentTick % 60 == 0 then
+                                    server.announce("Collision!", "object: " .. object.id .. " with zone: " .. zone.id)
+                                end
+                            end
+                            -- check if floored x+y+z is within a ballpark; false positives are OK, as long as we eliminate a lot of "just uselessly far away" points
+                            if zone.collisionXYZFloor - object.collisionXYZFloor < zone.radiusTripled then -- 500 in every direction
+
+                                --local isCollision;
+                                --if zone.savedata.collisionType == "sphere" then
+                                --    isCollision = isLineInSphere(object.lastTransform, object.transform, zone.transform, zone.savedata.radius)
+                                --else
+                                --    isCollision = isLineInZone(object.lastTransform, object.transform, zone.transform, zone.savedata.sizeX, zone.savedata.sizeY, zone.savedata.sizeZ)
+                                --end
+--
+                                --if isCollision == true then
+                                --    server.announce("Collision!", "object: " .. object.id .. " with zone: " .. zone.id)
+                                --end
+
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end;
+}
  
 --                 -- object lastPosition
 --                 local Oldx,Oldz = lastPosition[13], lastPosition[15]
@@ -493,7 +412,3 @@ LifeBoatAPI.CollisionManager = {
 --                         end
 --                     end
 --                 end -- end of checking collisions on potential collision candidates
-            end
-        end -- end of object loop
-    end;
-}

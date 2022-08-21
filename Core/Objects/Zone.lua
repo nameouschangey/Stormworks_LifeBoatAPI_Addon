@@ -14,6 +14,7 @@
 ---@field sizeY number
 ---@field sizeZ number
 ---@field radius number
+---@field radiusTripled number
 ---@field collisionType string
 ---@field collisionLayer string
 ---@field overrideIsBig any|nil
@@ -43,24 +44,23 @@ LifeBoatAPI.Zone = {
             savedata = savedata,
             id = savedata.id,
             transform = savedata.transform,
-            velocityOffset = 0,
-            parent = parent,
-            getTransform = parent and cls.getTransform or nil,
+            velocityOffset = not parent and 59 or 0,
             lastTickUpdated = 0,
+            parent = parent,
             
             onDespawn = LifeBoatAPI.Event:new(),
             onCollision = LifeBoatAPI.Event:new(),
 
+            getTransform = cls.getTransform,
             attach = LifeBoatAPI.lb_attachDisposable,
             despawn = LifeBoatAPI.GameObject.despawn,
             onDispose = cls.onDispose,
-            toggleCollision = LifeBoatAPI.GameObject.toggleCollision
         }
 
         if savedata.collisionType == "box" then
-            savedata.radius = (((savedata.sizeX * savedata.sizeX)
-                              + (savedata.sizeY * savedata.sizeY)
-                              + (savedata.sizeZ * savedata.sizeZ))^0.5) / 2
+            self.radiusTripled = savedata.radius * 3
+        else
+            self.radiusTripled = savedata.sizeX + savedata.sizeY + savedata.sizeZ
         end
 
         -- meant to be attached to an object that's now gone, or parent object exists but is disposed
@@ -78,6 +78,8 @@ LifeBoatAPI.Zone = {
         -- ensure position is up to date
         if self.getTransform then
             self:getTransform()
+        else
+            self.collisionXYZFloor = self.transform[13] + self.transform[14] + self.transform[15]
         end
 
         -- run init script (before enabling collision detection, so it can be cancelled if wanted)
@@ -86,9 +88,7 @@ LifeBoatAPI.Zone = {
             script(self)    
         end
         
-        if self.savedata.collisionLayer then
-            LB.collision:trackZone(self)
-        end
+        LB.collision:trackEntity(self)
 
         return self
     end;
@@ -181,6 +181,7 @@ LifeBoatAPI.Zone = {
         if parent.getTransform and parent.lastTickUpdated + parent.velocityOffset < LB.ticks.ticks then
             self.transform = LifeBoatAPI.Matrix.multiplyMatrix(parent:getTransform(), self.savedata.transform)
             self.lastTickUpdated = LB.ticks.ticks
+            self.collisionXYZFloor = self.transform[13] + self.transform[14] + self.transform[15]
         end
         
         return self.transform
@@ -189,6 +190,7 @@ LifeBoatAPI.Zone = {
     ---@param self LifeBoatAPI.Zone
     onDispose = function(self)
         -- ensures all references are collected correctly
+        self.isCollisionStopped = true
         LB.objects:stopTracking(self)
     end;
 }

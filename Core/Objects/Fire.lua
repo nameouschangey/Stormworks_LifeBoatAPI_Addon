@@ -44,8 +44,7 @@ LifeBoatAPI.Fire = {
 
             attach = LifeBoatAPI.lb_attachDisposable,
             despawn = LifeBoatAPI.GameObject.despawn,
-            onDispose = LifeBoatAPI.GameObject.onDispose,
-            toggleCollision = LifeBoatAPI.GameObject.toggleCollision
+            onDispose = LifeBoatAPI.GameObject.onDispose
         }
 
         -- meant to be attached to an object that's now gone, or parent object exists but is disposed
@@ -61,9 +60,7 @@ LifeBoatAPI.Fire = {
         end
 
         -- ensure position is up to date
-        if self.getTransform then
-            self:getTransform()
-        end
+        self:getTransform()
 
         -- run init script (before enabling collision detection, so it can be cancelled if wanted)
         local script = LB.objects.onInitScripts[self.savedata.onInitScript]
@@ -71,9 +68,7 @@ LifeBoatAPI.Fire = {
             script(self)
         end
         
-        if self.savedata.collisionLayers then
-            LB.collision:trackObject(self)
-        end
+        LB.collision:trackEntity(self)
 
         return self
     end;
@@ -91,7 +86,7 @@ LifeBoatAPI.Fire = {
             transform = spawnData.transform,
             parentID = parent and parent.id,
             parentType = parent and parent.savedata.type,
-            collisionLayers = component:parseSequentialTag("collisionLayer"),
+            collisionLayer = component.tags["collisionLayer"],
             onInitScript = component.tags["onInitScript"]
         })
 
@@ -108,6 +103,8 @@ LifeBoatAPI.Fire = {
         if parent.getTransform and parent.lastTickUpdated + parent.velocityOffset < LB.ticks.ticks then
             self.transform = LifeBoatAPI.Matrix.multiplyMatrix(parent:getTransform(), self.savedata.transform)
             self.lastTickUpdated = LB.ticks.ticks
+
+            self.collisionXYZFloor = self.transform[13] + self.transform[14] + self.transform[15]
         end
         
         return self.transform
@@ -120,6 +117,7 @@ LifeBoatAPI.Fire = {
         if self.onDespawn.hasListeners then
             self.onDespawn:trigger(self)
         end
+        self.isCollisionStopped = true
         LB.objects:stopTracking(self)
         server.despawnObject(self.id, true)
     end;

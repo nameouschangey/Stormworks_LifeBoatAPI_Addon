@@ -70,14 +70,15 @@ LifeBoatAPI.ObjectManager = {
                 if vehicle.onLoaded.hasListeners then
                     vehicle.onLoaded:trigger(vehicle)
                 end
-                vehicle.internalCollisionDisabled = false
+                vehicle.isCollisionStopped = false
+                LB.collision:trackEntity(vehicle)
             end
         end)
 
         LB.events.onVehicleUnload:register(function(l, context, vehicleID, peerID)
             local vehicle = self.vehiclesByID[vehicleID]  
             if vehicle then
-                vehicle.internalCollisionDisabled = true
+                vehicle.isCollisionStopped = true
             end 
         end)
 
@@ -87,14 +88,15 @@ LifeBoatAPI.ObjectManager = {
                 if object.onLoaded.hasListeners then
                     object.onLoaded:trigger(object)
                 end
-                object.internalCollisionDisabled = false
+                object.isCollisionStopped = false
+                LB.collision:trackEntity(object)
             end
         end)
 
         LB.events.onObjectUnload:register(function (l, context, objectID)
             local object = self.objectsByID[objectID] or self.npcsByID[objectID] or self.firesByID[objectID]
             if object then
-                object.internalCollisionDisabled = true
+                object.isCollisionStopped = true
             end 
         end)
         

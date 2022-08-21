@@ -30,7 +30,7 @@ LifeBoatAPI.Object = {
             transform = savedata.transform or LifeBoatAPI.Matrix:newMatrix(),
             childFires = {},
             childZones = {},
-            velocityOffset = 0,
+            velocityOffset = savedata.isStatic and 59 or 0,
             lastTickUpdated = 0,
 
             -- events
@@ -40,12 +40,11 @@ LifeBoatAPI.Object = {
             
             -- methods
             awaitLoaded = cls.awaitLoaded,
-            getTransform = not savedata.isStatic and cls.getTransform or nil,
+            getTransform = cls.getTransform,
             attach = LifeBoatAPI.lb_attachDisposable,
             despawn = LifeBoatAPI.GameObject.despawn,
             onDispose = cls.onDispose,
             isLoaded = cls.isLoaded,
-            toggleCollision = LifeBoatAPI.GameObject.toggleCollision,
             init = cls.init
         }
 
@@ -55,9 +54,7 @@ LifeBoatAPI.Object = {
     ---@param self LifeBoatAPI.Object
     init = function(self)
         -- ensure position is up to date
-        if self.getTransform then
-            self:getTransform()
-        end
+        self:getTransform()
 
         -- run init script (before enabling collision detection, so it can be cancelled if wanted)
         local script = LB.objects.onInitScripts[self.savedata.onInitScript]
@@ -65,9 +62,7 @@ LifeBoatAPI.Object = {
             script(self)
         end
 
-        if self.savedata.collisionLayers then
-            LB.collision:trackObject(self)
-        end
+        LB.collision:trackEntity(self)
     end;
 
     ---@param cls LifeBoatAPI.Object
@@ -83,7 +78,7 @@ LifeBoatAPI.Object = {
             name = component.rawdata.display_name,
             transform = spawnData.transform,
             isStatic = component.tags["isStatic"],
-            collisionLayers = component:parseSequentialTag("collisionLayer"),
+            collisionLayer = not component.tags["isStatic"] and component.tags["collisionLayer"] or nil,
             onInitScript = component.tags["onInitScript"]
         })
 
@@ -120,8 +115,13 @@ LifeBoatAPI.Object = {
         local matrix, success = server.getObjectPos(self.id)
         if success then
             self.velocityOffset = (matrix[13]-self.transform[13]) + (matrix[14]-self.transform[14]) + (matrix[15]-self.transform[15]) < 5 and 59 or 0
-            self.transform = matrix
             self.lastTickUpdated = LB.ticks.ticks
+
+            self.transform = matrix
+            self.collisionRadius = self.transform[13] + self.transform[14] + self.transform[15]
+
+            self.lastTransform = self.transform
+            self.collisionRadiusLast = self.collisionRadius
         else
             -- object has despawned already
             self:despawn()
@@ -158,6 +158,7 @@ LifeBoatAPI.Object = {
         if self.onDespawn.hasListeners then
             self.onDespawn:trigger(self)
         end
+        self.isCollisionStopped = true
         LB.objects:stopTracking(self)
         server.despawnObject(self.id, true)
     end;

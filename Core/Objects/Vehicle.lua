@@ -59,11 +59,10 @@ LifeBoatAPI.Vehicle = {
 
             -- methods
             awaitLoaded = cls.awaitLoaded,
-            getTransform = not savedata.isStatic and cls.getTransform or nil,
+            getTransform = cls.getTransform,
             attach = LifeBoatAPI.lb_attachDisposable,
             despawn = LifeBoatAPI.GameObject.despawn,
             onDispose = cls.onDispose,
-            toggleCollision = LifeBoatAPI.GameObject.toggleCollision,
             init = cls.init
         }
         server.announce("vehicle", "from savedata")
@@ -75,9 +74,7 @@ LifeBoatAPI.Vehicle = {
     init = function(self)
         server.announce("vehicle", "id: " .. tostring(self.id) .. ", table: " .. tostring(self))
         -- ensure position is up to date
-        if self.getTransform then
-            self:getTransform()
-        end
+        self:getTransform()
 
         -- run init script (before enabling collision detection, so it can be cancelled if wanted)
         local script = LB.objects.onInitScripts[self.savedata.onInitScript]
@@ -85,9 +82,7 @@ LifeBoatAPI.Vehicle = {
             script(self)
         end
         
-        if self.savedata.collisionLayers then
-            LB.collision:trackObject(self)
-        end
+        LB.collision:trackEntity(self)
     end;
 
     ---@param cls LifeBoatAPI.Vehicle
@@ -103,7 +98,7 @@ LifeBoatAPI.Vehicle = {
             name = component.rawdata.display_name,
             transform = spawnData.transform,
             isStatic = component.tags["isStatic"],
-            collisionLayers = component:parseSequentialTag("collisionLayer"),
+            collisionLayer = not component.tags["isStatic"] and component.tags["collisionLayer"] or nil,
             onInitScript = component.tags["onInitScript"]
         })
 
@@ -114,9 +109,9 @@ LifeBoatAPI.Vehicle = {
 
     ---@param vehicleID number
     ---@param isStatic boolean if true, will not collide and will not move
-    ---@param collisionLayers string[]|nil (ignored if isStatic) leave nil if this shouldn't perform collision checks
+    ---@param collisionLayer string|nil (ignored if isStatic) leave nil if this shouldn't perform collision checks
     ---@return LifeBoatAPI.Vehicle
-    fromUntrackedSpawn = function(cls, vehicleID, ownerPeerID, spawnCost, isStatic, collisionLayers, onInitScript)
+    fromUntrackedSpawn = function(cls, vehicleID, ownerPeerID, spawnCost, isStatic, collisionLayer, onInitScript)
         local obj = cls:fromSavedata({
             id = vehicleID,
             type = "vehicle",
@@ -124,7 +119,7 @@ LifeBoatAPI.Vehicle = {
             ownerSteamID = LB.players.playersByPeerID[ownerPeerID].steamID,
             spawnCost = spawnCost,
             isStatic = isStatic,
-            collisionLayers = isStatic and nil or collisionLayers,
+            collisionLayer = isStatic and nil or collisionLayer,
             onInitScript = onInitScript
         })
         
@@ -152,11 +147,10 @@ LifeBoatAPI.Vehicle = {
         local matrix, success = server.getVehiclePos(self.id, 0, 0, 0)
         if success then
             self.velocityOffset = ((matrix[13]-self.transform[13]) + (matrix[14]-self.transform[14]) + (matrix[15]-self.transform[15])) < 5 and 59 or 0
-            if self.velocityOffset == 0 then
-                server.announce("velocity", tostring(self.velocityOffset))
-            end
             self.transform = matrix
+
             self.lastTickUpdated = LB.ticks.ticks
+            self.collisionXYZFloor = self.transform[13] + self.transform[14] + self.transform[15]
         end
         return self.transform
     end;
@@ -166,6 +160,7 @@ LifeBoatAPI.Vehicle = {
         if self.onDespawn.hasListeners then
             self.onDespawn:trigger(self)
         end
+        self.isCollisionStopped = true
         LB.objects:stopTracking(self)
         server.despawnVehicle(self.id, true)
     end;
