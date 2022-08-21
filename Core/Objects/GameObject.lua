@@ -18,7 +18,9 @@
 ---@class LifeBoatAPI.GameObject : LifeBoatAPI.IDisposable
 ---@field savedata LifeBoatAPI.GameObjectSaveData
 ---@field id number id for this object, to use with game functions
+---@field internalCollisionDisabled boolean (internal) whether objects are collision disabled, e.g. unloaded etc.
 ---@field transform LifeBoatAPI.Matrix
+---@field velocityOffset number
 ---@field getTransform (fun(self:LifeBoatAPI.ITransform):LifeBoatAPI.Matrix)|nil if nil, it's static and the transform can be taken directly from the transform field
 ---@field lastTickUpdated number last tick the transform was updated, internal
 ---@field onDespawn LifeBoatAPI.Event
@@ -27,7 +29,6 @@ LifeBoatAPI.GameObject = {
     despawn = LifeBoatAPI.lb_dispose;
 
     toggleCollision = function(self, isEnabled)
-        self.isCollisionDisabled = not isEnabled
-        self.savedata.isCollisionDisabled = self.isCollisionDisabled
+        self.savedata.isCollisionDisabled = isEnabled
     end;
 }

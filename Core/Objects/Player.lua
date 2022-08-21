@@ -63,6 +63,9 @@ LifeBoatAPI.Player = {
             isAdmin = isAdmin;
             isAuth = isAuth;
             displayName = name;
+            velocityOffset = 0,
+            transform = LifeBoatAPI.Matrix:newMatrix(),
+            lastTickUpdated = 0,
 
             --- events
             onTeleport = LifeBoatAPI.Event:new();
@@ -131,6 +134,7 @@ LifeBoatAPI.Player = {
     getTransform = function(self)
         local matrix, success = server.getPlayerPos(self.id)
         if success then
+            self.velocityOffset = (matrix[13]-self.transform[13]) + (matrix[14]-self.transform[14]) + (matrix[15]-self.transform[15]) > 1 and 60 or 0
             self.transform = matrix
             self.lastTickUpdated = LB.ticks.ticks
         end

@@ -63,6 +63,40 @@ LifeBoatAPI.ObjectManager = {
                 vehicle:despawn() -- ensure correct disposal sequence, and object removed from LB.objects     
             end
         end)
+
+        LB.events.onVehicleLoad:register(function (l, context, vehicleID)
+            local vehicle = self.vehiclesByID[vehicleID]
+            if vehicle then
+                if vehicle.onLoaded.hasListeners then
+                    vehicle.onLoaded:trigger(vehicle)
+                end
+                vehicle.internalCollisionDisabled = false
+            end
+        end)
+
+        LB.events.onVehicleUnload:register(function(l, context, vehicleID, peerID)
+            local vehicle = self.vehiclesByID[vehicleID]  
+            if vehicle then
+                vehicle.internalCollisionDisabled = true
+            end 
+        end)
+
+        LB.events.onObjectLoad:register(function (l, context, objectID)
+            local object = self.objectsByID[objectID] or self.npcsByID[objectID] or self.firesByID[objectID]
+            if object then
+                if object.onLoaded.hasListeners then
+                    object.onLoaded:trigger(object)
+                end
+                object.internalCollisionDisabled = false
+            end
+        end)
+
+        LB.events.onObjectUnload:register(function (l, context, objectID)
+            local object = self.objectsByID[objectID] or self.npcsByID[objectID] or self.firesByID[objectID]
+            if object then
+                object.internalCollisionDisabled = true
+            end 
+        end)
         
         local initializables = {}
         -- initialize things that we already know exist from the savedata

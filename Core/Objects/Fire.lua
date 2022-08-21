@@ -36,7 +36,9 @@ LifeBoatAPI.Fire = {
             transform = savedata.transform,
             parent = parent,
             getTransform = parent and cls.getTransform or nil,
-            
+            velocityOffset = 0,
+            lastTickUpdated = 0,
+
             onDespawn = LifeBoatAPI.Event:new(),
             onCollision = LifeBoatAPI.Event:new(),
 
@@ -102,8 +104,9 @@ LifeBoatAPI.Fire = {
     getTransform = function(self)
         -- function isn't assigned unless this has a parent
         -- if parent has moved, recalculate our position
-        if self.parent.getTransform and self.parent.lastTickUpdated ~= LB.ticks.ticks then
-            self.transform = LifeBoatAPI.Matrix.multiplyMatrix(self.parent:getTransform(), self.savedata.transform)
+        local parent = self.parent
+        if parent.getTransform and parent.lastTickUpdated + parent.velocityOffset < LB.ticks.ticks then
+            self.transform = LifeBoatAPI.Matrix.multiplyMatrix(parent:getTransform(), self.savedata.transform)
             self.lastTickUpdated = LB.ticks.ticks
         end
         

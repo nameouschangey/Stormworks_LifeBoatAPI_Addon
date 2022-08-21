@@ -42,7 +42,9 @@ LifeBoatAPI.Vehicle = {
         local self = {
             savedata = savedata,
             id = savedata.id,
-            transform = savedata.transform,
+            transform = savedata.transform or LifeBoatAPI.Matrix:newMatrix(),
+            lastTickUpdated = 0,
+            velocityOffset = 0,
             childFires = {},
             childZones = {},
 
@@ -139,17 +141,8 @@ LifeBoatAPI.Vehicle = {
         local isLoaded = server.getVehicleSimulating(self.id)
         if isLoaded then
             return LifeBoatAPI.Coroutine:start()
-        elseif LB.events.trackVehicleLoad then
-            return self.onLoaded:await()
         else
-            local cr = LifeBoatAPI.Coroutine:start(nil, true)
-            cr:attach(LB.events.onVehicleLoad:register(function (l, context, vehicle_id)
-                if vehicle_id == self.id then
-                    cr:trigger()
-                    l.isDisposed = true
-                end
-            end,nil,nil))
-            return cr
+            return self.onLoaded:await()
         end
     end;
 
@@ -158,6 +151,10 @@ LifeBoatAPI.Vehicle = {
     getTransform = function(self)
         local matrix, success = server.getVehiclePos(self.id, 0, 0, 0)
         if success then
+            self.velocityOffset = ((matrix[13]-self.transform[13]) + (matrix[14]-self.transform[14]) + (matrix[15]-self.transform[15])) < 5 and 59 or 0
+            if self.velocityOffset == 0 then
+                server.announce("velocity", tostring(self.velocityOffset))
+            end
             self.transform = matrix
             self.lastTickUpdated = LB.ticks.ticks
         end

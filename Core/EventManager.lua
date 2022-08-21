@@ -140,10 +140,8 @@
 ---@field onWhirlpool               EventTypes.OnWhirlpool             
 ---@field onVolcano                 EventTypes.OnVolcano
 ---
----@field trackObjectLoad boolean whether to track objects loading
 ---@field trackSitUnsit boolean whether to track sitting/unsitting from vehicle object API
 ---@field trackVehicleDamage boolean whether to track vehicle damage from vehicle object API; potentially performance heavy
----@field trackVehicleLoad boolean whether to track vehicles loading and unloading, via vehicle object API
 ---@field trackVehicleTeleport boolean whether to track vehicles teleporting, via vehicle object API
 ---@field trackButtonPress boolean whether to track button presses via the vehicle object API
 ---@field trackPlayerSpawnVehicle boolean whether to track via player object API
@@ -198,24 +196,6 @@ LifeBoatAPI.EventManager = {
 	_setupAdditionalEvents = function(self)
         local players = LB.players;
         local objects = LB.objects;
-
-        if self.trackObjectLoad then
-            LB.events.onObjectLoad:register(function (l, context, object_id)
-                local object = objects.objectsByID[object_id]
-                if object and object.onLoaded.hasListeners then
-                    object.onLoaded:trigger(object)
-                end
-            end)
-        end
-
-		if self.trackVehicleLoad then
-            LB.events.onVehicleLoad:register(function (l, context, vehicle_id)
-                local vehicle = objects.vehiclesByID[vehicle_id]
-                if vehicle and vehicle.onLoaded.hasListeners then
-                    vehicle.onLoaded:trigger(vehicle)
-                end
-            end)
-		end
 
 		if self.trackVehicleTeleport then
             LB.events.onVehicleTeleport:register(function (l, context, vehicle_id, peer_id, x, y, z)

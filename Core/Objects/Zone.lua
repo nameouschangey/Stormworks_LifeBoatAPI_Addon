@@ -43,8 +43,10 @@ LifeBoatAPI.Zone = {
             savedata = savedata,
             id = savedata.id,
             transform = savedata.transform,
+            velocityOffset = 0,
             parent = parent,
             getTransform = parent and cls.getTransform or nil,
+            lastTickUpdated = 0,
             
             onDespawn = LifeBoatAPI.Event:new(),
             onCollision = LifeBoatAPI.Event:new(),
@@ -63,10 +65,8 @@ LifeBoatAPI.Zone = {
 
         -- meant to be attached to an object that's now gone, or parent object exists but is disposed
         if parentID and not parent then
-            server.announce("no parent found", "ok")
             LifeBoatAPI.lb_dispose(self)
         elseif parent then
-            server.announce("parent found", "parentid: " .. tostring(parentID) .. ", table: " .. tostring(parent))
             parent.childZones[#parent.childZones+1] = self
             parent:attach(self)
         end
@@ -177,8 +177,9 @@ LifeBoatAPI.Zone = {
     getTransform = function(self)
         -- function isn't assigned unless this has a parent
         -- if parent has moved, recalculate our position
-        if self.parent.getTransform and self.parent.lastTickUpdated ~= LB.ticks.ticks then
-            self.transform = LifeBoatAPI.Matrix.multiplyMatrix(self.parent:getTransform(), self.transform)
+        local parent = self.parent
+        if parent.getTransform and parent.lastTickUpdated + parent.velocityOffset < LB.ticks.ticks then
+            self.transform = LifeBoatAPI.Matrix.multiplyMatrix(parent:getTransform(), self.savedata.transform)
             self.lastTickUpdated = LB.ticks.ticks
         end
         

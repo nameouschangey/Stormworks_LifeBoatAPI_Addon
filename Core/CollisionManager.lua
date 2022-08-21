@@ -29,6 +29,7 @@ LifeBoatAPI.Collision = {
 ---@field dynamicPartitionsBig table<number< table<number,LifeBoatAPI.Zone[]>>>
 ---@field dynamicPartitionsMasive table<number< table<number,LifeBoatAPI.Zone[]>>>
 ---@field dynamicZones LifeBoatAPI.Zone[]
+---@field hadObjects boolean for dynamic calculation, whether there *was* objects on this layer or not (saves 3 table rebuilds)
 LifeBoatAPI.CollisionLayer = {
     ---@return LifeBoatAPI.CollisionLayer
     new = function(cls)
@@ -156,22 +157,9 @@ LifeBoatAPI.CollisionManager = {
     _onTick = function(listener)
         ---@type LifeBoatAPI.CollisionManager
         local self = listener.context
-        local layersWithObjects = self:_removeDeadObjectsAndCalulateActiveLayers()
-        self:_buildDynamicPartitions(layersWithObjects)
+        --local layersWithObjects = self:_removeDeadObjectsAndCalulateActiveLayers()
+        --self:_buildDynamicPartitions(layersWithObjects)
         self:_handleCollisions()
-        self:_storeObjectPositionsForNextTick()
-    end;
-
-    ---@param self LifeBoatAPI.CollisionManager
-    _storeObjectPositionsForNextTick = function(self)
-        local objects = self.objects
-        -- store object positions for next tick
-        self.lastObjectPositions = {}
-        local lastObjectPositions = self.lastObjectPositions
-        for i=1, #objects do
-            local object = objects[i]
-            lastObjectPositions[object] = object.transform
-        end
     end;
 
     --- Remove any objects that are now disposed
@@ -192,7 +180,7 @@ LifeBoatAPI.CollisionManager = {
             if object.isDisposed or not layerNames then
                 -- remove from objects list, performance less of a concern as it'll happen infrequently
                 table.remove(objects, iObject)
-            else
+            elseif not object.internalCollisionDisabled and not objsave.isCollisionDisabled then
                 for iLayerName=1, #layerNames do
                     local layerName = layerNames[iLayerName]
                     if not layersWithObjectsSet[layerName] then
@@ -211,21 +199,25 @@ LifeBoatAPI.CollisionManager = {
     end;
 
     ---@param self LifeBoatAPI.CollisionManager
-    ---@param layersWithZones LifeBoatAPI.CollisionLayer[]
-    _buildDynamicPartitions = function(self, layersWithZones)
+    ---@param layerWithObjects LifeBoatAPI.CollisionLayer[]
+    _buildDynamicPartitions = function(self, layerWithObjects)
         local currentTick = LB.ticks.ticks
 
-        for iLayer=1, #layersWithZones do
-            local layer = layersWithZones[iLayer]
-            
-            layer.dynamicPartitionsBig = {}
-            layer.dynamicPartitionsSmall = {}
-            layer.dynamicPartitionsMassive = {}
+        for iLayer=1, #layerWithObjects do
+            local layer = layerWithObjects[iLayer]
         
+            if layer.hadObjects then
+                layer.dynamicPartitionsBig = {}
+                layer.dynamicPartitionsSmall = {}
+                layer.dynamicPartitionsMassive = {}
+                layer.hadObjects = false
+            end
+
             local dynamicZones = layer.dynamicZones
             local numDynamicZones = #dynamicZones
             if numDynamicZones > 0 then
                 -- rebuild the dynamic tree from scratch each time
+                layer.hadObjects = true
 
                 for iZone=#dynamicZones, 1, -1 do
                     local zone = dynamicZones[iZone]
@@ -236,8 +228,9 @@ LifeBoatAPI.CollisionManager = {
 
                     elseif not zonesave.isCollisionDisabled then
                         -- ensure zone is fully updated, as it is "dynamic" and moves
-                        if zone.getTransform and zone.lastTickUpdated ~= currentTick then
-                            zone:getTransform()
+                        if zone.parent.lastTickUpdated + zone.parent.velocityOffset < currentTick then
+                            zone.transform = LifeBoatAPI.Matrix.multiplyMatrix(zone.parent:getTransform(), zone.savedata.transform)
+                            zone.lastTickUpdated = LB.ticks.ticks
                         end
 
                         --[[Build Dynamic Paritions for This Layer. Duplicate of addZone (but for dynamic zones)]]
@@ -302,254 +295,204 @@ LifeBoatAPI.CollisionManager = {
 
         local layers = self.layers
 
+        --server.announce("num objects", tostring(#objects))
+
         for iObject=1, #objects do
             local object = objects[iObject]
             local objsave = object.savedata
 
-            if false and not objsave.isCollisionDisabled then
+            if not object.internalCollisionDisabled and not objsave.isCollisionDisabled then
                 local lastPosition = self.lastObjectPositions[object] or object.transform -- no movement default
 
                 -- make sure position is updated
                 -- this is likely the most performance heavy call; as it can end up needing 2 function calls for e.g. players
-                if object.getTransform and object.lastTickUpdated ~= currentTick then
-                    --object:getTransform()
+                if object.getTransform and object.lastTickUpdated + object.velocityOffset < currentTick then
+                    object:getTransform()
                 end
-
-                local OldSmallx, OldSmallz = 0,0
+ 
+--                 -- object lastPosition
+--                 local Oldx,Oldz = lastPosition[13], lastPosition[15]
+--                 local OldSmallx,OldSmallz = math.floor(Oldx * smallReciprocal), math.floor(Oldz * smallReciprocal)
+--                 local OldBigx,OldBigz = math.floor(Oldx * bigReciprocal),  math.floor(Oldz * bigReciprocal)
+--                 -- does this add too much work for little gain?
                 
-                local OldBigx, OldBigz = 0,0
-                local Bigx, Bigz = 0,0
-                local Smallx, Smallz = 0,0
+--                 -- object position
+--                 local Newx,Newz = object.transform[13], object.transform[15]
+--                 local Smallx, Smallz = math.floor(Newx * smallReciprocal), math.floor(Oldz * smallReciprocal)
+--                 local Bigx, Bigz = math.floor(Newx * bigReciprocal),  math.floor(Newz * bigReciprocal)
+-- --
+--                 -- determine check direction, for the loops below
+--                 local xPartitionDirectionSmall = Oldx > Newx and partitionSizeSmall or -partitionSizeSmall
+--                 local zPartitionDirectionSmall = Oldz > Newz and partitionSizeSmall or -partitionSizeSmall
+--                 local xPartitionDirectionBig = Oldx > Newx and partitionSizeBig or -partitionSizeBig
+--                 local zPartitionDirectionBig = Oldz > Newz and partitionSizeBig or -partitionSizeBig
 
-                local xPartitionDirectionSmall = 100
-                local zPartitionDirectionSmall = 100
-                local xPartitionDirectionBig = 100
-                local zPartitionDirectionBig = 100
+--                 --server.announce("smallx, smallz", tostring(Smallx) .. "," .. tostring(Smallz))
+--                 --server.announce("oldSmallX, oldSmallz", tostring(OldSmallx) .. "," .. tostring(OldSmallz))
+--                 --server.announce("xPartitionDirectionSmall", tostring(xPartitionDirectionSmall))
 
-                -- object lastPosition
-                --local Oldx,Oldz = object.transform[13], object.transform[15]
-                --local OldSmallx,OldSmallz = Oldx - ((Oldx * smallReciprocal)%1),  (Oldz - (Oldz * smallReciprocal)%1)
-                --local OldBigx,OldBigz = Oldx - ((Oldx * bigReciprocal)%1),  (Oldz - (Oldz * bigReciprocal)%1)
-                --local OldMassivex,OldMassivez = Oldx - ((Oldx * massiveReciprocal)%1),  (Oldz - (Oldz * massiveReciprocal)%1)
-                ---- does this add too much work for little gain?
-                --
-                ---- object position
-                --local Newx,Newz = object.transform[13], object.transform[15]
-                --local Smallx,Smallz = Newx - ((Newx * smallReciprocal)%1),  (Newz - (Newz * smallReciprocal)%1)
-                --local Bigx,Bigz = Newx - ((Newx * bigReciprocal)%1),  (Newz - (Newz * bigReciprocal)%1)
-                --local Massivex,Massivez = Newx - ((Newx * massiveReciprocal)%1),  (Newz - (Newz * massiveReciprocal)%1)
---
-                ---- determine check direction, for the loops below
-                --local xPartitionDirectionSmall = Oldx > Newx and partitionSizeSmall or -partitionSizeSmall
-                --local zPartitionDirectionSmall = Oldz > Newz and partitionSizeSmall or -partitionSizeSmall
-                --local xPartitionDirectionBig = Oldx > Newx and partitionSizeBig or -partitionSizeBig
-                --local zPartitionDirectionBig = Oldz > Newz and partitionSizeBig or -partitionSizeBig
-                --local xPartitionDirectionMassive = Oldx > Newx and partitionSizeMassive or -partitionSizeMassive
-                --local zPartitionDirectionMassive = Oldz > Newz and partitionSizeMassive or -partitionSizeMassive
+--                 ---@type LifeBoatAPI.Zone[][]
+--                 local zoneListsToCheck = {}
 
-                --server.announce("smallx, smallz", tostring(Smallx) .. "," .. tostring(Smallz))
-                --server.announce("oldSmallX, oldSmallz", tostring(OldSmallx) .. "," .. tostring(OldSmallz))
-                --server.announce("xPartitionDirectionSmall", tostring(xPartitionDirectionSmall))
+--                 do  --[[INLINE: Find all relevant zone lists that might contain collisions, based on the partitions we straddle]]
+--                     --[[Heavily unrolled code to find the potential collisions, for minor optimization]]
+--                     --[[smalls]]
+--                     for x=OldSmallx, Smallx, xPartitionDirectionSmall do
+--                         for z=OldSmallz, Smallz, zPartitionDirectionSmall do
+--                             for iLayer=1, #objsave.collisionLayers do
+--                                 local layerName = objsave.collisionLayers[iLayer]
+--                                 local layer = layers[layerName]
 
-                ---@type LifeBoatAPI.Zone[][]
-                local zoneListsToCheck = {}
+--                                 if layer == "123123" then
+--                                     -- check statics
+--                                     local partitionXPart = layer.staticPartitionsSmall[x]
+--                                     --server.announce("x", tostring(x) .. " found: " .. tostring(partitionXPart))
+--                                     if partitionXPart then
+--                                         ---@type LifeBoatAPI.Zone[]
+--                                         local zonesInPartition = partitionXPart[z]
+--                                         if zonesInPartition then
+--                                             -- cleanup in static zone lists
+--                                             if #zonesInPartition > 0 then
+--                                                 zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
+--                                             else
+--                                                 partitionXPart[z] = nil
+--                                             end
+--                                         end
+--                                     end
 
-                do  --[[INLINE: Find all relevant zone lists that might contain collisions, based on the partitions we straddle]]
-                    --[[Heavily unrolled code to find the potential collisions, for minor optimization]]
+--                                     -- check dynamics
+--                                     local partitionXPart = layer.dynamicPartitionsSmall[x]
+--                                     if partitionXPart then
+--                                         ---@type LifeBoatAPI.Zone[]
+--                                         local zonesInPartition = partitionXPart[z]
+--                                         if zonesInPartition then
+--                                             zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
+--                                         end
+--                                     end
+--                                 end
+--                             end
+--                         end
+--                     end
 
-                    --[[smalls]]
-                    --for x=OldSmallx, Smallx, xPartitionDirectionSmall do
-                    --    for z=OldSmallz, Smallz, zPartitionDirectionSmall do
-                    --        for iLayer=1, #objsave.collisionLayers do
-                    --            local layerName = objsave.collisionLayers[iLayer]
-                    --            local layer = layers[layerName]
---
-                    --            if layer == "123123" then
-                    --                -- check statics
-                    --                local partitionXPart = layer.staticPartitionsSmall[x]
-                    --                --server.announce("x", tostring(x) .. " found: " .. tostring(partitionXPart))
-                    --                if partitionXPart then
-                    --                    ---@type LifeBoatAPI.Zone[]
-                    --                    local zonesInPartition = partitionXPart[z]
-                    --                    if zonesInPartition then
-                    --                        -- cleanup in static zone lists
-                    --                        if #zonesInPartition > 0 then
-                    --                            zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
-                    --                        else
-                    --                            partitionXPart[z] = nil
-                    --                        end
-                    --                    end
-                    --                end
---
-                    --                -- check dynamics
-                    --                local partitionXPart = layer.dynamicPartitionsSmall[x]
-                    --                if partitionXPart then
-                    --                    ---@type LifeBoatAPI.Zone[]
-                    --                    local zonesInPartition = partitionXPart[z]
-                    --                    if zonesInPartition then
-                    --                        zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
-                    --                    end
-                    --                end
-                    --            end
-                    --        end
-                    --    end
-                    --end
---
-                    ----[[bigs]]
-                    --for x=OldBigx, Bigx, xPartitionDirectionBig do
-                    --    for z=OldBigz, Bigz, zPartitionDirectionBig do
-                    --        for iLayer=1, #objsave.collisionLayers do
-                    --            local layerName = objsave.collisionLayers[iLayer]
-                    --            local layer = layers[layerName]
-                    --            if layer == "123123" then
-                    --                -- check statics
-                    --                local partitionXPart = layer.staticPartitionsBig[x]
-                    --                if partitionXPart then
-                    --                    ---@type LifeBoatAPI.Zone[]
-                    --                    local zonesInPartition = partitionXPart[z]
-                    --                    -- cleanup in static zone lists
-                    --                    if #zonesInPartition > 0 then
-                    --                        zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
-                    --                    else
-                    --                        partitionXPart[z] = nil
-                    --                    end
-                    --                end
---
-                    --                -- check dynamics
-                    --                local partitionXPart = layer.dynamicPartitionsBig[x]
-                    --                if partitionXPart then
-                    --                    ---@type LifeBoatAPI.Zone[]
-                    --                    local zonesInPartition = partitionXPart[z]
-                    --                    if zonesInPartition then
-                    --                        zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
-                    --                    end
-                    --                end
-                    --            end
-                    --        end
-                    --    end
-                    --end
+--                     --[[bigs]]
+--                     for x=OldBigx, Bigx, xPartitionDirectionBig do
+--                         for z=OldBigz, Bigz, zPartitionDirectionBig do
+--                             for iLayer=1, #objsave.collisionLayers do
+--                                 local layerName = objsave.collisionLayers[iLayer]
+--                                 local layer = layers[layerName]
+--                                 if layer == "123123" then
+--                                     -- check statics
+--                                     local partitionXPart = layer.staticPartitionsBig[x]
+--                                     if partitionXPart then
+--                                         ---@type LifeBoatAPI.Zone[]
+--                                         local zonesInPartition = partitionXPart[z]
+--                                         -- cleanup in static zone lists
+--                                         if #zonesInPartition > 0 then
+--                                             zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
+--                                         else
+--                                             partitionXPart[z] = nil
+--                                         end
+--                                     end
+--                                     -- check dynamics
+--                                     local partitionXPart = layer.dynamicPartitionsBig[x]
+--                                     if partitionXPart then
+--                                         ---@type LifeBoatAPI.Zone[]
+--                                         local zonesInPartition = partitionXPart[z]
+--                                         if zonesInPartition then
+--                                             zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
+--                                         end
+--                                     end
+--                                 end
+--                             end
+--                         end
+--                     end
+--                 end
 
-                    
-                    --[[massives]]
-                    --for x=OldMassivex, Massivex, xPartitionDirectionMassive do
-                    --    for z=OldMassivez, Massivez, zPartitionDirectionMassive do
-                    --        for iLayer=1, #objsave.collisionLayers do
-                    --            local layerName = objsave.collisionLayers[iLayer]
-                    --            local layer = layers[layerName]
-                    --            if layer then
-                    --                -- check statics
-                    --                local partitionXPart = layer.staticPartitionsBig[x]
-                    --                if partitionXPart then
-                    --                    ---@type LifeBoatAPI.Zone[]
-                    --                    local zonesInPartition = partitionXPart[z]
-                    --                    -- cleanup in static zone lists
-                    --                    if #zonesInPartition > 0 then
-                    --                        zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
-                    --                    else
-                    --                        partitionXPart[z] = nil
-                    --                    end
-                    --                end
---
-                    --                -- check dynamics
-                    --                local partitionXPart = layer.dynamicPartitionsBig[x]
-                    --                if partitionXPart then
-                    --                    ---@type LifeBoatAPI.Zone[]
-                    --                    local zonesInPartition = partitionXPart[z]
-                    --                    if zonesInPartition then
-                    --                        zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
-                    --                    end
-                    --                end
-                    --            end
-                    --        end
-                    --    end
-                    --end
-                end
+--                 -- continue collision checks, only if we found any potential zones (most objects will NOT be near zones most of the time)
+--                 if #zoneListsToCheck > 0 then
 
-                -- continue collision checks, only if we found any potential zones (most objects will NOT be near zones most of the time)
-                if #zoneListsToCheck > 0 then
-
-                    -- check collisions with each unique zone we've found
-                    local zonesSeen = {} -- avoid collision checks on the same zone twice
-                    for iZoneList=1, #zoneListsToCheck do
-                        local zonelist = zoneListsToCheck[iZoneList]
-                        for iZone=#zonelist, 1, -1  do
-                            local zone = zonelist[iZone]
-                            local zonesave = zone.savedata
+--                     -- check collisions with each unique zone we've found
+--                     local zonesSeen = {} -- avoid collision checks on the same zone twice
+--                     for iZoneList=1, #zoneListsToCheck do
+--                         local zonelist = zoneListsToCheck[iZoneList]
+--                         for iZone=#zonelist, 1, -1  do
+--                             local zone = zonelist[iZone]
+--                             local zonesave = zone.savedata
                             
-                            -- check if we were colliding last run; so we can handle onExit appropriately
-                            ---@type LifeBoatAPI.Collision?
-                            local existingCollision = (collisions[zone] and collisions[zone][object]) or nil
+--                             -- check if we were colliding last run; so we can handle onExit appropriately
+--                             ---@type LifeBoatAPI.Collision?
+--                             local existingCollision = (collisions[zone] and collisions[zone][object]) or nil
 
-                            -- ensure disposed zones are always cleaned up
-                            if zone.isDisposed then
-                                table.remove(zonelist, iZone) -- cleanup - shared reference to the actual zone list in the partition; remove it if it's dead
+--                             -- ensure disposed zones are always cleaned up
+--                             if zone.isDisposed then
+--                                 table.remove(zonelist, iZone) -- cleanup - shared reference to the actual zone list in the partition; remove it if it's dead
 
-                            elseif not zonesSeen[zone] then -- only check collisions for zones once each per object
-                                zonesSeen[zone] = true 
+--                             elseif not zonesSeen[zone] then -- only check collisions for zones once each per object
+--                                 zonesSeen[zone] = true 
 
-                                if not zonesave.isCollisionDisabled then
-                                    -- check for collision
-                                    local isCollision;
-                                    if zonesave.collisionType == "sphere" then
-                                        isCollision = isLineInSphere(object.transform, lastPosition, zone.transform, zonesave.radius)
-                                    else
-                                        isCollision = isLineInZone(object.transform, lastPosition, zone.transform, zonesave.sizeX, zonesave.sizeY, zonesave.sizeZ)
-                                    end
+--                                 if not zonesave.isCollisionDisabled then
+--                                     -- check for collision
+--                                     local isCollision;
+--                                     if zonesave.collisionType == "sphere" then
+--                                         isCollision = isLineInSphere(object.transform, lastPosition, zone.transform, zonesave.radius)
+--                                     else
+--                                         isCollision = isLineInZone(object.transform, lastPosition, zone.transform, zonesave.sizeX, zonesave.sizeY, zonesave.sizeZ)
+--                                     end
 
-                                    if isCollision then
-                                        -- record this collision pair for next time we check, to see if the player/object left the zone etc.
-                                        if not existingCollision then
-                                            -- new collision
-                                            local collisionObject = {
-                                                startTick = LB.ticks.ticks,
-                                                zone = zone,
-                                                object = object,
-                                                onCollisionEnd = LifeBoatAPI.Event:new(),
-                                                onDispose = LifeBoatAPI.Collision.onDispose
-                                            }
+--                                     if isCollision then
+--                                         -- record this collision pair for next time we check, to see if the player/object left the zone etc.
+--                                         if not existingCollision then
+--                                             -- new collision
+--                                             local collisionObject = {
+--                                                 startTick = LB.ticks.ticks,
+--                                                 zone = zone,
+--                                                 object = object,
+--                                                 onCollisionEnd = LifeBoatAPI.Event:new(),
+--                                                 onDispose = LifeBoatAPI.Collision.onDispose
+--                                             }
                                             
-                                            -- add to disposables, so we can handle the collision as a lifespan
-                                            --inline: attach
-                                            zone.disposables = zone.disposables or {}
-                                            zone.disposables[#zone.disposables+1] = collisionObject
+--                                             -- add to disposables, so we can handle the collision as a lifespan
+--                                             --inline: attach
+--                                             zone.disposables = zone.disposables or {}
+--                                             zone.disposables[#zone.disposables+1] = collisionObject
 
-                                            --inline: attach
-                                            object.disposables = object.disposables or {}
-                                            object.disposables[#object.disposables+1] = collisionObject
+--                                             --inline: attach
+--                                             object.disposables = object.disposables or {}
+--                                             object.disposables[#object.disposables+1] = collisionObject
 
                                             
-                                            collisions[zone] = collisions[zone] or {}
-                                            collisions[zone][object] = collisionObject
+--                                             collisions[zone] = collisions[zone] or {}
+--                                             collisions[zone][object] = collisionObject
 
-                                            if object.onCollision.hasListeners then
-                                                object.onCollision:trigger(object, collisionObject, zone)
-                                            end
-                                            if zone.onCollision.hasListeners then
-                                                zone.onCollision:trigger(zone, collisionObject, object)
-                                            end
-                                        end
-                                    elseif existingCollision  then
-                                        -- no longer colliding
-                                        if existingCollision.onCollisionEnd.hasListeners then
-                                            existingCollision.onCollisionEnd:trigger(existingCollision)
-                                        end
+--                                             if object.onCollision.hasListeners then
+--                                                 object.onCollision:trigger(object, collisionObject, zone)
+--                                             end
+--                                             if zone.onCollision.hasListeners then
+--                                                 zone.onCollision:trigger(zone, collisionObject, object)
+--                                             end
+--                                         end
+--                                     elseif existingCollision  then
+--                                         -- no longer colliding
+--                                         if existingCollision.onCollisionEnd.hasListeners then
+--                                             existingCollision.onCollisionEnd:trigger(existingCollision)
+--                                         end
 
-                                        LifeBoatAPI.lb_dispose(existingCollision)
-                                    end
+--                                         LifeBoatAPI.lb_dispose(existingCollision)
+--                                     end
                                     
-                                -- if the zone is disabled, or disposed of; and we *were* colliding - we need to handle that exit
-                                elseif existingCollision then
-                                    if existingCollision.onCollisionEnd.hasListeners then
-                                        existingCollision.onCollisionEnd:trigger(existingCollision)
-                                    end
-                                    -- check if the collider was turned off/killed while an object was inside it
-                                    LifeBoatAPI.lb_dispose(existingCollision)
-                                end
-                            end
+--                                 -- if the zone is disabled, or disposed of; and we *were* colliding - we need to handle that exit
+--                                 elseif existingCollision then
+--                                     if existingCollision.onCollisionEnd.hasListeners then
+--                                         existingCollision.onCollisionEnd:trigger(existingCollision)
+--                                     end
+--                                     -- check if the collider was turned off/killed while an object was inside it
+--                                     LifeBoatAPI.lb_dispose(existingCollision)
+--                                 end
+--                             end
                             
-                        end
-                    end
-                end -- end of checking collisions on potential collision candidates
+--                         end
+--                     end
+--                 end -- end of checking collisions on potential collision candidates
             end
         end -- end of object loop
     end;
