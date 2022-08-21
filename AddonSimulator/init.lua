@@ -5,7 +5,7 @@
 --- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
----@section ___REMOVE_THIS__ADDON_SIMULATOR_INIT_LUA
+---@section ___REMOVE_THIS__ADDON_SIMULATOR_INIT_LUA 1 ___REMOVE_THIS__ADDON_SIMULATOR_INIT_LUA_SECTION
 server = {}
 g_savedata = {}
 matrix = {}
@@ -21,4 +21,4 @@ require("LifeBoatAPI.AddonSimulator.objects")
 require("LifeBoatAPI.AddonSimulator.ui")
 require("LifeBoatAPI.AddonSimulator.vehicle")
 
----@endsection
+---@endsection ___REMOVE_THIS__ADDON_SIMULATOR_INIT_LUA_SECTION

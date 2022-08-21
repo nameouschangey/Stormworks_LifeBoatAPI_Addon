@@ -5,6 +5,7 @@
 --- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
+---@sectiom Bitwise
 LifeBoatAPI.Bitwise = {
 
     --- Compacts 24 booleans to a single number, that can be sent to SW keypads
@@ -30,3 +31,4 @@ LifeBoatAPI.Bitwise = {
         return flags
     end;
 }
+---@endsection

@@ -5,6 +5,7 @@
 --- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
+---@section ___REMOVE_THIS__ADDON_SIMULATOR_ADDON_LUA
 
 --- Get the internal index of an active addon (useful if you want to spawn objects from another script). Omitting the name argument will return this addon's index
 --- @param name string|nil The name of the addon as it appears in xml file. Not the filename
@@ -122,3 +123,5 @@ function server.getLocationComponentData(addon_index, location_index, component_
         component_count = 0,
     }, true
 end
+
+---@endsection
