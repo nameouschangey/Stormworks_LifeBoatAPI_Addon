@@ -28,7 +28,7 @@ LifeBoatAPI.UIMapCollection = {
         return self
     end;
 
-    ---@param isTemporary boolean if true, this will not persist between reload_scripts
+    ---@param isTemporary boolean|nil if true, this will not persist between reload_scripts
     ---@param player LifeBoatAPI.Player|nil nil displays to all players
     ---@return LifeBoatAPI.UIMapCollection
     new = function(cls, player, isTemporary)

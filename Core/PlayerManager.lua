@@ -83,15 +83,14 @@ LifeBoatAPI.PlayerManager = {
     _onPlayerJoin = function (l, self, steamID, name, peerId, isAdmin, isAuth)
         steamID = tostring(steamID)
 
-        local savedata = self.savedata.playersBySteamID[steamID] or {}
         local isFirstTimeJoining = false;
 
         -- first time player has joined the server
-        if self.enablePlayerSaveTracking and not savedata then
-            savedata = {}
-            self.savedata.playersBySteamID[steamID] = savedata
+        if self.enablePlayerSaveTracking and not self.savedata.playersBySteamID[steamID] then
+            self.savedata.playersBySteamID[steamID] = {}
             isFirstTimeJoining = true
         end
+        local savedata = self.savedata.playersBySteamID[steamID] or {}
 
         local player = LifeBoatAPI.Player:new(peerId, steamID, isAdmin, isAuth, name, savedata)
 

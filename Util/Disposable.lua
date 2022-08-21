@@ -30,10 +30,14 @@ LifeBoatAPI.lb_dispose = function(disposable)
         local numDisposables = 1
         while iStack <= numDisposables do
             local disposable = disposablesStack[iStack]
+            iStack = iStack + 1
+
             if not disposable.isDisposed then
-                for i=1, #disposable.disposables do
-                    numDisposables = numDisposables + 1
-                    disposablesStack[numDisposables + 1] = disposable.disposables[i]
+                if disposable.disposables then
+                    for i=1, #disposable.disposables do
+                        numDisposables = numDisposables + 1
+                        disposablesStack[numDisposables] = disposable.disposables[i]
+                    end
                 end
                 disposable.isDisposed = true
                 if disposable.onDispose then

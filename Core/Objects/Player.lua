@@ -88,7 +88,7 @@ LifeBoatAPI.Player = {
         end
 
         -- by default all players are collision enabled
-        if self.collisionLayers then
+        if self.savedata.collisionLayers then
             LB.collision:trackObject(self)
         end
         

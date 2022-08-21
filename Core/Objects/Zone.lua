@@ -6,7 +6,7 @@
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
 ---@class EventTypes.LBOnCollisionStart_Zone : LifeBoatAPI.Event
----@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, zone:LifeBoatAPI.Zone, collision:LifeBoatAPI.Collision, object:LifeBoatAPI.GameObject), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, zone:LifeBoatAPI.Zone, collision:LifeBoatAPI.Collision, collidingWith:LifeBoatAPI.GameObject), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 
 ---@class LifeBoatAPI.ZoneSaveData : LifeBoatAPI.GameObjectSaveData
@@ -16,7 +16,7 @@
 ---@field radius number
 ---@field collisionType string
 ---@field collisionLayer string
----@field overrideIsBig boolean
+---@field overrideIsBig any|nil
 
 ---@class LifeBoatAPI.Zone : LifeBoatAPI.GameObject
 ---@field savedata LifeBoatAPI.ZoneSaveData
@@ -31,6 +31,7 @@ LifeBoatAPI.Zone = {
     ---@param cls LifeBoatAPI.Zone
     ---@param savedata LifeBoatAPI.ZoneSaveData
     fromSavedata = function(cls, savedata)
+
         local parentID = savedata.parentID
         local parentType = savedata.parentType
         local parent;
@@ -50,7 +51,7 @@ LifeBoatAPI.Zone = {
 
             attach = LifeBoatAPI.lb_attachDisposable,
             despawn = LifeBoatAPI.GameObject.despawn,
-            onDispose = LifeBoatAPI.GameObject.onDispose,
+            onDispose = cls.onDispose,
             toggleCollision = LifeBoatAPI.GameObject.toggleCollision
         }
 
@@ -62,8 +63,11 @@ LifeBoatAPI.Zone = {
 
         -- meant to be attached to an object that's now gone, or parent object exists but is disposed
         if parentID and not parent then
+            server.announce("no parent found", "ok")
             LifeBoatAPI.lb_dispose(self)
         elseif parent then
+            server.announce("parent found", "parentid: " .. tostring(parentID) .. ", table: " .. tostring(parent))
+            parent.childZones[#parent.childZones+1] = self
             parent:attach(self)
         end
 
@@ -82,20 +86,23 @@ LifeBoatAPI.Zone = {
             script(self)    
         end
         
-        if self.collisionLayers then
-            LB.collision:trackObject(self)
+        if self.savedata.collisionLayer then
+            LB.collision:trackZone(self)
         end
 
         return self
     end;
 
     ---@param cls LifeBoatAPI.Zone
+    ---@param component LifeBoatAPI.AddonComponent
     ---@param spawnData SWAddonComponentSpawned
     fromAddonSpawn = function(cls, component, spawnData, parent)
+        local zoneID = LifeBoatAPI.Zone._generateZoneID()
         local obj = cls:fromSavedata({
-            id = spawnData.id,
+            id = zoneID,
             type = "zone",
             isAddonSpawn = true,
+            name = component.rawdata.display_name,
             tags = component.tags,
             collisionType = (component.tags["collisionType"] == "sphere" and "sphere") or "box",
             collisionLayer = component.tags["collisionLayer"],
@@ -107,7 +114,7 @@ LifeBoatAPI.Zone = {
             overrideIsBig = component.tags["overrideIsBig"],
 
             parentID = parent and parent.id,
-            parentType = parent and parent.type,
+            parentType = parent and parent.savedata.type,
             onInitScript = component.tags["onInitScript"]
         })
 
@@ -129,7 +136,7 @@ LifeBoatAPI.Zone = {
             radius = radius,
             collisionLayer = collisionLayer,
             parentID = parent and parent.id,
-            parentType = parent and parent.type,
+            parentType = parent and parent.savedata.type,
             onInitScript = onInitScript
         })
 
@@ -155,7 +162,7 @@ LifeBoatAPI.Zone = {
             sizeZ = sizeZ,
             collisionLayer = collisionLayer,
             parentID = parent and parent.id,
-            parentType = parent and parent.type,
+            parentType = parent and parent.savedata.type,
             onInitScript = onInitScript
         })
 

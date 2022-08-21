@@ -34,6 +34,8 @@
 ---@field onTeleport EventTypes.LBOnTeleport_Vehicle 
 ---@field onButtonPress EventTypes.LBOnButtonPress_Vehicle
 ---@field onSeatedChange EventTypes.LBOnSeatedChange_Vehicle
+---@field childZones LifeBoatAPI.Zone[]
+---@field childFires LifeBoatAPI.Fire[]
 LifeBoatAPI.Vehicle = {
     ---@param cls LifeBoatAPI.Vehicle
     fromSavedata = function(cls, savedata)
@@ -41,6 +43,8 @@ LifeBoatAPI.Vehicle = {
             savedata = savedata,
             id = savedata.id,
             transform = savedata.transform,
+            childFires = {},
+            childZones = {},
 
             -- events
             onDamaged = LifeBoatAPI.Event:new(),
@@ -57,9 +61,17 @@ LifeBoatAPI.Vehicle = {
             attach = LifeBoatAPI.lb_attachDisposable,
             despawn = LifeBoatAPI.GameObject.despawn,
             onDispose = cls.onDispose,
-            toggleCollision = LifeBoatAPI.GameObject.toggleCollision
+            toggleCollision = LifeBoatAPI.GameObject.toggleCollision,
+            init = cls.init
         }
-        
+        server.announce("vehicle", "from savedata")
+        return self
+    end;
+
+    -- needs done slightly differently due to parenting order
+    ---@param self LifeBoatAPI.Vehicle
+    init = function(self)
+        server.announce("vehicle", "id: " .. tostring(self.id) .. ", table: " .. tostring(self))
         -- ensure position is up to date
         if self.getTransform then
             self:getTransform()
@@ -71,11 +83,9 @@ LifeBoatAPI.Vehicle = {
             script(self)
         end
         
-        if self.collisionLayers then
+        if self.savedata.collisionLayers then
             LB.collision:trackObject(self)
         end
-
-        return self
     end;
 
     ---@param cls LifeBoatAPI.Vehicle
@@ -116,6 +126,8 @@ LifeBoatAPI.Vehicle = {
             onInitScript = onInitScript
         })
         
+        obj:init()
+
         LB.objects:trackEntity(obj)
 
         return obj

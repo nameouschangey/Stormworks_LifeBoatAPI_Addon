@@ -64,27 +64,39 @@ LifeBoatAPI.ObjectManager = {
             end
         end)
         
+        local initializables = {}
         -- initialize things that we already know exist from the savedata
         for vehicleID, vehicleSaveData in pairs(self.savedata.vehiclesByID) do
-            self.vehiclesByID[vehicleID] = LifeBoatAPI.Vehicle:fromSavedata(vehicleSaveData)
+            local vehicle = LifeBoatAPI.Vehicle:fromSavedata(vehicleSaveData)
+            self.vehiclesByID[vehicleID] = vehicle
+            initializables[#initializables+1] = vehicle
         end
 
         for objectID, objectSaveData in pairs(self.savedata.objectsByID) do
-            self.objectsByID[objectID] = LifeBoatAPI.Object:fromSavedata(objectSaveData)
+            local object = LifeBoatAPI.Object:fromSavedata(objectSaveData)
+            self.objectsByID[objectID] = object
+            initializables[#initializables+1] = object
         end
 
         for objectID, objectSaveData in pairs(self.savedata.npcsByID) do
-            self.npcsByID[objectID] = LifeBoatAPI.Object:fromSavedata(objectSaveData)
+            local object = LifeBoatAPI.Object:fromSavedata(objectSaveData)
+            self.npcsByID[objectID] = object
+            initializables[#initializables+1] = object
         end
 
         -- zones and fires must come second, as they can be parents to an object/npc/vehicle
         -- note: no chained parenting, because as fun as that sounds, there's no reason to do it
         for objectID, objectSaveData in pairs(self.savedata.zonesByID) do
-            self.zonesByID[objectID] = LifeBoatAPI.NPC:fromSavedata(objectSaveData)
+            self.zonesByID[objectID] = LifeBoatAPI.Zone:fromSavedata(objectSaveData)
         end
 
         for objectID, objectSaveData in pairs(self.savedata.firesByID) do
             self.firesByID[objectID] = LifeBoatAPI.Fire:fromSavedata(objectSaveData)
+        end
+
+        -- initialize all vehicles and objects, that might have had children
+        for i=1, #initializables do
+            initializables[i]:init()
         end
     end;
 
@@ -102,7 +114,7 @@ LifeBoatAPI.ObjectManager = {
 
         if type == "zone" then
             self.zonesByID[entity.id] = nil
-            self.savedata.zonesById[entity.id] = nil
+            self.savedata.zonesByID[entity.id] = nil
 
         elseif type == "vehicle" then
             self.vehiclesByID[entity.id] = nil
@@ -135,7 +147,7 @@ LifeBoatAPI.ObjectManager = {
         if type == "zone" then
             ---@cast entity LifeBoatAPI.Zone
             self.zonesByID[entity.id] = entity
-            self.savedata.zonesById[entity.id] = entity.savedata
+            self.savedata.zonesByID[entity.id] = entity.savedata
 
         elseif type == "vehicle" then
             ---@cast entity LifeBoatAPI.Vehicle

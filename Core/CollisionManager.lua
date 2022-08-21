@@ -67,7 +67,7 @@ LifeBoatAPI.CollisionManager = {
             objects = {};
             collisions = {};
             lastObjectPositions = {};
-            tickFrequency = tickFrequency or 30; -- twice per second seems pretty reasonable really. Not sure why you'd need it much higher, especially as we're checking by line
+            tickFrequency = tickFrequency or 1; -- twice per second seems pretty reasonable really. Not sure why you'd need it much higher, especially as we're checking by line
 
             ---methods
             init = cls.init;
@@ -148,6 +148,8 @@ LifeBoatAPI.CollisionManager = {
     ---@param object LifeBoatAPI.GameObject
     trackObject = function(self, object)
         self.objects[#self.objects+1] = object
+
+        server.announce("obj added", "added obj on layer ")
     end;
 
     ---@param listener LifeBoatAPI.ITickable
@@ -291,7 +293,7 @@ LifeBoatAPI.CollisionManager = {
         local partitionSizeBig = self.partitionSizeBig
         local partitionSizeMassive = self.partitionSizeMassive
 
-        local smallRecirocal = 1/partitionSizeSmall
+        local smallReciprocal = 1/partitionSizeSmall
         local bigReciprocal = 1/partitionSizeBig
         local massiveReciprocal = 1/partitionSizeMassive
 
@@ -304,35 +306,50 @@ LifeBoatAPI.CollisionManager = {
             local object = objects[iObject]
             local objsave = object.savedata
 
-            if not objsave.isCollisionDisabled then
+            if false and not objsave.isCollisionDisabled then
                 local lastPosition = self.lastObjectPositions[object] or object.transform -- no movement default
 
                 -- make sure position is updated
                 -- this is likely the most performance heavy call; as it can end up needing 2 function calls for e.g. players
                 if object.getTransform and object.lastTickUpdated ~= currentTick then
-                    object:getTransform()
+                    --object:getTransform()
                 end
 
-                -- object lastPosition
-                local Oldx,Oldz = object.transform[13], object.transform[15]
-                local OldSmallx,OldSmallz = Oldx - ((Oldx * smallRecirocal)%1),  (Oldz - (Oldz * smallRecirocal)%1)
-                local OldBigx,OldBigz = Oldx - ((Oldx * bigReciprocal)%1),  (Oldz - (Oldz * bigReciprocal)%1)
-                local OldMassivex,OldMassivez = Oldx - ((Oldx * massiveReciprocal)%1),  (Oldz - (Oldz * massiveReciprocal)%1)
-                -- does this add too much work for little gain?
+                local OldSmallx, OldSmallz = 0,0
                 
-                -- object position
-                local Newx,Newz = object.transform[13], object.transform[15]
-                local Smallx,Smallz = Newx - ((Newx * smallRecirocal)%1),  (Newz - (Newz * smallRecirocal)%1)
-                local Bigx,Bigz = Newx - ((Newx * bigReciprocal)%1),  (Newz - (Newz * bigReciprocal)%1)
-                local Massivex,Massivez = Newx - ((Newx * massiveReciprocal)%1),  (Newz - (Newz * massiveReciprocal)%1)
+                local OldBigx, OldBigz = 0,0
+                local Bigx, Bigz = 0,0
+                local Smallx, Smallz = 0,0
 
-                -- determine check direction, for the loops below
-                local xPartitionDirectionSmall = Oldx > Newx and partitionSizeSmall or -partitionSizeSmall
-                local zPartitionDirectionSmall = Oldz > Newz and partitionSizeSmall or -partitionSizeSmall
-                local xPartitionDirectionBig = Oldx > Newx and partitionSizeBig or -partitionSizeBig
-                local zPartitionDirectionBig = Oldz > Newz and partitionSizeBig or -partitionSizeBig
-                local xPartitionDirectionMassive = Oldx > Newx and partitionSizeMassive or -partitionSizeMassive
-                local zPartitionDirectionMassive = Oldz > Newz and partitionSizeMassive or -partitionSizeMassive
+                local xPartitionDirectionSmall = 100
+                local zPartitionDirectionSmall = 100
+                local xPartitionDirectionBig = 100
+                local zPartitionDirectionBig = 100
+
+                -- object lastPosition
+                --local Oldx,Oldz = object.transform[13], object.transform[15]
+                --local OldSmallx,OldSmallz = Oldx - ((Oldx * smallReciprocal)%1),  (Oldz - (Oldz * smallReciprocal)%1)
+                --local OldBigx,OldBigz = Oldx - ((Oldx * bigReciprocal)%1),  (Oldz - (Oldz * bigReciprocal)%1)
+                --local OldMassivex,OldMassivez = Oldx - ((Oldx * massiveReciprocal)%1),  (Oldz - (Oldz * massiveReciprocal)%1)
+                ---- does this add too much work for little gain?
+                --
+                ---- object position
+                --local Newx,Newz = object.transform[13], object.transform[15]
+                --local Smallx,Smallz = Newx - ((Newx * smallReciprocal)%1),  (Newz - (Newz * smallReciprocal)%1)
+                --local Bigx,Bigz = Newx - ((Newx * bigReciprocal)%1),  (Newz - (Newz * bigReciprocal)%1)
+                --local Massivex,Massivez = Newx - ((Newx * massiveReciprocal)%1),  (Newz - (Newz * massiveReciprocal)%1)
+--
+                ---- determine check direction, for the loops below
+                --local xPartitionDirectionSmall = Oldx > Newx and partitionSizeSmall or -partitionSizeSmall
+                --local zPartitionDirectionSmall = Oldz > Newz and partitionSizeSmall or -partitionSizeSmall
+                --local xPartitionDirectionBig = Oldx > Newx and partitionSizeBig or -partitionSizeBig
+                --local zPartitionDirectionBig = Oldz > Newz and partitionSizeBig or -partitionSizeBig
+                --local xPartitionDirectionMassive = Oldx > Newx and partitionSizeMassive or -partitionSizeMassive
+                --local zPartitionDirectionMassive = Oldz > Newz and partitionSizeMassive or -partitionSizeMassive
+
+                --server.announce("smallx, smallz", tostring(Smallx) .. "," .. tostring(Smallz))
+                --server.announce("oldSmallX, oldSmallz", tostring(OldSmallx) .. "," .. tostring(OldSmallz))
+                --server.announce("xPartitionDirectionSmall", tostring(xPartitionDirectionSmall))
 
                 ---@type LifeBoatAPI.Zone[][]
                 local zoneListsToCheck = {}
@@ -341,104 +358,111 @@ LifeBoatAPI.CollisionManager = {
                     --[[Heavily unrolled code to find the potential collisions, for minor optimization]]
 
                     --[[smalls]]
-                    for x=OldSmallx, Smallx, xPartitionDirectionSmall do
-                        for z=OldSmallz, Smallz, zPartitionDirectionSmall do
-                            for iLayer=1, #objsave.collisionLayers do
-                                local layerName = objsave.collisionLayers[iLayer]
-                                local layer = layers[layerName]
-
-                                -- check statics
-                                local partitionXPart = layer.staticPartitionsSmall[x]
-                                if partitionXPart then
-                                    ---@type LifeBoatAPI.Zone[]
-                                    local zonesInPartition = partitionXPart[z]
-                                    if zonesInPartition then
-                                        -- cleanup in static zone lists
-                                        if #zonesInPartition > 0 then
-                                            zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
-                                        else
-                                            partitionXPart[z] = nil
-                                        end
-                                    end
-                                end
-
-                                -- check dynamics
-                                local partitionXPart = layer.dynamicPartitionsSmall[x]
-                                if partitionXPart then
-                                    ---@type LifeBoatAPI.Zone[]
-                                    local zonesInPartition = partitionXPart[z]
-                                    if zonesInPartition then
-                                        zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
-                                    end
-                                end
-                            end
-                        end
-                    end
-
-                    --[[bigs]]
-                    for x=OldBigx, Bigx, xPartitionDirectionBig do
-                        for z=OldBigz, Bigz, zPartitionDirectionBig do
-                            for iLayer=1, #objsave.collisionLayers do
-                                local layerName = objsave.collisionLayers[iLayer]
-                                local layer = layers[layerName]
-                                -- check statics
-                                local partitionXPart = layer.staticPartitionsBig[x]
-                                if partitionXPart then
-                                    ---@type LifeBoatAPI.Zone[]
-                                    local zonesInPartition = partitionXPart[z]
-                                    -- cleanup in static zone lists
-                                    if #zonesInPartition > 0 then
-                                        zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
-                                    else
-                                        partitionXPart[z] = nil
-                                    end
-                                end
-
-                                -- check dynamics
-                                local partitionXPart = layer.dynamicPartitionsBig[x]
-                                if partitionXPart then
-                                    ---@type LifeBoatAPI.Zone[]
-                                    local zonesInPartition = partitionXPart[z]
-                                    if zonesInPartition then
-                                        zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
-                                    end
-                                end
-                            end
-                        end
-                    end
+                    --for x=OldSmallx, Smallx, xPartitionDirectionSmall do
+                    --    for z=OldSmallz, Smallz, zPartitionDirectionSmall do
+                    --        for iLayer=1, #objsave.collisionLayers do
+                    --            local layerName = objsave.collisionLayers[iLayer]
+                    --            local layer = layers[layerName]
+--
+                    --            if layer == "123123" then
+                    --                -- check statics
+                    --                local partitionXPart = layer.staticPartitionsSmall[x]
+                    --                --server.announce("x", tostring(x) .. " found: " .. tostring(partitionXPart))
+                    --                if partitionXPart then
+                    --                    ---@type LifeBoatAPI.Zone[]
+                    --                    local zonesInPartition = partitionXPart[z]
+                    --                    if zonesInPartition then
+                    --                        -- cleanup in static zone lists
+                    --                        if #zonesInPartition > 0 then
+                    --                            zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
+                    --                        else
+                    --                            partitionXPart[z] = nil
+                    --                        end
+                    --                    end
+                    --                end
+--
+                    --                -- check dynamics
+                    --                local partitionXPart = layer.dynamicPartitionsSmall[x]
+                    --                if partitionXPart then
+                    --                    ---@type LifeBoatAPI.Zone[]
+                    --                    local zonesInPartition = partitionXPart[z]
+                    --                    if zonesInPartition then
+                    --                        zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
+                    --                    end
+                    --                end
+                    --            end
+                    --        end
+                    --    end
+                    --end
+--
+                    ----[[bigs]]
+                    --for x=OldBigx, Bigx, xPartitionDirectionBig do
+                    --    for z=OldBigz, Bigz, zPartitionDirectionBig do
+                    --        for iLayer=1, #objsave.collisionLayers do
+                    --            local layerName = objsave.collisionLayers[iLayer]
+                    --            local layer = layers[layerName]
+                    --            if layer == "123123" then
+                    --                -- check statics
+                    --                local partitionXPart = layer.staticPartitionsBig[x]
+                    --                if partitionXPart then
+                    --                    ---@type LifeBoatAPI.Zone[]
+                    --                    local zonesInPartition = partitionXPart[z]
+                    --                    -- cleanup in static zone lists
+                    --                    if #zonesInPartition > 0 then
+                    --                        zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
+                    --                    else
+                    --                        partitionXPart[z] = nil
+                    --                    end
+                    --                end
+--
+                    --                -- check dynamics
+                    --                local partitionXPart = layer.dynamicPartitionsBig[x]
+                    --                if partitionXPart then
+                    --                    ---@type LifeBoatAPI.Zone[]
+                    --                    local zonesInPartition = partitionXPart[z]
+                    --                    if zonesInPartition then
+                    --                        zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
+                    --                    end
+                    --                end
+                    --            end
+                    --        end
+                    --    end
+                    --end
 
                     
                     --[[massives]]
-                    for x=OldMassivex, Massivex, xPartitionDirectionMassive do
-                        for z=OldMassivez, Massivez, zPartitionDirectionMassive do
-                            for iLayer=1, #objsave.collisionLayers do
-                                local layerName = objsave.collisionLayers[iLayer]
-                                local layer = layers[layerName]
-                                -- check statics
-                                local partitionXPart = layer.staticPartitionsBig[x]
-                                if partitionXPart then
-                                    ---@type LifeBoatAPI.Zone[]
-                                    local zonesInPartition = partitionXPart[z]
-                                    -- cleanup in static zone lists
-                                    if #zonesInPartition > 0 then
-                                        zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
-                                    else
-                                        partitionXPart[z] = nil
-                                    end
-                                end
-
-                                -- check dynamics
-                                local partitionXPart = layer.dynamicPartitionsBig[x]
-                                if partitionXPart then
-                                    ---@type LifeBoatAPI.Zone[]
-                                    local zonesInPartition = partitionXPart[z]
-                                    if zonesInPartition then
-                                        zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
-                                    end
-                                end
-                            end
-                        end
-                    end
+                    --for x=OldMassivex, Massivex, xPartitionDirectionMassive do
+                    --    for z=OldMassivez, Massivez, zPartitionDirectionMassive do
+                    --        for iLayer=1, #objsave.collisionLayers do
+                    --            local layerName = objsave.collisionLayers[iLayer]
+                    --            local layer = layers[layerName]
+                    --            if layer then
+                    --                -- check statics
+                    --                local partitionXPart = layer.staticPartitionsBig[x]
+                    --                if partitionXPart then
+                    --                    ---@type LifeBoatAPI.Zone[]
+                    --                    local zonesInPartition = partitionXPart[z]
+                    --                    -- cleanup in static zone lists
+                    --                    if #zonesInPartition > 0 then
+                    --                        zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
+                    --                    else
+                    --                        partitionXPart[z] = nil
+                    --                    end
+                    --                end
+--
+                    --                -- check dynamics
+                    --                local partitionXPart = layer.dynamicPartitionsBig[x]
+                    --                if partitionXPart then
+                    --                    ---@type LifeBoatAPI.Zone[]
+                    --                    local zonesInPartition = partitionXPart[z]
+                    --                    if zonesInPartition then
+                    --                        zoneListsToCheck[#zoneListsToCheck+1] = zonesInPartition
+                    --                    end
+                    --                end
+                    --            end
+                    --        end
+                    --    end
+                    --end
                 end
 
                 -- continue collision checks, only if we found any potential zones (most objects will NOT be near zones most of the time)

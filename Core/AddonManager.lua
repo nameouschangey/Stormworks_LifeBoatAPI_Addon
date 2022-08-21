@@ -138,6 +138,7 @@ LifeBoatAPI.AddonLocation = {
             getPosition = cls.getPosition;
         }
 
+        ---@type LifeBoatAPI.AddonComponent[]
         local withParent = {}
 
         -- component index starts at 0
@@ -163,7 +164,7 @@ LifeBoatAPI.AddonLocation = {
         -- todo: manage parented items
         for i=1, #withParent do
             local component = withParent[i]
-            local parentID = component.tags["parentID"] or component.rawdata.vehicle_parent_component_id
+            local parentID = tonumber(component.tags["parentID"] or component.rawdata.vehicle_parent_component_id)
 
             if parentID then
                 local parent = self.componentsByID[parentID]
@@ -316,7 +317,7 @@ LifeBoatAPI.AddonComponent = {
     ---@param parent LifeBoatAPI.GameObject|nil
     ---@return LifeBoatAPI.GameObject|nil
     spawn = function(self, matrix, parent)
-
+        
         local spawnedData, success =  server.spawnAddonComponent(matrix, self.location.addon.index, self.location.index, self.index)
         if success then
 
@@ -325,15 +326,15 @@ LifeBoatAPI.AddonComponent = {
             if spawnedData.type == "zone" then
                 entity = LifeBoatAPI.Zone:fromAddonSpawn(self, spawnedData, parent)
 
+            elseif spawnedData.type == "fire" then
+                entity = LifeBoatAPI.Fire:fromAddonSpawn(self, spawnedData, parent)
+                
             elseif spawnedData.type == "character" then
                 entity = LifeBoatAPI.Object:fromAddonSpawn(self, spawnedData)
 
             elseif spawnedData.type == "vehicle" then
                 entity = LifeBoatAPI.Vehicle:fromAddonSpawn(self, spawnedData)
 
-            elseif spawnedData.type == "fire" then
-                entity = LifeBoatAPI.Fire:fromAddonSpawn(self, spawnedData, parent)
-                
             -- regular objects
             elseif spawnedData.type == "object"    -- small objects 
             or spawnedData.type == "loot"        -- flare
@@ -348,6 +349,11 @@ LifeBoatAPI.AddonComponent = {
                 -- is this how we want to do it? (yes)
                 local child = self.children[i]
                 child:spawn(LifeBoatAPI.Matrix.multiplyMatrix(matrix, child.rawdata.transform), entity)
+            end
+
+            -- vehicle & object want intialized after children created/added
+            if entity.init then
+                entity:init()
             end
 
             return entity

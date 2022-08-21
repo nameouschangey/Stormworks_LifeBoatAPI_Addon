@@ -45,12 +45,12 @@ LifeBoatAPI.Fire = {
             onDispose = LifeBoatAPI.GameObject.onDispose,
             toggleCollision = LifeBoatAPI.GameObject.toggleCollision
         }
-        self.savedata.type = "fire"
 
         -- meant to be attached to an object that's now gone, or parent object exists but is disposed
         if parentID and not parent then
             LifeBoatAPI.lb_dispose(self)
         elseif parent then
+            parent.childFires[#parent.childFires+1] = self
             parent:attach(self)
         end
 
@@ -69,7 +69,7 @@ LifeBoatAPI.Fire = {
             script(self)
         end
         
-        if self.collisionLayers then
+        if self.savedata.collisionLayers then
             LB.collision:trackObject(self)
         end
 
@@ -85,9 +85,10 @@ LifeBoatAPI.Fire = {
             id = spawnData.id,
             type = "fire",
             tags = component.tags,
+            name = component.rawdata.display_name,
             transform = spawnData.transform,
             parentID = parent and parent.id,
-            parentType = parent and parent.type,
+            parentType = parent and parent.savedata.type,
             collisionLayers = component:parseSequentialTag("collisionLayer"),
             onInitScript = component.tags["onInitScript"]
         })

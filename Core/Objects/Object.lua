@@ -19,14 +19,17 @@
 ---@field onLoaded EventTypes.LBOnLoaded_Object
 ---@field onCollision EventTypes.LBOnCollisionStart_Object
 ---@field onDespawn EventTypes.LBOnDespawn_Object
+---@field childZones LifeBoatAPI.Zone[]
+---@field childFires LifeBoatAPI.Fire[]
 LifeBoatAPI.Object = {
     ---@param cls LifeBoatAPI.Object
     fromSavedata = function(cls, savedata)
         local self = {
             savedata = savedata,
-            
             id = savedata.id,
             transform = savedata.transform,
+            childFires = {},
+            childZones = {},
 
             -- events
             onLoaded = LifeBoatAPI.Event:new(),
@@ -40,9 +43,15 @@ LifeBoatAPI.Object = {
             despawn = LifeBoatAPI.GameObject.despawn,
             onDispose = cls.onDispose,
             isLoaded = cls.isLoaded,
-            toggleCollision = LifeBoatAPI.GameObject.toggleCollision
+            toggleCollision = LifeBoatAPI.GameObject.toggleCollision,
+            init = cls.init
         }
-        
+
+        return self
+    end;
+
+    ---@param self LifeBoatAPI.Object
+    init = function(self)
         -- ensure position is up to date
         if self.getTransform then
             self:getTransform()
@@ -54,11 +63,9 @@ LifeBoatAPI.Object = {
             script(self)
         end
 
-        if self.collisionLayers then
+        if self.savedata.collisionLayers then
             LB.collision:trackObject(self)
         end
-
-        return self
     end;
 
     ---@param cls LifeBoatAPI.Object
@@ -97,6 +104,8 @@ LifeBoatAPI.Object = {
             collisionLayers = collisionLayers,
             onInitScript = onInitScript
         })
+
+        obj:init()
 
         LB.objects:trackEntity(obj)
         
