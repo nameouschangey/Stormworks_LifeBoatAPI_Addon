@@ -95,6 +95,8 @@ LifeBoatAPI.Zone = {
         local obj = cls:fromSavedata({
             id = spawnData.id,
             type = "zone",
+            isAddonSpawn = true,
+            tags = component.tags,
             collisionType = (component.tags["collisionType"] == "sphere" and "sphere") or "box",
             collisionLayer = component.tags["collisionLayer"],
             transform = spawnData.transform,

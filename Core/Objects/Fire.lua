@@ -45,6 +45,7 @@ LifeBoatAPI.Fire = {
             onDispose = LifeBoatAPI.GameObject.onDispose,
             toggleCollision = LifeBoatAPI.GameObject.toggleCollision
         }
+        self.savedata.type = "fire"
 
         -- meant to be attached to an object that's now gone, or parent object exists but is disposed
         if parentID and not parent then
@@ -83,6 +84,7 @@ LifeBoatAPI.Fire = {
         local obj = cls:fromSavedata({
             id = spawnData.id,
             type = "fire",
+            tags = component.tags,
             transform = spawnData.transform,
             parentID = parent and parent.id,
             parentType = parent and parent.type,

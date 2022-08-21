@@ -31,7 +31,7 @@ LifeBoatAPI.Matrix = {
     ---@param pitch number|nil pitch angle (x-axis rotation) in radians
     ---@param roll number|nil roll angle (z-axis rotation) in radians
     ---@return LifeBoatAPI.Matrix
-    newMatrix = function(posX, posY, posZ, yaw, pitch, roll)
+    newMatrix = function(cls, posX, posY, posZ, yaw, pitch, roll)
         yaw     = yaw or 0
         pitch   = pitch or 0
         roll    = roll or 0
@@ -70,7 +70,7 @@ LifeBoatAPI.Matrix = {
     ---@param position LifeBoatAPI.Matrix|LifeBoatAPI.Vector position to be at
     ---@param positionToFace LifeBoatAPI.Matrix|LifeBoatAPI.Vector position to face
     ---@return LifeBoatAPI.Matrix
-    newFacingMatrix = function(position, positionToFace)
+    newFacingMatrix = function(cls, position, positionToFace)
         --[[
             taylor series expansion: https://www.researchgate.net/publication/265755808_Direction_Cosine_Matrix_IMU_Theory
             fast normalization, if expected to be near 1 already

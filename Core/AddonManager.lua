@@ -108,7 +108,7 @@ LifeBoatAPI.Addon = {
 ---@class LifeBoatAPI.AddonLocation
 ---@field components LifeBoatAPI.AddonComponent[]
 ---@field componentsByID table<number, LifeBoatAPI.AddonComponent>
----@field componentByName table<string, LifeBoatAPI.AddonComponent>
+---@field componentsByName table<string, LifeBoatAPI.AddonComponent>
 ---@field addon LifeBoatAPI.Addon
 ---@field rawdata SWLocationData
 ---@field index number
@@ -118,6 +118,7 @@ LifeBoatAPI.AddonLocation = {
     ---@param parent LifeBoatAPI.Addon
     ---@return LifeBoatAPI.AddonLocation
     new = function(cls, parent, index, locationData)
+        ---@type LifeBoatAPI.AddonLocation
         local self = {
             addon = parent,
             index = index,
@@ -134,23 +135,58 @@ LifeBoatAPI.AddonLocation = {
             --methods
             spawnAll = cls.spawnAll;
             spawnAllRelativeToPosition = cls.spawnAllRelativeToPosition;
+            getPosition = cls.getPosition;
         }
+
+        local withParent = {}
 
         -- component index starts at 0
         for i=0, locationData.component_count-1 do
             local componentData = server.getLocationComponentData(self.addon.index, self.index, i)
             local component = LifeBoatAPI.AddonComponent:new(self, i, componentData)
 
-            -- manage parented items
-            self.componentsByID[componentData.id] = component -- this ID is actually the spawned ID though isn't it?
-            self.components[#self.components+1] = component
+            self.componentsByID[componentData.id] = component
 
-            if componentData.display_name ~= "" then
-                self.componentsByName[componentData.display_name] = component
+            if (component.rawdata.type == "zone" or component.rawdata.type == "fire")
+                and (component.tags["parentID"] or component.rawdata.vehicle_parent_component_id) then
+
+                withParent[#withParent+1] = component
+            else
+                self.components[#self.components+1] = component
+
+                if componentData.display_name ~= "" then
+                    self.componentsByName[componentData.display_name] = component
+                end
+            end
+        end
+
+        -- todo: manage parented items
+        for i=1, #withParent do
+            local component = withParent[i]
+            local parentID = component.tags["parentID"] or component.rawdata.vehicle_parent_component_id
+
+            if parentID then
+                local parent = self.componentsByID[parentID]
+                if parent then
+                    parent.children[#parent.children+1] = component
+                end
             end
         end
 
         return self
+    end;
+
+    ---@param closestToMatrix LifeBoatAPI.Matrix|nil optional, center position to try and be closest to
+    ---@param self LifeBoatAPI.AddonLocation
+    ---@return LifeBoatAPI.Matrix|nil matrix
+    getPosition = function(self, closestToMatrix)
+        closestToMatrix = closestToMatrix or LifeBoatAPI.Matrix:newMatrix()
+        local tileMatrix, success = server.getTileTransform(closestToMatrix, self.rawdata.tile, 50000)
+
+        if not success then
+            return nil
+        end
+        return tileMatrix
     end;
 
     ---Spawn the location exactly as it is in the editor
@@ -203,6 +239,7 @@ LifeBoatAPI.AddonComponent = {
             location = location;
             rawdata = componentData;
             tags = {};
+            children = {};
 
             --methods
             parseSequentialTag = cls.parseSequentialTag;
@@ -261,10 +298,10 @@ LifeBoatAPI.AddonComponent = {
     end;
 
     ---@param self LifeBoatAPI.AddonComponent
-    ---@param relativePosition LifeBoatAPI.Matrix
+    ---@param position LifeBoatAPI.Matrix
     ---@return LifeBoatAPI.GameObject|nil
-    spawnRelativeToPosition = function(self, relativePosition)
-        return self:spawn(LifeBoatAPI.Matrix.multiplyMatrix(relativePosition, self.rawdata.transform))
+    spawnRelativeToPosition = function(self, position)
+        return self:spawn(LifeBoatAPI.Matrix.multiplyMatrix(position, self.rawdata.transform))
     end;
 
     ---@param self LifeBoatAPI.AddonComponent
@@ -282,30 +319,27 @@ LifeBoatAPI.AddonComponent = {
 
         local spawnedData, success =  server.spawnAddonComponent(matrix, self.location.addon.index, self.location.index, self.index)
         if success then
-            spawnedData.betterTags = self.tags
 
             ---@type LifeBoatAPI.GameObject
             local entity;
-            if spawnedData.type == 0        -- zone
-            or spawnedData.type == 10 then  -- cargo_zone (deprecated)
+            if spawnedData.type == "zone" then
                 entity = LifeBoatAPI.Zone:fromAddonSpawn(self, spawnedData, parent)
 
-            elseif spawnedData.type == 2 then -- npc/character
+            elseif spawnedData.type == "character" then
                 entity = LifeBoatAPI.Object:fromAddonSpawn(self, spawnedData)
 
-            elseif spawnedData.type == 3 then -- vehicle
+            elseif spawnedData.type == "vehicle" then
                 entity = LifeBoatAPI.Vehicle:fromAddonSpawn(self, spawnedData)
 
-            elseif spawnedData.type == 5 then -- fire
+            elseif spawnedData.type == "fire" then
                 entity = LifeBoatAPI.Fire:fromAddonSpawn(self, spawnedData, parent)
                 
             -- regular objects
-            elseif spawnedData.type == 1    -- small objects 
-            or spawnedData.type == 4        -- flare
-            or spawnedData.type == 6        -- loot
-            or spawnedData.type == 7        -- button
-            or spawnedData.type == 8        -- animal
-            or spawnedData.type == 9 then   -- ice
+            elseif spawnedData.type == "object"    -- small objects 
+            or spawnedData.type == "loot"        -- flare
+            or spawnedData.type == "flare"        -- loot
+            or spawnedData.type == "animal"        -- button
+            or spawnedData.type == "ice" then   -- ice
                 entity = LifeBoatAPI.Object:fromAddonSpawn(self, spawnedData)
             end
 
