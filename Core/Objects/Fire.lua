@@ -5,16 +5,13 @@
 --- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
----@class EventTypes.LBOnCollisionStart_Fire : LifeBoatAPI.Event
----@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, fire:LifeBoatAPI.Fire, collision:LifeBoatAPI.Collision,  zone:LifeBoatAPI.Zone), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
-
 ---@class EventTypes.LBOnDespawn_Fire : LifeBoatAPI.Event
 ---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, fire:LifeBoatAPI.Fire), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 
 ---@class LifeBoatAPI.Fire : LifeBoatAPI.GameObject
 ---@field parent LifeBoatAPI.GameObject
----@field onCollision EventTypes.LBOnCollisionStart_Fire
+---@field onCollision nil
 ---@field onDespawn EventTypes.LBOnDespawn_Fire
 LifeBoatAPI.Fire = {
     ---@param cls LifeBoatAPI.Fire
@@ -35,13 +32,10 @@ LifeBoatAPI.Fire = {
             id = savedata.id,
             transform = savedata.transform,
             parent = parent,
-            getTransform = cls.getTransform,
-            velocityOffset = 0,
-            lastTickUpdated = 0,
 
             onDespawn = LifeBoatAPI.Event:new(),
-            onCollision = LifeBoatAPI.Event:new(),
 
+            getTransform = cls.getTransform,
             attach = LifeBoatAPI.lb_attachDisposable,
             despawn = LifeBoatAPI.GameObject.despawn,
             onDispose = LifeBoatAPI.GameObject.onDispose
@@ -67,8 +61,6 @@ LifeBoatAPI.Fire = {
         if script then
             script(self)
         end
-        
-        LB.collision:trackEntity(self)
 
         return self
     end;
@@ -97,14 +89,9 @@ LifeBoatAPI.Fire = {
     ---@param self LifeBoatAPI.Fire
     ---@return LifeBoatAPI.Matrix
     getTransform = function(self)
-        -- function isn't assigned unless this has a parent
-        -- if parent has moved, recalculate our position
         local parent = self.parent
-        if parent.getTransform and parent.lastTickUpdated + parent.velocityOffset < LB.ticks.ticks then
+        if parent and parent.lastTickUpdated < LB.ticks.ticks then
             self.transform = LifeBoatAPI.Matrix.multiplyMatrix(parent:getTransform(), self.savedata.transform)
-            self.lastTickUpdated = LB.ticks.ticks
-
-            self.collisionXYZFloor = self.transform[13] + self.transform[14] + self.transform[15]
         end
         
         return self.transform

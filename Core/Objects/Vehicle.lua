@@ -45,6 +45,7 @@ LifeBoatAPI.Vehicle = {
             transform = savedata.transform or LifeBoatAPI.Matrix:newMatrix(),
             lastTickUpdated = 0,
             velocityOffset = 0,
+            collisionRadius = 0,
             childFires = {},
             childZones = {},
 
@@ -146,11 +147,14 @@ LifeBoatAPI.Vehicle = {
     getTransform = function(self)
         local matrix, success = server.getVehiclePos(self.id, 0, 0, 0)
         if success then
-            self.velocityOffset = ((matrix[13]-self.transform[13]) + (matrix[14]-self.transform[14]) + (matrix[15]-self.transform[15])) < 5 and 59 or 0
-            self.transform = matrix
+            self.lastTransform = self.transform
+            self.collisionRadiusLast = self.collisionRadius
 
+            self.transform = matrix
             self.lastTickUpdated = LB.ticks.ticks
-            self.collisionXYZFloor = self.transform[13] + self.transform[14] + self.transform[15]
+
+            local x,y,z = self.transform[13], self.transform[14], self.transform[15]
+            self.collisionRadius = ((x*x)+(y*y)+(z*z))^0.5
         end
         return self.transform
     end;

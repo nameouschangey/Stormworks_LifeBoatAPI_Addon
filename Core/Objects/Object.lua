@@ -30,8 +30,8 @@ LifeBoatAPI.Object = {
             transform = savedata.transform or LifeBoatAPI.Matrix:newMatrix(),
             childFires = {},
             childZones = {},
-            velocityOffset = savedata.isStatic and 59 or 0,
             lastTickUpdated = 0,
+            collisionRadius = 0,
 
             -- events
             onLoaded = LifeBoatAPI.Event:new(),
@@ -114,14 +114,14 @@ LifeBoatAPI.Object = {
     getTransform = function(self)
         local matrix, success = server.getObjectPos(self.id)
         if success then
-            self.velocityOffset = (matrix[13]-self.transform[13]) + (matrix[14]-self.transform[14]) + (matrix[15]-self.transform[15]) < 5 and 59 or 0
-            self.lastTickUpdated = LB.ticks.ticks
-
-            self.transform = matrix
-            self.collisionRadius = self.transform[13] + self.transform[14] + self.transform[15]
-
             self.lastTransform = self.transform
             self.collisionRadiusLast = self.collisionRadius
+
+            self.transform = matrix
+            self.lastTickUpdated = LB.ticks.ticks
+
+            local x,y,z = self.transform[13], self.transform[14], self.transform[15]
+            self.collisionRadius = ((x*x)+(y*y)+(z*z))^0.5
         else
             -- object has despawned already
             self:despawn()

@@ -44,8 +44,6 @@ LifeBoatAPI.Zone = {
             savedata = savedata,
             id = savedata.id,
             transform = savedata.transform,
-            velocityOffset = not parent and 59 or 0,
-            lastTickUpdated = 0,
             parent = parent,
             
             onDespawn = LifeBoatAPI.Event:new(),
@@ -58,9 +56,10 @@ LifeBoatAPI.Zone = {
         }
 
         if savedata.collisionType == "box" then
-            self.radiusTripled = savedata.radius * 3
+            -- sizes are already 1/2'd, (radial rather than edge length)
+            self.collisionRadius = ((savedata.sizeX * savedata.sizeX) + (savedata.sizeY * savedata.sizeY) + (savedata.sizeZ*savedata.sizeZ)) ^ 0.5
         else
-            self.radiusTripled = savedata.sizeX + savedata.sizeY + savedata.sizeZ
+            self.collisionRadius = savedata.radius
         end
 
         -- meant to be attached to an object that's now gone, or parent object exists but is disposed
@@ -174,15 +173,18 @@ LifeBoatAPI.Zone = {
     end;
 
     ---@param self LifeBoatAPI.Zone
+    ---@return LifeBoatAPI.Matrix
     getTransform = function(self)
-        -- function isn't assigned unless this has a parent
-        -- if parent has moved, recalculate our position
+
         local parent = self.parent
-        if parent.getTransform and parent.lastTickUpdated + parent.velocityOffset < LB.ticks.ticks then
+        if parent and parent.lastTickUpdated < LB.ticks.ticks then
             self.transform = LifeBoatAPI.Matrix.multiplyMatrix(parent:getTransform(), self.savedata.transform)
-            self.lastTickUpdated = LB.ticks.ticks
-            self.collisionXYZFloor = self.transform[13] + self.transform[14] + self.transform[15]
         end
+
+        local x,y,z = self.transform[13], self.transform[14], self.transform[15]
+        local centerRadius = ((x*x)+(y*y)+(z*z))^0.5
+        self.collisionRadiusMax = centerRadius + self.collisionRadius
+        self.collisionRadiusMin = centerRadius - self.collisionRadius
         
         return self.transform
     end;

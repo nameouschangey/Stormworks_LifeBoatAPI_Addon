@@ -66,6 +66,7 @@ LifeBoatAPI.Player = {
             velocityOffset = 0,
             transform = LifeBoatAPI.Matrix:newMatrix(),
             lastTickUpdated = 0,
+            collisionRadius = 0,
 
             --- events
             onTeleport = LifeBoatAPI.Event:new();
@@ -130,10 +131,14 @@ LifeBoatAPI.Player = {
     getTransform = function(self)
         local matrix, success = server.getPlayerPos(self.id)
         if success then
-            self.velocityOffset = (matrix[13]-self.transform[13]) + (matrix[14]-self.transform[14]) + (matrix[15]-self.transform[15]) > 1 and 60 or 0
+            self.lastTransform = self.transform
+            self.collisionRadiusLast = self.collisionRadius
+            
             self.transform = matrix
             self.lastTickUpdated = LB.ticks.ticks
-            self.collisionXYZFloor = self.transform[13] + self.transform[14] + self.transform[15]
+
+            local x,y,z = self.transform[13], self.transform[14], self.transform[15]
+            self.collisionRadius = ((x*x)+(y*y)+(z*z))^0.5
         end
         return self.transform
     end;

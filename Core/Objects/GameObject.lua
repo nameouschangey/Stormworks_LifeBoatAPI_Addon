@@ -18,7 +18,7 @@
 ---@field savedata LifeBoatAPI.GameObjectSaveData
 ---@field id number id for this object, to use with game functions
 ---@field transform LifeBoatAPI.Matrix
----@field velocityOffset number
+---@field lastTransform LifeBoatAPI.Matrix
 ---@field isCollisionRegistered boolean
 ---@field isCollisionStopped boolean
 ---@field collisionRadius number
