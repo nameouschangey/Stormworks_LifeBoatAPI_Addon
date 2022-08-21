@@ -35,7 +35,7 @@ LifeBoatAPI.Fire = {
             id = savedata.id,
             transform = savedata.transform,
             parent = parent,
-            getTransform = parent and cls.getTransform or nil,
+            getTransform = cls.getTransform,
             velocityOffset = 0,
             lastTickUpdated = 0,
 
