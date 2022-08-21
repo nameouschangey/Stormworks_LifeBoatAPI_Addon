@@ -107,7 +107,8 @@ LifeBoatAPI.Addon = {
 
 ---@class LifeBoatAPI.AddonLocation
 ---@field components LifeBoatAPI.AddonComponent[]
----@field componentsByID table<string, LifeBoatAPI.AddonComponent>
+---@field componentsByID table<number, LifeBoatAPI.AddonComponent>
+---@field componentByName table<string, LifeBoatAPI.AddonComponent>
 ---@field addon LifeBoatAPI.Addon
 ---@field rawdata SWLocationData
 ---@field index number
