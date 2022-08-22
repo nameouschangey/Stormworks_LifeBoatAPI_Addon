@@ -142,7 +142,7 @@ LifeBoatAPI.CollisionManager = {
                         -- we should check for collisions ending here
 
                     elseif object.lastTickUpdated < currentTick then
-                        --object:getTransform()
+                        object:getTransform()
                     end
                 end
 
@@ -157,46 +157,44 @@ LifeBoatAPI.CollisionManager = {
                         --check for existing collisions to end
 
                     elseif zone.parent and zone.parent.lastTickUpdated < currentTick then
-                        --zone:getTransform()
+                        zone:getTransform()
                     end
                 end
 
                 if numObjects > 0 and numZones > 0 then
+                    for iObject = numObjects, 1, -1 do
+                        local object = objects[iObject]
 
-                    -- must be objects
-                    -- for iObject = numObjects, 1, -1 do
-                    --     local object = objects[iObject]
+                        for iZone = numZones, 1, -1 do -- this kind of nested loop gives me severe heebie jeebies
+                            local zone = layer.zones[iZone]
 
-                    --     for iZone = numZones, 1, -1 do -- this kind of nested loop gives me severe heebie jeebies
-                    --         local zone = layer.zones[iZone]
+                            local collisionRadius = object.collisionRadius
+                            local zoneCollisionMax = zone.collisionRadiusMax
+                            local zoneCollisionMin = zone.collisionRadiusMin
 
-                    --         local collisionRadius = object.collisionRadius
-                    --         local zoneCollisionMax = zone.collisionRadiusMax
-                    --         local zoneCollisionMin = zone.collisionRadiusMin
+                            local isCollision;
+                            -- is concentric rings a terrible idea? (probably)
+                            local collisionRadiusLast = object.collisionRadiusLast
 
-                    --         local isCollision;
-                    --         -- is concentric rings a terrible idea? (probably)
-                    --         local collisionRadiusLast = object.collisionRadiusLast
-
-                    --         if (collisionRadius > zoneCollisionMin and collisionRadius < zoneCollisionMax) -- current point in zone radius
-                    --         or (collisionRadiusLast > zoneCollisionMin and collisionRadiusLast < zoneCollisionMax) -- last point in zone radius
-                    --         or (collisionRadiusLast < zoneCollisionMin and collisionRadius > zoneCollisionMax) -- last point outside min, current point beyond max
-                    --         or (collisionRadiusLast > zoneCollisionMax and collisionRadius < zoneCollisionMin) -- last point beyond max, currnet point before min
-                    --         then
-                    --             if zone.savedata.collisionType == "sphere" then
-                    --                 isCollision = isLineInSphere(object.lastTransform, object.transform, zone.transform, zone.savedata.radius)
-                    --             else
-                    --                 isCollision = isLineInZone(object.lastTransform, object.transform, zone.transform, zone.savedata.sizeX, zone.savedata.sizeY, zone.savedata.sizeZ)
-                    --             end
-                    --         end
+                            if (collisionRadius > zoneCollisionMin and collisionRadius < zoneCollisionMax) -- current point in zone radius
+                            or (collisionRadiusLast > zoneCollisionMin and collisionRadiusLast < zoneCollisionMax) -- last point in zone radius
+                            or (collisionRadiusLast < zoneCollisionMin and collisionRadius > zoneCollisionMax) -- last point outside min, current point beyond max
+                            or (collisionRadiusLast > zoneCollisionMax and collisionRadius < zoneCollisionMin) -- last point beyond max, currnet point before min
+                            then
+                                if zone.savedata.collisionType == "sphere" then
+                                    isCollision = isLineInSphere(object.lastTransform, object.transform, zone.transform, zone.savedata.radius)
+                                else
+                                    isCollision = isLineInZone(object.lastTransform, object.transform, zone.transform, zone.savedata.sizeX, zone.savedata.sizeY, zone.savedata.sizeZ)
+                                end
+                            end
                             
-                    --         if isCollision then
-                    --             if iZone==1 and runtime == 1 and currentTick % 60 == 0 then
-                    --                 server.announce("Collision!", "object: " .. object.id .. " with zone: " .. zone.id)
-                    --             end
-                    --         end
-                    --     end
-                    -- end
+                            if isCollision then
+                                if iZone==1 and runtime == 1 and currentTick % 60 == 0 then
+                                    server.announce("Collision!", "object: " .. object.id .. " with zone: " .. zone.id)
+                                end
+                            end
+                        end
+                    end
                 end
             end
         end

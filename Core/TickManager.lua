@@ -19,8 +19,7 @@ LifeBoatAPI.TickFrequency = {
 ---@class LifeBoatAPI.TickManager
 ---@field ticks number
 ---@field gameTicks number
----@field tickables LifeBoatAPI.ITickable[]
----@field onTick function own implementation of the onTick function
+---@field tickables table<number, LifeBoatAPI.ITickable[]>
 LifeBoatAPI.TickManager = {
 
     ---@param cls LifeBoatAPI.TickManager
@@ -42,18 +41,13 @@ LifeBoatAPI.TickManager = {
 
     ---@param self LifeBoatAPI.TickManager
     init = function(self)
-        -- if we should have already set onTick, but then something has overwritten it
-        -- steal it back (i.e. player defined onTick after LB was intantiated, AND something registered before onCreate ran ~ low probability but saves a nightmare error to debug)
-		if self.onTick and self.onTick ~= _ENV["onTick"] then
-            onTick = self:_onTickClosure()
-            self.onTick = onTick
-		end
+        onTick = self:_onTickClosure()
     end;
 
     ---@param self LifeBoatAPI.TickManager
     ---@param func LifeBoatAPI.ITickableFunc
     ---@param tickFrequency number|nil if nil, will run ONE TIME only and then dispose of itself
-    ---@param firstTickDelay number|nil if nil, will run at a random interval between now and tickFrequency, so that it spaces out evenly
+    ---@param firstTickDelay number|nil if nil, will run at a random interval between now and repeatFrequency, so that it spaces out evenly
     ---@param context any|nil
     ---@param contextIsTickable boolean|nil if true, the provided context is used as the tickable, directly. (mainly for coroutine simplification)
     ---@return LifeBoatAPI.ITickable
@@ -64,20 +58,20 @@ LifeBoatAPI.TickManager = {
         -- this avoids having tons of tickables all running on the exact same tick, and removing any benefit of the tickable system
         if not firstTickDelay and tickFrequency > 0 then
             firstTickDelay = math.floor(math.random() * math.min(60, tickFrequency)) + 1
+        elseif not firstTickDelay then
+            firstTickDelay = 1
         end
 
         local tickable;
-        
+        local nextTick = self.ticks + firstTickDelay
         if contextIsTickable then
             tickable = context
             tickable.onExecute = func
-            tickable.nextTick = self.ticks + (firstTickDelay or 1)
             tickable.lastTick = self.ticks
         else
             tickable = {
                 onExecute = func,
                 tickFrequency = tickFrequency,
-                nextTick = self.ticks + (firstTickDelay or 1),
                 lastTick = self.ticks,
                 context = context
             }
@@ -85,12 +79,11 @@ LifeBoatAPI.TickManager = {
 
         -- safe during iteration, as the loop is fixed length
         -- as such, new tickables will *never* be evaluated during the tick they are added (hence setting nextTick to ticks+1)
-        self.tickables[#self.tickables + 1] = tickable
-
-        if not self.onTick then
-            onTick = self:_onTickClosure()
-            self.onTick = onTick
-            self.isOnTickRegistered = true
+        local nextTickTickables = self.tickables[nextTick]
+        if not nextTickTickables then
+            self.tickables[nextTick] = {tickable}
+        else
+            nextTickTickables[#nextTickTickables+1] = tickable
         end
 
         -- allow tickables to be run instantly in the tick they're registered, unlikely to be used
@@ -114,20 +107,31 @@ LifeBoatAPI.TickManager = {
             self.ticks = self.ticks + 1
             self.gameTicks = self.gameTicks + gameTicks -- track the in-game time separately
             
-            local disposablesAwaitingRemoval = 0;
-            for i=1, #self.tickables do
-                local tickable = self.tickables[i]
+            local tickables = self.tickables[self.ticks]
+            if not tickables then
+                return
+            end
 
-                if not tickable.isDisposed and tickable.nextTick == self.ticks and not tickable.isPaused then
+            self.tickables[self.ticks] = nil -- clear old list
+            for i=1, #tickables do
+                local tickable = tickables[i]
 
-                    if tickable.tickFrequency > 0 then
-                        tickable.nextTick = self.ticks + tickable.tickFrequency
+                if not tickable.isDisposed then
+
+                    if not tickable.isPaused then
+                        tickable:onExecute(tickable.context, self.ticks - tickable.lastTick)
+                        tickable.lastTick = self.ticks
                     end
 
-                    tickable:onExecute(tickable.context, self.gameTicks - tickable.lastTick)
-                    tickable.lastTick = self.gameTicks
-
-                    if tickable.tickFrequency <= 0 then
+                    if tickable.tickFrequency > 0 then
+                        local nextTick = self.ticks + tickable.tickFrequency
+                        local nextTickTickables = self.tickables[nextTick]
+                        if nextTickTickables then
+                            nextTickTickables[#nextTickTickables+1] = tickable
+                        else
+                            self.tickables[nextTick] = {tickable}
+                        end
+                    else
                         -- todo: decision to make after real-world use: does tickManager need to lb_dispose the tickables, or not
                         if tickable.disposables or tickable.onDispose then
                             LifeBoatAPI.lb_dispose(tickable)
@@ -136,33 +140,6 @@ LifeBoatAPI.TickManager = {
                         end
                     end
                 end
-
-                if tickable.isDisposed then
-                    disposablesAwaitingRemoval = disposablesAwaitingRemoval + 1;
-                end
-            end
-            
-            -- handle restructuring whenever there are a significant number of tickables waiting to be disposed of
-            -- it depends on how impactful having too many "dead" tickables is to performance
-            local MAX_DISPOSABLES = 100
-            if disposablesAwaitingRemoval > MAX_DISPOSABLES then
-                local newTickables = {}
-
-                for i=1, #self.tickables do
-                    local tickable = self.tickables[i]
-                    if not tickable.isDisposed then
-                        newTickables[#newTickables+1] = tickable
-                    end
-                end
-        
-                self.tickables = newTickables
-                disposablesAwaitingRemoval = 0
-            end
-
-            -- deregister self if nothing listening anymore
-            if #self.tickables == 0 then
-                onTick = _onTick
-                self.isOnTickRegistered = false
             end
         end
     end;
