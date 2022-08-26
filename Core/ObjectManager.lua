@@ -103,31 +103,41 @@ LifeBoatAPI.ObjectManager = {
         local initializables = {}
         -- initialize things that we already know exist from the savedata
         for vehicleID, vehicleSaveData in pairs(self.savedata.vehiclesByID) do
-            local vehicle = LifeBoatAPI.Vehicle:fromSavedata(vehicleSaveData)
-            self.vehiclesByID[vehicleID] = vehicle
-            initializables[#initializables+1] = vehicle
+            if not self.vehiclesByID[vehicleID] then
+                local vehicle = LifeBoatAPI.Vehicle:fromSavedata(vehicleSaveData)
+                self.vehiclesByID[vehicleID] = vehicle
+                initializables[#initializables+1] = vehicle
+            end
         end
 
         for objectID, objectSaveData in pairs(self.savedata.objectsByID) do
-            local object = LifeBoatAPI.Object:fromSavedata(objectSaveData)
-            self.objectsByID[objectID] = object
-            initializables[#initializables+1] = object
+            if not self.objectsByID[objectID] then
+                local object = LifeBoatAPI.Object:fromSavedata(objectSaveData)
+                self.objectsByID[objectID] = object
+                initializables[#initializables+1] = object
+            end
         end
 
         for objectID, objectSaveData in pairs(self.savedata.npcsByID) do
-            local object = LifeBoatAPI.Object:fromSavedata(objectSaveData)
-            self.npcsByID[objectID] = object
-            initializables[#initializables+1] = object
+            if not self.npcsByID[objectID] then
+                local object = LifeBoatAPI.Object:fromSavedata(objectSaveData)
+                self.npcsByID[objectID] = object
+                initializables[#initializables+1] = object
+            end
         end
 
         -- zones and fires must come second, as they can be parents to an object/npc/vehicle
         -- note: no chained parenting, because as fun as that sounds, there's no reason to do it
         for objectID, objectSaveData in pairs(self.savedata.zonesByID) do
-            self.zonesByID[objectID] = LifeBoatAPI.Zone:fromSavedata(objectSaveData)
+            if not self.zonesByID[objectID] then
+                self.zonesByID[objectID] = LifeBoatAPI.Zone:fromSavedata(objectSaveData)
+            end
         end
 
         for objectID, objectSaveData in pairs(self.savedata.firesByID) do
-            self.firesByID[objectID] = LifeBoatAPI.Fire:fromSavedata(objectSaveData)
+            if not self.firesByID[objectID] then
+                self.firesByID[objectID] = LifeBoatAPI.Fire:fromSavedata(objectSaveData)
+            end
         end
 
         -- initialize all vehicles and objects, that might have had children

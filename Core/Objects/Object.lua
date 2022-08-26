@@ -30,8 +30,7 @@ LifeBoatAPI.Object = {
             transform = savedata.transform or LifeBoatAPI.Matrix:newMatrix(),
             childFires = {},
             childZones = {},
-            lastTickUpdated = 0,
-            collisionRadius = 0,
+            nextUpdateTick = 0,
 
             -- events
             onLoaded = LifeBoatAPI.Event:new(),
@@ -90,15 +89,15 @@ LifeBoatAPI.Object = {
     ---@param cls LifeBoatAPI.Object
     ---@param objectID number
     ---@param isStatic boolean
-    ---@param collisionLayers string[]|nil leave nil if this shouldn't perform collision checks, e.g. static objects
+    ---@param collisionLayer string|nil leave nil if this shouldn't perform collision checks, e.g. static objects
     ---@return LifeBoatAPI.Object
-    fromUntrackedSpawn = function(cls, objectID, isStatic, collisionLayers, onInitScript)
+    fromUntrackedSpawn = function(cls, objectID, isStatic, collisionLayer, onInitScript)
         local obj = cls:fromSavedata({
             id = objectID,
             type = "object",
             isAddonSpawn = false,
             isStatic = isStatic,
-            collisionLayers = collisionLayers,
+            collisionLayer = collisionLayer,
             onInitScript = onInitScript
         })
 
@@ -115,16 +114,12 @@ LifeBoatAPI.Object = {
         local matrix, success = server.getObjectPos(self.id)
         if success then
             self.lastTransform = self.transform
-            self.collisionRadiusLast = self.collisionRadius
 
             self.transform = matrix
-            self.lastTickUpdated = LB.ticks.ticks
-
-            local x,y,z = self.transform[13], self.transform[14], self.transform[15]
-            self.collisionRadius = ((x*x)+(y*y)+(z*z))^0.5
+            self.nextUpdateTick = LB.ticks.ticks + 30
         else
             -- object has despawned already
-            self:despawn()
+            --? not sure if necessary self:despawn()
         end
         return self.transform
     end;

@@ -148,13 +148,9 @@ LifeBoatAPI.Vehicle = {
         local matrix, success = server.getVehiclePos(self.id, 0, 0, 0)
         if success then
             self.lastTransform = self.transform
-            self.collisionRadiusLast = self.collisionRadius
 
             self.transform = matrix
-            self.lastTickUpdated = LB.ticks.ticks
-
-            local x,y,z = self.transform[13], self.transform[14], self.transform[15]
-            self.collisionRadius = ((x*x)+(y*y)+(z*z))^0.5
+            self.nextUpdateTick = LB.ticks.ticks + 30
         end
         return self.transform
     end;
@@ -164,7 +160,7 @@ LifeBoatAPI.Vehicle = {
         if self.onDespawn.hasListeners then
             self.onDespawn:trigger(self)
         end
-        self.isCollisionStopped = true
+        LB.collision:stopTracking(self)
         LB.objects:stopTracking(self)
         server.despawnVehicle(self.id, true)
     end;

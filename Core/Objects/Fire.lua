@@ -32,6 +32,7 @@ LifeBoatAPI.Fire = {
             id = savedata.id,
             transform = savedata.transform,
             parent = parent,
+            nextUpdateTick = (parent and LB.ticks.ticks + 30) or math.maxinteger,
 
             onDespawn = LifeBoatAPI.Event:new(),
 
@@ -78,7 +79,6 @@ LifeBoatAPI.Fire = {
             transform = spawnData.transform,
             parentID = parent and parent.id,
             parentType = parent and parent.savedata.type,
-            collisionLayer = component.tags["collisionLayer"],
             onInitScript = component.tags["onInitScript"]
         })
 
@@ -90,8 +90,17 @@ LifeBoatAPI.Fire = {
     ---@return LifeBoatAPI.Matrix
     getTransform = function(self)
         local parent = self.parent
-        if parent and parent.lastTickUpdated < LB.ticks.ticks then
-            self.transform = LifeBoatAPI.Matrix.multiplyMatrix(parent:getTransform(), self.savedata.transform)
+        if parent then
+            -- parent can be updated by somewhere else, and we still need to update our own relative position
+            if parent.nextUpdateTick <= LB.ticks.ticks then
+                parent:getTransform()
+            end
+
+            -- parent must have updated since we last spoke to it
+            if self.nextUpdateTick ~= parent.nextUpdateTick then
+                self.transform = LifeBoatAPI.Matrix.multiplyMatrix(parent.transform, self.savedata.transform)
+                self.nextUpdateTick = parent.nextUpdateTick
+            end
         end
         
         return self.transform
@@ -104,7 +113,6 @@ LifeBoatAPI.Fire = {
         if self.onDespawn.hasListeners then
             self.onDespawn:trigger(self)
         end
-        self.isCollisionStopped = true
         LB.objects:stopTracking(self)
         server.despawnObject(self.id, true)
     end;

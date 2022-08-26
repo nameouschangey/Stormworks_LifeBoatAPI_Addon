@@ -55,6 +55,8 @@ LifeBoatAPI.Player = {
     ---@return LifeBoatAPI.Player
     new = function (cls, peerID, steamID, isAdmin, isAuth, name, savedata)
         savedata.collisionLayer = savedata.collisionLayer or "player"
+        savedata.type = "player"
+        
         local self = {
             savedata = savedata;
             type = "player";
@@ -65,8 +67,7 @@ LifeBoatAPI.Player = {
             displayName = name;
             velocityOffset = 0,
             transform = LifeBoatAPI.Matrix:newMatrix(),
-            lastTickUpdated = 0,
-            collisionRadius = 0,
+            nextUpdateTick = 0,
 
             --- events
             onTeleport = LifeBoatAPI.Event:new();
@@ -132,18 +133,14 @@ LifeBoatAPI.Player = {
         local matrix, success = server.getPlayerPos(self.id)
         if success then
             self.lastTransform = self.transform
-            self.collisionRadiusLast = self.collisionRadius
             
             self.transform = matrix
-            self.lastTickUpdated = LB.ticks.ticks
-
-            local x,y,z = self.transform[13], self.transform[14], self.transform[15]
-            self.collisionRadius = ((x*x)+(y*y)+(z*z))^0.5
+            self.nextUpdateTick = LB.ticks.ticks + 30
         end
         return self.transform
     end;
 
     onDispose = function(self)
-        self.isCollisionStopped = true
+        LB.collision:stopTracking(self)
     end;
 }
