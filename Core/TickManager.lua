@@ -8,6 +8,7 @@
 ---@field isPaused boolean
 ---@field lastTick number 
 ---@field context any|nil
+---@field disableTickSpread any|nil
 
 LifeBoatAPI.TickFrequency = {
     REALTIME    = 1,        -- relatively few things need to happen every tick - consider before using this
@@ -51,7 +52,7 @@ LifeBoatAPI.TickManager = {
     ---@param context any|nil
     ---@param contextIsTickable boolean|nil if true, the provided context is used as the tickable, directly. (mainly for coroutine simplification)
     ---@return LifeBoatAPI.ITickable
-    register = function (self, func, context, tickFrequency, firstTickDelay, contextIsTickable)
+    register = function (self, func, context, tickFrequency, firstTickDelay, contextIsTickable, disableTickSpread)
         tickFrequency = tickFrequency or -1
         
         -- if not explicitly provided, first tick delay should be randomly spread out across the tick frequency
@@ -73,7 +74,8 @@ LifeBoatAPI.TickManager = {
                 onExecute = func,
                 tickFrequency = tickFrequency,
                 lastTick = self.ticks,
-                context = context
+                context = context,
+                disableTickSpread = disableTickSpread
             }
         end
 
@@ -126,10 +128,54 @@ LifeBoatAPI.TickManager = {
                     if tickable.tickFrequency > 0 then
                         local nextTick = self.ticks + tickable.tickFrequency
                         local nextTickTickables = self.tickables[nextTick]
-                        if nextTickTickables then
+
+                        -- handle tick spread
+                        -- if there's any tickable spread +0, +1, +10 that's empty, we use it
+                        -- if tickspread is disabled, don't even calculate it
+                        -- otherwise; find the best of the 3 and spread it onto that, so the load is balanced
+
+                        --      over a short period of time, this spreads the load out evenly, so less spikes happen with e.g. 0, 0, 0, 1000 things, 0
+                        --      instead should eventually tend towards: 200, 200, 200, 200, 200 things
+
+                        if not nextTickTickables then
+                            -- best place is +0 spread
+                            self.tickables[nextTick] = {tickable}
+                        elseif tickable.disableTickSpread then
+                            -- existing ticks, but spread is disabled
                             nextTickTickables[#nextTickTickables+1] = tickable
                         else
-                            self.tickables[nextTick] = {tickable}
+                            -- spread ticks
+                            local nextTickCount = #nextTickTickables
+
+                            local nextTickSpread1 = nextTick + 1
+                            local nextTickTickablesSpread1 = self.tickables[nextTickSpread1]
+                            if not nextTickTickablesSpread1 then
+                                self.tickables[nextTickSpread1] = {tickable}
+                            else
+                                local nextTickCountSpread1 = #nextTickTickablesSpread1
+
+                                local nextTickSpread10 = nextTick + 10
+                                local nextTickTickablesSpread10 = self.tickables[nextTickSpread10]
+                                if not nextTickTickablesSpread10 then
+                                    self.tickables[nextTickSpread10] = {tickable}
+                                else
+                                    local nextTickCountSpread10 = #nextTickTickablesSpread10
+
+                                    -- pick best choice of the 3 potential tick spreads
+                                    if nextTickCountSpread10 < nextTickCountSpread1 then
+                                        if nextTickCountSpread10 < nextTickCount then
+                                            nextTickTickablesSpread10[nextTickCountSpread10 + 1] = tickable
+                                        else
+                                            nextTickTickables[nextTickCount + 1] = tickable
+                                        end
+                                    elseif nextTickCountSpread1 < nextTickCount then
+                                        nextTickTickablesSpread1[nextTickCountSpread1 + 1] = tickable
+                                    else
+                                        nextTickTickables[nextTickCount + 1] = tickable
+                                    end
+                                    
+                                end
+                            end
                         end
                     else
                         -- todo: decision to make after real-world use: does tickManager need to lb_dispose the tickables, or not
