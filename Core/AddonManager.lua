@@ -330,24 +330,24 @@ LifeBoatAPI.AddonComponent = {
 
             ---@type LifeBoatAPI.GameObject
             local entity;
-            if spawnedData.type == "zone" then
+            if self.rawdata.type == "zone" then
                 entity = LifeBoatAPI.Zone:fromAddonSpawn(self, matrix, parent)
 
-            elseif spawnedData.type == "fire" then
+            elseif self.rawdata.type == "fire" then
                 entity = LifeBoatAPI.Fire:fromAddonSpawn(self, spawnedData, parent)
                 
-            elseif spawnedData.type == "character" then
+            elseif self.rawdata.type == "character" then
                 entity = LifeBoatAPI.Object:fromAddonSpawn(self, spawnedData)
 
-            elseif spawnedData.type == "vehicle" then
+            elseif self.rawdata.type == "vehicle" then
                 entity = LifeBoatAPI.Vehicle:fromAddonSpawn(self, spawnedData)
 
             -- regular objects
-            elseif spawnedData.type == "object"    -- small objects 
-            or spawnedData.type == "loot"        -- flare
-            or spawnedData.type == "flare"        -- loot
-            or spawnedData.type == "animal"        -- button
-            or spawnedData.type == "ice" then   -- ice
+            elseif self.rawdata.type == "object"    -- small objects 
+            or self.rawdata.type == "loot"        -- flare
+            or self.rawdata.type == "flare"        -- loot
+            or self.rawdata.type == "animal"        -- button
+            or self.rawdata.type == "ice" then   -- ice
                 entity = LifeBoatAPI.Object:fromAddonSpawn(self, spawnedData)
             end
 
