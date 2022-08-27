@@ -318,13 +318,18 @@ LifeBoatAPI.AddonComponent = {
     ---@return LifeBoatAPI.GameObject|nil
     spawn = function(self, matrix, parent)
         
-        local spawnedData, success =  server.spawnAddonComponent(matrix, self.location.addon.index, self.location.index, self.index)
+        -- don't actually "spawn" a zone, otherwise it adds an insane load on the server; due to how the game handles them 
+        local spawnedData, success;
+        if self.rawdata.type ~= "zone" then
+            spawnedData, success =  server.spawnAddonComponent(matrix, self.location.addon.index, self.location.index, self.index)
+        end
+
         if success then
 
             ---@type LifeBoatAPI.GameObject
             local entity;
             if spawnedData.type == "zone" then
-                entity = LifeBoatAPI.Zone:fromAddonSpawn(self, spawnedData, parent)
+                entity = LifeBoatAPI.Zone:fromAddonSpawn(self, matrix, parent)
 
             elseif spawnedData.type == "fire" then
                 entity = LifeBoatAPI.Fire:fromAddonSpawn(self, spawnedData, parent)

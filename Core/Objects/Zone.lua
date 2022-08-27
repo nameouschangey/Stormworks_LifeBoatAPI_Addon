@@ -95,8 +95,8 @@ LifeBoatAPI.Zone = {
 
     ---@param cls LifeBoatAPI.Zone
     ---@param component LifeBoatAPI.AddonComponent
-    ---@param spawnData SWAddonComponentSpawned
-    fromAddonSpawn = function(cls, component, spawnData, parent)
+    ---@param transform LifeBoatAPI.Matrix
+    fromAddonSpawn = function(cls, component, transform, parent)
         local zoneID = LifeBoatAPI.Zone._generateZoneID()
         local obj = cls:fromSavedata({
             id = zoneID,
@@ -106,7 +106,7 @@ LifeBoatAPI.Zone = {
             tags = component.tags,
             collisionType = (component.tags["collisionType"] == "sphere" and "sphere") or "box",
             collisionLayer = component.tags["collisionLayer"],
-            transform = spawnData.transform,
+            transform = transform,
             radius = component.tags["radius"] and tonumber(component.tags["radius"]) or 0,
             sizeX = component.tags["sizeX"] and tonumber(component.tags["sizeX"]) or 0,
             sizeY = component.tags["sizeY"] and tonumber(component.tags["sizeY"]) or 0,
