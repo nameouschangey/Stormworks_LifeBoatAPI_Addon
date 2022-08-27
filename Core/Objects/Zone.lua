@@ -33,7 +33,6 @@ LifeBoatAPI.Zone = {
     ---@param cls LifeBoatAPI.Zone
     ---@param savedata LifeBoatAPI.ZoneSaveData
     fromSavedata = function(cls, savedata)
-
         local parentID = savedata.parentID
         local parentType = savedata.parentType
         local parent;

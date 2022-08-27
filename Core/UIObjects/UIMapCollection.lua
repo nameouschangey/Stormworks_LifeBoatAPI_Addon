@@ -14,7 +14,7 @@
 ---@class LifeBoatAPI.UIMapCollection : LifeBoatAPI.UIElement
 LifeBoatAPI.UIMapCollection = {
     ---@param cls LifeBoatAPI.UIMapCollection
-    ---@return LifeBoatAPI.UIMapLine
+    ---@return LifeBoatAPI.UIMapCollection
     fromSavedata = function(cls, savedata)
         local self = {
             savedata = savedata,
@@ -23,7 +23,8 @@ LifeBoatAPI.UIMapCollection = {
             -- methods
             despawn = LifeBoatAPI.lb_dispose,
             show = cls.show,
-            onDispose = cls.onDispose
+            onDispose = cls.onDispose,
+            beginDisplaying = cls.beginDisplaying
         }
         
         return self
@@ -84,7 +85,7 @@ LifeBoatAPI.UIMapCollection = {
 
     --- call this once setup with all the lines/objects/labels wanted
     ---@param self LifeBoatAPI.UIMapCollection
-    init = function(self)
+    beginDisplaying = function(self)
         if self.savedata.steamID == "all" then
             self:show(-1)
         else

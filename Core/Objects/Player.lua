@@ -49,7 +49,6 @@
 ---@field onCommand EventTypes.LBOnCommand_Player
 ---@field onChat EventTypes.LBOnChat_Player
 ---@field onToggleMap EventTypes.LBOnToggleMap_Player
----@field onDespawn nil
 LifeBoatAPI.Player = {
     ---@param cls LifeBoatAPI.Player
     ---@return LifeBoatAPI.Player

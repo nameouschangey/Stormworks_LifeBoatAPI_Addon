@@ -6,17 +6,27 @@
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
 
----@class LifeBoatAPI.UIPopup : LifeBoatAPI.UIElement
+---@class LifeBoatAPI.UIPopupRelativePos : LifeBoatAPI.UIElement
 ---@field savedata table
 ---@field id number uiID
----@field isPopup boolean
-LifeBoatAPI.UIPopup = {
+---@field tickable LifeBoatAPI.ITickable
+---@field parent LifeBoatAPI.GameObject
+LifeBoatAPI.UIPopupRelativePos = {
 
-    ---@return LifeBoatAPI.UIPopup
+    ---@return LifeBoatAPI.UIPopupRelativePos
     fromSavedata = function(cls, savedata)
+
+        local parentID = savedata.parentID
+        local parentType = savedata.parentType
+        local parent;
+        if parentID and parentType then
+            parent = LB.objects:getByType(parentType, parentID)
+        end
+
         local self = {
             savedata = savedata,
             id = savedata.id,
+            parent = parent,
 
             -- methods
             despawn = LifeBoatAPI.lb_dispose,
@@ -25,43 +35,40 @@ LifeBoatAPI.UIPopup = {
             edit = cls.edit
         }
 
-        if savedata.parentID then
-            local parent = LB.objects:getByType(savedata.parentType, savedata.parentID)
-            if parent then
-                parent:attach(self)
-            else
-                LifeBoatAPI.lb_dispose(self)
-                return self
-            end
-        end
-
-        if self.savedata.steamID == "all" then
-            self:show(-1)
+        -- meant to be attached to an object that's now gone, or parent object exists but is disposed
+        if not parent then -- this specific UI type cannot exist without a valid parent 
+            LifeBoatAPI.lb_dispose(self)
         else
-            local player = LB.players.playersBySteamID[savedata.steamID]
-            if player then
-                self:show(player.id)
-            end
+            parent.childZones[#parent.childZones+1] = self
+            parent:attach(self)
         end
 
-        LB.ticks:register(function (listener, context, deltaGameTicks)
-            
-        end)
+        if self.isDisposed then
+            return self
+        end
+
+        -- reminder parent and player are NOT the same
+        -- parent if the object being tracked
+        -- potential to need to start showing from the start of being created, if the player exists
+        local player = LB.players.playersBySteamID[savedata.steamID]
+        if self.savedata.steamID == "all" or player then
+            self:show()
+        end
 
         return self
     end;
 
     ---@param isTemporary boolean|nil if true, this will not persist between reload_scripts
     ---@param player LifeBoatAPI.Player|nil nil displays to all players
-    ---@return LifeBoatAPI.UIPopup
-    new = function(cls, player, text, x, y, z, renderDistance, parent, isTemporary)
+    ---@param parent LifeBoatAPI.Vehicle|LifeBoatAPI.Object
+    ---@return LifeBoatAPI.UIPopupRelativePos
+    new = function(cls, player, text, offset, centerOffset,  renderDistance, parent, isTemporary)
         local obj = cls:fromSavedata({
             id = server.getMapID(),
-            type = "popup",
+            type = "popuprelative",
             steamID = player and player.steamID or "all",
-            x = x,
-            y = y,
-            z = z,
+            offset = offset,
+            centerOffset = centerOffset, 
             text = text,
             renderDistance = renderDistance,
             parentID = parent and parent.id,
@@ -75,51 +82,64 @@ LifeBoatAPI.UIPopup = {
         return obj
     end;
 
-    ---Override the existing values and re-show, leave values nil to leave them unchanged
-    ---@param self LifeBoatAPI.UIPopup
-    ---@param text string|nil
-    ---@param x number|nil
-    ---@param y number|nil
-    ---@param z number|nil
-    ---@param renderDistance number|nil
-    ---@param forceUpdate boolean if true, forcibly refreshes immediately - otherwise waits for the next tick where the position changed anyway
-    edit = function(self, text, centerOffset, translation, renderDistance, forceUpdate)
+    ---@param self LifeBoatAPI.UIPopupRelativePos
+    show = function(self)
+        -- needs to be implemented, as we can end up "showing" this at any time
+        -- what we don't want, is this to be running constantly without any need
+        -- and we don't want to create a new tickable every time a player joins if it's (-1)
+        if not self.tickable then
+            -- begin following the given parent 
+            self.tickable = LB.ticks:register(function (listener, ctx, deltaGameTicks)
+                local save = self.savedata
+                server.removePopup(-1, self.id)
+
+                local peerID;
+                if save.steamID == "all" then
+                    peerID = -1
+                else
+                    local player = LB.players.playersBySteamID[save.steamID]
+                    if player then
+                       peerID = player.id
+                    else
+                        -- singular player we're displaying to, has gone 
+                        listener.isDisposed = true
+                        self.tickable = nil
+                        return
+                    end
+                end
+
+                -- calculate new position
+                if self.parent.nextUpdateTick >= LB.ticks.ticks then
+                    self.parent:getTransform()
+                end
+
+                local transform = save.centerOffset and LifeBoatAPI.Matrix.multiplyMatrix(save.centerOffset, self.parent.transform) or self.parent.transform
+                local offset = save.offset and LifeBoatAPI.Matrix.multiplyMatrix(transform, save.offset) or transform
+                local x,y,z = offset[13], offset[14], offset[15]
+
+                server.setPopup(peerID, save.id, nil, true, save.text, x, y, z, save.renderDistance, nil, nil)
+
+            end, self, 30, 0)
+        end
+    end;
+
+    ---Override the existing values and re-show, provide "false" to mean "don't overwrite the existing value"
+    ---@param self LifeBoatAPI.UIPopupRelativePos
+    ---@param text string|boolean
+    ---@param offset LifeBoatAPI.Matrix|boolean
+    ---@param centerOffset LifeBoatAPI.Matrix|boolean
+    ---@param renderDistance number|false
+    edit = function(self, text, offset, centerOffset, renderDistance)
         local save = self.savedata
         save.text = text or save.text
-        save.x = x or save.x
-        save.y = y or save.y
-        save.z = z or save.z
-        save.renderDistance = renderDistance or save.renderDistance
-
-        if forceUpdate then
-            -- reshow
-            server.removePopup(-1, self.id)
-
-            if self.savedata.steamID == "all" then
-                self:show(-1)
-            else
-                local player = LB.players.playersBySteamID[save.steamID]
-                if player then
-                    self:show(player.id)
-                end
-            end
-        end
+        save.offset = offset or save.offset;
+        save.centerOffset = centerOffset or save.centerOffset;
+        save.renderDistance = renderDistance or save.renderDistance;
     end;
 
-    ---@param self LifeBoatAPI.UIPopup
-    ---@param peerID number
-    show = function(self, peerID)
-        local save = self.savedata
-
-        if save.parentID then
-            server.setPopup(peerID, save.id, nil, true, save.text, save.x, save.y, save.z, save.renderDistance, save.parentType == "vehicle" and save.parentID or nil, save.parentType ~= "vehicle" and save.parentID or nil)
-        else
-            server.setPopup(peerID, save.id, nil, true, save.text, save.x, save.y, save.z, save.renderDistance, nil, nil)
-        end
-    end;
-
-    ---@param self LifeBoatAPI.UIPopup
+    ---@param self LifeBoatAPI.UIPopupRelativePos
     onDispose = function(self)
+        self.tickable.isDisposed = true
         server.removePopup(-1, self.id)
         LB.ui:stopTracking(self)
     end;

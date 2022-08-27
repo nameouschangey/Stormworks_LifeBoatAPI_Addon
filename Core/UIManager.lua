@@ -53,6 +53,9 @@ LifeBoatAPI.UIManager = {
                 element = LifeBoatAPI.UIScreenPopup:fromSavedata(elementSave)
             elseif elementSave.type == "mapcollection" then
                 element = LifeBoatAPI.UIMapCollection:fromSavedata(elementSave)
+                element:beginDisplaying()
+            elseif elementSave.type == "popuprelative" then
+                element = LifeBoatAPI.UIPopupRelativePos:fromSavedata(elementSave)
             end
 
             if element and not element.isDisposed then
@@ -63,23 +66,6 @@ LifeBoatAPI.UIManager = {
                 self.uiBySteamID[steamID][#self.uiBySteamID[steamID]+1] = element
             end
         end
-
-        -- load and show all "-1" everybody UI elements
-        --local uiForAll = self.uiBySteamID["all"]
-        --for i=1, #uiForAll do
-        --    local ui = uiForAll[i]
-        --    ui:show(-1)
-        --end
---
-        ---- handle each player's individual UI by steamID
-        --for iPlayer=1, #LB.players.players do
-        --    local player = LB.players.players[iPlayer]
-        --    local uiBySteamID = self.uiBySteamID[player.steamID] or {}
-        --    for iUI=1, #uiBySteamID do
-        --        local ui = uiBySteamID[iUI]
-        --        ui:show(player.id)
-        --    end
-        --end
 
         -- register for new players connecting
         LB.players.onPlayerConnected:register(self._onPlayerJoin, self)

@@ -13,9 +13,18 @@
 LifeBoatAPI.UIMapObject = {
     ---@return LifeBoatAPI.UIMapObject
     fromSavedata = function(cls, savedata)
+
+        local parentID = savedata.parentID
+        local parentType = savedata.parentType
+        local parent;
+        if parentID and parentType then
+            parent = LB.objects:getByType(parentType, parentID)
+        end
+
         local self = {
             savedata = savedata,
             id = savedata.id,
+            parent = parent,
 
             -- methods
             despawn = LifeBoatAPI.lb_dispose,
@@ -23,14 +32,15 @@ LifeBoatAPI.UIMapObject = {
             onDispose = cls.onDispose
         }
 
-        if savedata.parentID then
-            local parent = LB.objects:getByType(savedata.parentType, savedata.parentID)
-            if parent then
-                parent:attach(self)
-            else
-                LifeBoatAPI.lb_dispose(self)
-                return self
-            end
+        if parentID and not parent then
+            LifeBoatAPI.lb_dispose(self)
+        elseif parent then
+            parent.childZones[#parent.childZones+1] = self
+            parent:attach(self)
+        end
+
+        if self.isDisposed then
+            return self
         end
 
         if self.savedata.steamID == "all" then
