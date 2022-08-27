@@ -73,11 +73,10 @@ LifeBoatAPI.UIPopup = {
             renderDistance = renderDistance,
             parentID = parent and parent.id,
             parentType = parent and parent.savedata.type,
+            isTemporary = isTemporary,
         })
 
-        if not isTemporary then
-            LB.ui:trackEntity(obj)
-        end
+        LB.ui:trackEntity(obj)
 
         return obj
     end;

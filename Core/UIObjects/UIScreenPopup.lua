@@ -54,12 +54,11 @@ LifeBoatAPI.UIScreenPopup = {
             steamID = player and player.steamID or "all",
             screenX = screenX,
             screenY = screenY,
-            text = text
+            text = text,
+            isTemporary = isTemporary,
         })
 
-        if not isTemporary then
-            LB.ui:trackEntity(obj)
-        end
+        LB.ui:trackEntity(obj)
 
         return obj
     end;

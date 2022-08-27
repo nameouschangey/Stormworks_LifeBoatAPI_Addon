@@ -47,12 +47,11 @@ LifeBoatAPI.UIMapLabel = {
             labelType = labelType,
             name = name,
             x = x,
-            z = z
+            z = z,
+            isTemporary = isTemporary
         })
 
-        if not isTemporary then
-            LB.ui:trackEntity(obj)
-        end
+        LB.ui:trackEntity(obj)
 
         return obj
     end;

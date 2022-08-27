@@ -49,11 +49,10 @@ LifeBoatAPI.UIMapLine = {
             startMatrix = startMatrix,
             endMatrix = endMatrix,
             width = width,
+            isTemporary = isTemporary
         })
         
-        if not isTemporary then
-            LB.ui:trackEntity(obj)
-        end
+        LB.ui:trackEntity(obj)
 
         return obj
     end;

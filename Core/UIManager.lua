@@ -14,7 +14,8 @@ LifeBoatAPI.UIManager = {
     new = function(cls)
         local self = {
             savedata = {
-                uiByID = {} -- id : savedata
+                uiByID = {}, -- id : savedata
+                temporaryUIIDs = {} -- list of ids to be killed when re-starting the server, as these are all temporary
             };
             uiByID = {}; -- id: object
             uiBySteamID = { -- id: object[]
@@ -36,7 +37,17 @@ LifeBoatAPI.UIManager = {
     ---@param self LifeBoatAPI.UIManager
     init = function(self)
         g_savedata.uiManager = g_savedata.uiManager or self.savedata
-        self.uiManager = g_savedata.uiManager
+        self.savedata = g_savedata.uiManager
+
+        -- kill all temporaryIDs that shouldn't exist anymore
+        -- prevents UI duplicates between reload_scripts
+        server.announce("removing ui", tostring(#self.savedata.temporaryUIIDs))
+        for i=1, #self.savedata.temporaryUIIDs do
+            local uiID = self.savedata.temporaryUIIDs[i]
+            server.removePopup(-1, uiID)
+            server.removeMapID(-1, uiID)
+        end
+        self.savedata.temporaryUIIDs = {}
 
         -- load all elements (note: only very popular, long running servers - potentially for data leak, due to UI that never gets seen again, by players who never return)
         for id, elementSave in pairs(self.savedata.uiByID) do
@@ -95,7 +106,13 @@ LifeBoatAPI.UIManager = {
             return 
         end
 
-        self.savedata.uiByID[uiElement.id] = uiElement.savedata
+        -- temporary elements are stored separately, so we can safely remove them next reload
+        if uiElement.savedata.isTemporary then
+            self.savedata.temporaryUIIDs[#self.savedata.temporaryUIIDs+1] = uiElement.id
+        else
+            self.savedata.uiByID[uiElement.id] = uiElement.savedata
+        end
+
         self.uiByID[uiElement.id] = uiElement
         self.uiBySteamID[uiElement.savedata.steamID] = uiElement
     end;

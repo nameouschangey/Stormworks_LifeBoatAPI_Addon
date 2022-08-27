@@ -38,12 +38,11 @@ LifeBoatAPI.UIMapCollection = {
             id = server.getMapID(),
             type = "mapcollection",
             steamID = player and player.steamID or "all",
+            isTemporary = isTemporary,
             objects = {}
         })
 
-        if not isTemporary then
-            LB.ui:trackEntity(obj)
-        end
+        LB.ui:trackEntity(obj)
 
         return obj
     end;

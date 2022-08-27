@@ -60,7 +60,7 @@ LifeBoatAPI.UIPopupRelativePos = {
 
     ---@param isTemporary boolean|nil if true, this will not persist between reload_scripts
     ---@param player LifeBoatAPI.Player|nil nil displays to all players
-    ---@param parent LifeBoatAPI.Vehicle|LifeBoatAPI.Object
+    ---@param parent LifeBoatAPI.GameObject
     ---@return LifeBoatAPI.UIPopupRelativePos
     new = function(cls, player, text, offset, centerOffset,  renderDistance, parent, isTemporary)
         local obj = cls:fromSavedata({
@@ -73,11 +73,10 @@ LifeBoatAPI.UIPopupRelativePos = {
             renderDistance = renderDistance,
             parentID = parent and parent.id,
             parentType = parent and parent.savedata.type,
+            isTemporary = isTemporary,
         })
 
-        if not isTemporary then
-            LB.ui:trackEntity(obj)
-        end
+        LB.ui:trackEntity(obj)
 
         return obj
     end;
@@ -90,6 +89,7 @@ LifeBoatAPI.UIPopupRelativePos = {
         if not self.tickable then
             -- begin following the given parent 
             self.tickable = LB.ticks:register(function (listener, ctx, deltaGameTicks)
+                
                 local save = self.savedata
                 server.removePopup(-1, self.id)
 
@@ -101,6 +101,7 @@ LifeBoatAPI.UIPopupRelativePos = {
                     if player then
                        peerID = player.id
                     else
+                        server.announce("DISPOSED", "pop")
                         -- singular player we're displaying to, has gone 
                         listener.isDisposed = true
                         self.tickable = nil
@@ -116,6 +117,7 @@ LifeBoatAPI.UIPopupRelativePos = {
                 local transform = save.centerOffset and LifeBoatAPI.Matrix.multiplyMatrix(save.centerOffset, self.parent.transform) or self.parent.transform
                 local offset = save.offset and LifeBoatAPI.Matrix.multiplyMatrix(transform, save.offset) or transform
                 local x,y,z = offset[13], offset[14], offset[15]
+                server.announce("updated", "pop: " .. tostring(x) .. "," .. tostring(y) .. ", " .. tostring(z))
 
                 server.setPopup(peerID, save.id, nil, true, save.text, x, y, z, save.renderDistance, nil, nil)
 
@@ -139,6 +141,7 @@ LifeBoatAPI.UIPopupRelativePos = {
 
     ---@param self LifeBoatAPI.UIPopupRelativePos
     onDispose = function(self)
+        server.announce("DISPOSED", "DISPOSED onDispose ")
         self.tickable.isDisposed = true
         server.removePopup(-1, self.id)
         LB.ui:stopTracking(self)

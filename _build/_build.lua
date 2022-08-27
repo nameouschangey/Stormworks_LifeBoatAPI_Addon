@@ -40,40 +40,65 @@ if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.
 local combinedText, outText, outFile = _builder:buildAddonScript([[init.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\init.lua]]), params)
 if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[init.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\init.lua]]), outFile, combinedText, outText) end
 
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\Utils.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\Utils.lua]])) end
+
+local combinedText, outText, outFile = _builder:buildAddonScript([[Util\Utils.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\Utils.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\Utils.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\Utils.lua]]), outFile, combinedText, outText) end
+
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\notes.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\notes.lua]])) end
+
+local combinedText, outText, outFile = _builder:buildAddonScript([[Util\notes.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\notes.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\notes.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\notes.lua]]), outFile, combinedText, outText) end
+
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\Disposable.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\Disposable.lua]])) end
+
+local combinedText, outText, outFile = _builder:buildAddonScript([[Util\Disposable.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\Disposable.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\Disposable.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\Disposable.lua]]), outFile, combinedText, outText) end
+
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\CoroutineUtils.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\CoroutineUtils.lua]])) end
+
+local combinedText, outText, outFile = _builder:buildAddonScript([[Util\CoroutineUtils.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\CoroutineUtils.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\CoroutineUtils.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\CoroutineUtils.lua]]), outFile, combinedText, outText) end
+
 if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\Constants.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\Constants.lua]])) end
 
 local combinedText, outText, outFile = _builder:buildAddonScript([[Util\Constants.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\Constants.lua]]), params)
 if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\Constants.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\Constants.lua]]), outFile, combinedText, outText) end
-
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Missions\Mission.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Missions\Mission.lua]])) end
-
-local combinedText, outText, outFile = _builder:buildAddonScript([[Missions\Mission.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Missions\Mission.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Missions\Mission.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Missions\Mission.lua]]), outFile, combinedText, outText) end
 
 if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\Bitwise.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\Bitwise.lua]])) end
 
 local combinedText, outText, outFile = _builder:buildAddonScript([[Util\Bitwise.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\Bitwise.lua]]), params)
 if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\Bitwise.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\Bitwise.lua]]), outFile, combinedText, outText) end
 
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Maths\Vector.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\Vector.lua]])) end
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Maths\Colliders.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\Colliders.lua]])) end
 
-local combinedText, outText, outFile = _builder:buildAddonScript([[Maths\Vector.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\Vector.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Maths\Vector.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\Vector.lua]]), outFile, combinedText, outText) end
-
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Maths\RollingAverage.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\RollingAverage.lua]])) end
-
-local combinedText, outText, outFile = _builder:buildAddonScript([[Maths\RollingAverage.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\RollingAverage.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Maths\RollingAverage.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\RollingAverage.lua]]), outFile, combinedText, outText) end
+local combinedText, outText, outFile = _builder:buildAddonScript([[Maths\Colliders.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\Colliders.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Maths\Colliders.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\Colliders.lua]]), outFile, combinedText, outText) end
 
 if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Maths\Matrix.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\Matrix.lua]])) end
 
 local combinedText, outText, outFile = _builder:buildAddonScript([[Maths\Matrix.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\Matrix.lua]]), params)
 if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Maths\Matrix.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\Matrix.lua]]), outFile, combinedText, outText) end
 
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Maths\Colliders.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\Colliders.lua]])) end
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\CollisionManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\CollisionManager.lua]])) end
 
-local combinedText, outText, outFile = _builder:buildAddonScript([[Maths\Colliders.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\Colliders.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Maths\Colliders.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\Colliders.lua]]), outFile, combinedText, outText) end
+local combinedText, outText, outFile = _builder:buildAddonScript([[Core\CollisionManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\CollisionManager.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\CollisionManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\CollisionManager.lua]]), outFile, combinedText, outText) end
+
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\AddonManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\AddonManager.lua]])) end
+
+local combinedText, outText, outFile = _builder:buildAddonScript([[Core\AddonManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\AddonManager.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\AddonManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\AddonManager.lua]]), outFile, combinedText, outText) end
+
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Missions\Mission.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Missions\Mission.lua]])) end
+
+local combinedText, outText, outFile = _builder:buildAddonScript([[Missions\Mission.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Missions\Mission.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Missions\Mission.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Missions\Mission.lua]]), outFile, combinedText, outText) end
+
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\ObjectManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\ObjectManager.lua]])) end
+
+local combinedText, outText, outFile = _builder:buildAddonScript([[Core\ObjectManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\ObjectManager.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\ObjectManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\ObjectManager.lua]]), outFile, combinedText, outText) end
 
 if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[AddonSimulator\vehicle.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\AddonSimulator\vehicle.lua]])) end
 
@@ -110,11 +135,6 @@ if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.
 local combinedText, outText, outFile = _builder:buildAddonScript([[AddonSimulator\ai.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\AddonSimulator\ai.lua]]), params)
 if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[AddonSimulator\ai.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\AddonSimulator\ai.lua]]), outFile, combinedText, outText) end
 
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[AddonSimulator\addon.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\AddonSimulator\addon.lua]])) end
-
-local combinedText, outText, outFile = _builder:buildAddonScript([[AddonSimulator\addon.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\AddonSimulator\addon.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[AddonSimulator\addon.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\AddonSimulator\addon.lua]]), outFile, combinedText, outText) end
-
 if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\UIManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\UIManager.lua]])) end
 
 local combinedText, outText, outFile = _builder:buildAddonScript([[Core\UIManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\UIManager.lua]]), params)
@@ -130,10 +150,10 @@ if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.
 local combinedText, outText, outFile = _builder:buildAddonScript([[Core\PlayerManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\PlayerManager.lua]]), params)
 if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\PlayerManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\PlayerManager.lua]]), outFile, combinedText, outText) end
 
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\ObjectManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\ObjectManager.lua]])) end
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[AddonSimulator\addon.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\AddonSimulator\addon.lua]])) end
 
-local combinedText, outText, outFile = _builder:buildAddonScript([[Core\ObjectManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\ObjectManager.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\ObjectManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\ObjectManager.lua]]), outFile, combinedText, outText) end
+local combinedText, outText, outFile = _builder:buildAddonScript([[AddonSimulator\addon.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\AddonSimulator\addon.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[AddonSimulator\addon.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\AddonSimulator\addon.lua]]), outFile, combinedText, outText) end
 
 if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\LB.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\LB.lua]])) end
 
@@ -150,50 +170,30 @@ if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.
 local combinedText, outText, outFile = _builder:buildAddonScript([[Core\Event.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\Event.lua]]), params)
 if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\Event.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\Event.lua]]), outFile, combinedText, outText) end
 
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\Utils.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\Utils.lua]])) end
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Maths\Vector.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\Vector.lua]])) end
 
-local combinedText, outText, outFile = _builder:buildAddonScript([[Util\Utils.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\Utils.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\Utils.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\Utils.lua]]), outFile, combinedText, outText) end
+local combinedText, outText, outFile = _builder:buildAddonScript([[Maths\Vector.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\Vector.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Maths\Vector.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\Vector.lua]]), outFile, combinedText, outText) end
 
 if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\Coroutine.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\Coroutine.lua]])) end
 
 local combinedText, outText, outFile = _builder:buildAddonScript([[Core\Coroutine.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\Coroutine.lua]]), params)
 if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\Coroutine.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\Coroutine.lua]]), outFile, combinedText, outText) end
 
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\CollisionManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\CollisionManager.lua]])) end
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Maths\RollingAverage.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\RollingAverage.lua]])) end
 
-local combinedText, outText, outFile = _builder:buildAddonScript([[Core\CollisionManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\CollisionManager.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\CollisionManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\CollisionManager.lua]]), outFile, combinedText, outText) end
-
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\notes.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\notes.lua]])) end
-
-local combinedText, outText, outFile = _builder:buildAddonScript([[Util\notes.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\notes.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\notes.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\notes.lua]]), outFile, combinedText, outText) end
-
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\Disposable.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\Disposable.lua]])) end
-
-local combinedText, outText, outFile = _builder:buildAddonScript([[Util\Disposable.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\Disposable.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\Disposable.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\Disposable.lua]]), outFile, combinedText, outText) end
-
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\CoroutineUtils.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\CoroutineUtils.lua]])) end
-
-local combinedText, outText, outFile = _builder:buildAddonScript([[Util\CoroutineUtils.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\CoroutineUtils.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Util\CoroutineUtils.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Util\CoroutineUtils.lua]]), outFile, combinedText, outText) end
-
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\AddonManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\AddonManager.lua]])) end
-
-local combinedText, outText, outFile = _builder:buildAddonScript([[Core\AddonManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\AddonManager.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\AddonManager.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\AddonManager.lua]]), outFile, combinedText, outText) end
-
-if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\UIObjects\UIScreenPopup.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\UIObjects\UIScreenPopup.lua]])) end
-
-local combinedText, outText, outFile = _builder:buildAddonScript([[Core\UIObjects\UIScreenPopup.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\UIObjects\UIScreenPopup.lua]]), params)
-if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\UIObjects\UIScreenPopup.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\UIObjects\UIScreenPopup.lua]]), outFile, combinedText, outText) end
+local combinedText, outText, outFile = _builder:buildAddonScript([[Maths\RollingAverage.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\RollingAverage.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Maths\RollingAverage.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Maths\RollingAverage.lua]]), outFile, combinedText, outText) end
 
 if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\UIObjects\UIPopup.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\UIObjects\UIPopup.lua]])) end
 
 local combinedText, outText, outFile = _builder:buildAddonScript([[Core\UIObjects\UIPopup.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\UIObjects\UIPopup.lua]]), params)
 if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\UIObjects\UIPopup.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\UIObjects\UIPopup.lua]]), outFile, combinedText, outText) end
+
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\UIObjects\UIPopupRelativePos.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\UIObjects\UIPopupRelativePos.lua]])) end
+
+local combinedText, outText, outFile = _builder:buildAddonScript([[Core\UIObjects\UIPopupRelativePos.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\UIObjects\UIPopupRelativePos.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\UIObjects\UIPopupRelativePos.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\UIObjects\UIPopupRelativePos.lua]]), outFile, combinedText, outText) end
 
 if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\UIObjects\UIMapObject.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\UIObjects\UIMapObject.lua]])) end
 
@@ -249,6 +249,11 @@ if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.
 
 local combinedText, outText, outFile = _builder:buildAddonScript([[Core\Objects\Fire.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\Objects\Fire.lua]]), params)
 if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\Objects\Fire.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\Objects\Fire.lua]]), outFile, combinedText, outText) end
+
+if onLBBuildFileStarted then onLBBuildFileStarted(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\UIObjects\UIScreenPopup.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\UIObjects\UIScreenPopup.lua]])) end
+
+local combinedText, outText, outFile = _builder:buildAddonScript([[Core\UIObjects\UIScreenPopup.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\UIObjects\UIScreenPopup.lua]]), params)
+if onLBBuildFileComplete then onLBBuildFileComplete(LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]]), [[Core\UIObjects\UIScreenPopup.lua]], LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI\Core\UIObjects\UIScreenPopup.lua]]), outFile, combinedText, outText) end
 
 if onLBBuildComplete then onLBBuildComplete(_builder, params, LifeBoatAPI.Tools.Filepath:new([[c:\Workspaces\stormworks\projects\mission_test\addon\_build\libs\LifeBoatAPI]])) end
 --- @diagnostic enable: undefined-global

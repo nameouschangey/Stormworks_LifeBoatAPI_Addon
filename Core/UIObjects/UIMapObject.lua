@@ -78,12 +78,11 @@ LifeBoatAPI.UIMapObject = {
             parentID = parent and parent.id,
             label = label,
             radius = radius,
-            hoverLabel = hoverLabel
+            hoverLabel = hoverLabel,
+            isTemporary = isTemporary,
         })
 
-        if not isTemporary then
-            LB.ui:trackEntity(obj)
-        end
+        LB.ui:trackEntity(obj)
 
         return obj
     end;

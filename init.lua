@@ -33,6 +33,8 @@ require("LifeBoatAPI.Core.UIObjects.UIMapLabel")
 require("LifeBoatAPI.Core.UIObjects.UIMapObject")
 require("LifeBoatAPI.Core.UIObjects.UIPopup")
 require("LifeBoatAPI.Core.UIObjects.UIScreenPopup")
+require("LifeBoatAPI.Core.UIObjects.UIMapCollection")
+require("LifeBoatAPI.Core.UIObjects.UIPopupRelativePos")
 
 require("LifeBoatAPI.Core.AddonManager")
 require("LifeBoatAPI.Core.CollisionManager")
