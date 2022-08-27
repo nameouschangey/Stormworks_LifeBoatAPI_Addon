@@ -103,7 +103,7 @@ LifeBoatAPI.CollisionManager = {
             return
         end
         layer.entityLookup[entity] = true
-
+        entity.collisionPairs = {}
 
         if entity.savedata.type == "zone" then
             ---@cast entity LifeBoatAPI.Zone
@@ -140,6 +140,9 @@ LifeBoatAPI.CollisionManager = {
     stopTracking = function(self, entity)
         local layerName = entity.savedata.collisionLayer -- if this gets messed with, welcome to error land
         local layer = self.layersByName[layerName]
+        if not layer then
+            return
+        end
 
         if entity.savedata.type == "zone" then
             ---@cast entity LifeBoatAPI.Zone
@@ -151,10 +154,10 @@ LifeBoatAPI.CollisionManager = {
                     if collisionPair.collision then
                         LifeBoatAPI.lb_dispose(collisionPair.collision)
                     end
-                    collisionPair.collision.isDisposed = true -- safe, because the collisionPair is entirely within internal implementation
-                    
+
                     object.collisionPairs[zone] = nil -- remove from the other
                 end
+                collisionPair.isDisposed = true -- safe, because the collisionPair is entirely within internal implementation
             end
 
             -- remove from zones list
@@ -174,10 +177,10 @@ LifeBoatAPI.CollisionManager = {
                     if collisionPair.collision then
                         LifeBoatAPI.lb_dispose(collisionPair.collision)
                     end
-                    collisionPair.collision.isDisposed = true -- safe, because the collisionPair is entirely within internal implementation
 
                     zone.collisionPairs[object] = nil -- remove from the other
                 end
+                collisionPair.isDisposed = true -- safe, because the collisionPair is entirely within internal implementation
             end
 
             -- remove from objects list
@@ -189,6 +192,8 @@ LifeBoatAPI.CollisionManager = {
             end
             layer.entityLookup[object] = nil
         end
+
+        entity.collisionPairs = {}
     end;
 }
 
@@ -220,8 +225,8 @@ LifeBoatAPI.CollisionPair = {
         
         -- if nothings listening for the collision, don't bother calculating it - come back in 10 seconds
         if not object.onCollision.hasListeners and not zone.onCollision.hasListeners then
-            self.tickFrequency = 600
-            server.announce("no listeners", "no listeners")
+            self.tickFrequency = 3000
+            server.announce("no listeners", "no listeners " .. tostring(object.onCollision.hasListeners) .. " z " .. tostring(zone.onCollision.hasListeners))
             return
         end
 
@@ -245,7 +250,7 @@ LifeBoatAPI.CollisionPair = {
         local distance = (dx*dx + dy*dy + dz*dz)^0.5
         
         local isCollision = false;
-        if distance < zone.boundingRadius then
+        if distance <= zone.boundingRadius then
             if zoneSave.collisionType == "sphere" then
                 isCollision = LifeBoatAPI.Colliders.isPointInSphere(objTransform, zoneTransform, zoneSave.radius)
             else
@@ -255,14 +260,22 @@ LifeBoatAPI.CollisionPair = {
             self.tickFrequency = 30
         else
             local distanceOut = distance-zone.boundingRadius -- distance outside the radius the object is, determins how quickly to do the next collision check
-            self.tickFrequency = 30 + (distanceOut * 0.001 * 60) // 1 -- 1 second, per 1000 distance away from the edge of the collider
-            server.announce("no collision", "radius: " .. tostring(zone.boundingRadius) .. " -> " .. tostring(distance) .. " out by " .. tostring(distanceOut))
+
+            self.tickFrequency = 30 + (distanceOut * 0.001 * 300) // 1 -- 5 second, per 1000 distance away from the edge of the collider
+
+            if self.tickFrequency > 3000 then -- max timeout 30s at 10Km
+                self.tickFrequency = 3000
+            end
+
+            --server.announce("no collision", "radius: " .. tostring(zone.boundingRadius) .. " -> " .. tostring(distance) .. " out by " .. tostring(distanceOut))
         end
 
+        local collision = self.collision
         -- handle calculated collision
         if isCollision and not collision then
             -- new collision
-            collision = LifeBoatAPI.Collision:new(zone, object)
+            self.collision = LifeBoatAPI.Collision:new(zone, object)
+            collision = self.collision
 
             if object.onCollision.hasListeners then
                 object.onCollision:trigger(object, collision, zone)
@@ -272,12 +285,10 @@ LifeBoatAPI.CollisionPair = {
                 zone.onCollision:trigger(zone, collision, object)
             end
 
-        elseif collision then
+        elseif not isCollision and collision then
             -- end of collision
-            if collision then
-                LifeBoatAPI.lb_dispose(collision);
-                collision = nil
-            end
+            LifeBoatAPI.lb_dispose(collision);
+            self.collision = nil
         end
     end;
 }

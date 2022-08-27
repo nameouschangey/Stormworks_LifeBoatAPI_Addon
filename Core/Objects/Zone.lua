@@ -59,9 +59,9 @@ LifeBoatAPI.Zone = {
 
         if savedata.collisionType == "box" then
             -- sizes are already 1/2'd, (radial rather than edge length)
-            self.radius = ((savedata.sizeX * savedata.sizeX) + (savedata.sizeY * savedata.sizeY) + (savedata.sizeZ*savedata.sizeZ)) ^ 0.5
+            self.boundingRadius = ((savedata.sizeX * savedata.sizeX) + (savedata.sizeY * savedata.sizeY) + (savedata.sizeZ*savedata.sizeZ)) ^ 0.5
         else
-            self.radius = savedata.radius
+            self.boundingRadius = savedata.radius
         end
 
         -- meant to be attached to an object that's now gone, or parent object exists but is disposed

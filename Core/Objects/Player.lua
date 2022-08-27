@@ -65,7 +65,6 @@ LifeBoatAPI.Player = {
             isAdmin = isAdmin;
             isAuth = isAuth;
             displayName = name;
-            velocityOffset = 0,
             transform = LifeBoatAPI.Matrix:newMatrix(),
             nextUpdateTick = 0,
 

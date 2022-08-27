@@ -32,7 +32,7 @@ LifeBoatAPI.Fire = {
             id = savedata.id,
             transform = savedata.transform,
             parent = parent,
-            nextUpdateTick = (parent and LB.ticks.ticks + 30) or math.maxinteger,
+            nextUpdateTick = (parent and 0) or math.maxinteger, -- no parent = never update
 
             onDespawn = LifeBoatAPI.Event:new(),
 
