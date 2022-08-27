@@ -322,6 +322,8 @@ LifeBoatAPI.AddonComponent = {
         local spawnedData, success;
         if self.rawdata.type ~= "zone" then
             spawnedData, success =  server.spawnAddonComponent(matrix, self.location.addon.index, self.location.index, self.index)
+        else
+            success = true
         end
 
         if success then
