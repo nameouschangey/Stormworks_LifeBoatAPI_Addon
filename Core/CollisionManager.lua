@@ -131,8 +131,6 @@ LifeBoatAPI.CollisionManager = {
                 zone.collisionPairs[object] = collisionPair
             end
         end
-
-        server.announce("obj added", "added ".. tostring(entity.savedata.type) .. " on layer " .. tostring(layerName) .. " : " .. tostring(entity))
     end;
 
     ---@param self LifeBoatAPI.CollisionManager
@@ -226,7 +224,6 @@ LifeBoatAPI.CollisionPair = {
         -- if nothings listening for the collision, don't bother calculating it - come back in 10 seconds
         if not object.onCollision.hasListeners and not zone.onCollision.hasListeners then
             self.tickFrequency = 3000
-            server.announce("no listeners", "no listeners " .. tostring(object.onCollision.hasListeners) .. " z " .. tostring(zone.onCollision.hasListeners))
             return
         end
 
@@ -266,8 +263,6 @@ LifeBoatAPI.CollisionPair = {
             if self.tickFrequency > 3000 then -- max timeout 30s at 10Km
                 self.tickFrequency = 3000
             end
-
-            --server.announce("no collision", "radius: " .. tostring(zone.boundingRadius) .. " -> " .. tostring(distance) .. " out by " .. tostring(distanceOut))
         end
 
         local collision = self.collision

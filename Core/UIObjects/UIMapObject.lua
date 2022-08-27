@@ -29,6 +29,16 @@ LifeBoatAPI.UIMapObject = {
                 parent:attach(self)
             else
                 LifeBoatAPI.lb_dispose(self)
+                return self
+            end
+        end
+
+        if self.savedata.steamID == "all" then
+            self:show(-1)
+        else
+            local player = LB.players.playersBySteamID[savedata.steamID]
+            if player then
+                self:show(player.id)
             end
         end
 
@@ -54,7 +64,7 @@ LifeBoatAPI.UIMapObject = {
             markerType = markerType,
             x = x,
             z = z, 
-            parentType = parent and parent.type,
+            parentType = parent and parent.savedata.type,
             parentID = parent and parent.id,
             label = label,
             radius = radius,

@@ -65,21 +65,21 @@ LifeBoatAPI.UIManager = {
         end
 
         -- load and show all "-1" everybody UI elements
-        local uiForAll = self.uiBySteamID["all"]
-        for i=1, #uiForAll do
-            local ui = uiForAll[i]
-            ui:show(-1)
-        end
-
-        -- handle each player's individual UI by steamID
-        for iPlayer=1, #LB.players.players do
-            local player = LB.players.players[iPlayer]
-            local uiBySteamID = self.uiBySteamID[player.steamID] or {}
-            for iUI=1, #uiBySteamID do
-                local ui = uiBySteamID[iUI]
-                ui:show(player.id)
-            end
-        end
+        --local uiForAll = self.uiBySteamID["all"]
+        --for i=1, #uiForAll do
+        --    local ui = uiForAll[i]
+        --    ui:show(-1)
+        --end
+--
+        ---- handle each player's individual UI by steamID
+        --for iPlayer=1, #LB.players.players do
+        --    local player = LB.players.players[iPlayer]
+        --    local uiBySteamID = self.uiBySteamID[player.steamID] or {}
+        --    for iUI=1, #uiBySteamID do
+        --        local ui = uiBySteamID[iUI]
+        --        ui:show(player.id)
+        --    end
+        --end
 
         -- register for new players connecting
         LB.players.onPlayerConnected:register(self._onPlayerJoin, self)

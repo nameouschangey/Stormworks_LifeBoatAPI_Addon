@@ -98,7 +98,7 @@ LifeBoatAPI.Coroutine = {
 	end;
 
 	---@param self LifeBoatAPI.Coroutine note, for Tickable the listener (first param) IS this Coroutine
-	trigger = function(self, _ctx, _delta)
+	trigger = function(self)
 
 		-- no further triggers should do anything
 		if self.isDisposed then

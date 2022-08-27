@@ -29,7 +29,7 @@ LifeBoatAPI.CoroutineUtils = {
     ---@return LifeBoatAPI.Coroutine
     delay = function(numTicks)
         local cr = LifeBoatAPI.Coroutine:start(nil, true)
-        LB.ticks:register(cr.trigger, cr, -1, numTicks); -- no need to worry about disposing, as it will self-dispose after being run once
+        LB.ticks:register(function() cr:trigger() end, cr, -1, numTicks, nil, true); -- no need to worry about disposing, as it will self-dispose after being run once
         return cr
     end;
 
