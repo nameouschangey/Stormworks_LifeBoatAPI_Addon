@@ -66,14 +66,12 @@ LifeBoatAPI.Vehicle = {
             init = cls.init,
             setCollisionLayer = LifeBoatAPI.GameObject.setCollisionLayer
         }
-        server.announce("vehicle", "from savedata")
         return self
     end;
 
     -- needs done slightly differently due to parenting order
     ---@param self LifeBoatAPI.Vehicle
     init = function(self)
-        server.announce("vehicle", "id: " .. tostring(self.id) .. ", table: " .. tostring(self))
         -- ensure position is up to date
         self:getTransform()
 

@@ -110,8 +110,7 @@ LifeBoatAPI.UIPopupRelativePos = {
                 end
 
                 -- calculate new position
-                local currentTick = LB.ticks.ticks
-                if self.nextUpdateTick <= currentTick then
+                if self.nextUpdateTick ~= self.parent.nextUpdateTick then
                     if self.parent.nextUpdateTick <= LB.ticks.ticks then
                         self.parent:getTransform()
                     end

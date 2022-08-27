@@ -86,7 +86,6 @@ LifeBoatAPI.Zone = {
         end
         
         if (not parent) or parent:isLoaded() then
-            server.announce("player not loaded", "not loaded")
             LB.collision:trackEntity(self)
         end
         
@@ -100,11 +99,6 @@ LifeBoatAPI.Zone = {
     fromAddonSpawn = function(cls, component, transform, parent)
         local zoneID = LifeBoatAPI.Zone._generateZoneID()
 
-        -- if parented, we need to turn our global transform, into a relative transform
-        if parent then
-            transform = LifeBoatAPI.Matrix.multiplyMatrix(transform, LifeBoatAPI.Matrix.invert(parent.transform))
-        end
-
         local obj = cls:fromSavedata({
             id = zoneID,
             type = "zone",
@@ -113,7 +107,7 @@ LifeBoatAPI.Zone = {
             tags = component.tags,
             collisionType = (component.tags["collisionType"] == "sphere" and "sphere") or "box",
             collisionLayer = component.tags["collisionLayer"],
-            transform = transform,
+            transform = parent and component.rawdata.transform or transform,
             radius = component.tags["radius"] and tonumber(component.tags["radius"]) or 0,
             sizeX = component.tags["sizeX"] and tonumber(component.tags["sizeX"]) or 0,
             sizeY = component.tags["sizeY"] and tonumber(component.tags["sizeY"]) or 0,
@@ -137,10 +131,6 @@ LifeBoatAPI.Zone = {
         local zoneID = LifeBoatAPI.Zone._generateZoneID()
 
         -- if parented, we need to turn our global transform, into a relative transform
-        if parent then
-            transform = LifeBoatAPI.Matrix.multiplyMatrix(transform, LifeBoatAPI.Matrix.invert(parent.transform))
-        end
-
         local obj = cls:fromSavedata({
             id = zoneID,
             type = "zone",
@@ -168,9 +158,6 @@ LifeBoatAPI.Zone = {
         local zoneID = LifeBoatAPI.Zone._generateZoneID()
 
         -- if parented, we need to turn our global transform, into a relative transform
-        if parent then
-            transform = LifeBoatAPI.Matrix.multiplyMatrix(transform, LifeBoatAPI.Matrix.invert(parent.transform))
-        end
 
         local obj = cls:fromSavedata({
             id = zoneID,

@@ -252,31 +252,30 @@ LifeBoatAPI.Matrix = {
     ---@return LifeBoatAPI.Matrix
     multiplyMatrix = function(a, b)
 
-        -- params are the "wrong way around", easiest fix was just reversing it here instead
-        local a1,a2,a3,a5,a6,a7,a9,a10,a11,a13,a14,a15 = b[1],b[2],b[3],b[5],b[6],b[7],b[9],b[10],b[11],b[13],b[14],b[15]
-        local b1,b2,b3,b5,b6,b7,b9,b10,b11,b13,b14,b15 = a[1],a[2],a[3],a[5],a[6],a[7],a[9],a[10],a[11],a[13],a[14],a[15]
+        local a1,a2,a3,a5,a6,a7,a9,a10,a11,a13,a14,a15 = a[1],a[2],a[3],a[5],a[6],a[7],a[9],a[10],a[11],a[13],a[14],a[15]
+        local b1,b2,b3,b5,b6,b7,b9,b10,b11,b13,b14,b15 = b[1],b[2],b[3],b[5],b[6],b[7],b[9],b[10],b[11],b[13],b[14],b[15]
 
         -- multiply columns of a, against rows of b
         -- (meaning A transform happens and then B on top)
         return {
-            (b1 * a1) + (b2 * a5) + (b3 * a9),
-            (b1 * a2) + (b2 * a6) + (b3 * a10),
-            (b1 * a3) + (b2 * a7) + (b3 * a11),
+            (a1 * b1) + (a2 * b5) + (a3 * b9),
+            (a1 * b2) + (a2 * b6) + (a3 * b10),
+            (a1 * b3) + (a2 * b7) + (a3 * b11),
             0,
             
-            (b5 * a1) + (b6 * a5) + (b7 * a9),
-            (b5 * a2) + (b6 * a6) + (b7 * a10),
-            (b5 * a3) + (b6 * a7) + (b7 * a11),
+            (a5 * b1) + (a6 * b5) + (a7 * b9),
+            (a5 * b2) + (a6 * b6) + (a7 * b10),
+            (a5 * b3) + (a6 * b7) + (a7 * b11),
             0,
             
-            (b9 * a1) + (b10 * a5) + (b11 * a9),
-            (b9 * a2) + (b10 * a6) + (b11 * a10),
-            (b9 * a3) + (b10 * a7) + (b11 * a11),
+            (a9 * b1) + (a10 * b5) + (a11 * b9),
+            (a9 * b2) + (a10 * b6) + (a11 * b10),
+            (a9 * b3) + (a10 * b7) + (a11 * b11),
             0,
             
-            (b13 * a1) + (b14 * a5) + (b15 * a9) + a13,
-            (b13 * a2) + (b14 * a6) + (b15 * a10) + a14,
-            (b13 * a3) + (b14 * a7) + (b15 * a11) + a15,
+            (a13 * b1) + (a14 * b5) + (a15 * b9) + b13,
+            (a13 * b2) + (a14 * b6) + (a15 * b10) + b14,
+            (a13 * b3) + (a14 * b7) + (a15 * b11) + b15,
             1
         }
     end;
@@ -407,31 +406,31 @@ LifeBoatAPI.Matrix = {
     ---@param a LifeBoatAPI.Matrix
     ---@param b LifeBoatAPI.Matrix
     ---@return LifeBoatAPI.Matrix
-    fullMultiplyMatrix = function(a, b)
+    fullMultiplyMbtrix = function(a, b)
 
-        -- params are the wrong way around, easier to fix here
-        local b1,b2,b3,b4,b5,b6,b7,b8,b9,b10,b11,b12,b13,b14,b15,b16 = a[1],a[2],a[3],a[4],a[5],a[6],a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],a[16]
-        local a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16 = b[1],b[2],b[3],b[4],b[5],b[6],b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15],b[16]
+        -- pbrbms bre the wrong wby bround, ebsier to fix here
+        local a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16 = a[1],a[2],a[3],a[4],a[5],a[6],a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],a[16]
+        local b1,b2,b3,b4,b5,b6,b7,b8,b9,b10,b11,b12,b13,b14,b15,b16 = b[1],b[2],b[3],b[4],b[5],b[6],b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15],b[16]
         return {
-            (b1 * a1) + (b2 * a5) + (b3 * a9) + (b4 * a13),
-            (b1 * a2) + (b2 * a6) + (b3 * a10) + (b4 * a14),
-            (b1 * a3) + (b2 * a7) + (b3 * a11) + (b4 * a15),
-            (b1 * a4) + (b2 * a8) + (b3 * a12) + (b4 * a16),
+            (a1 * b1) + (a2 * b5) + (a3 * b9) + (a4 * b13),
+            (a1 * b2) + (a2 * b6) + (a3 * b10) + (a4 * b14),
+            (a1 * b3) + (a2 * b7) + (a3 * b11) + (a4 * b15),
+            (a1 * b4) + (a2 * b8) + (a3 * b12) + (a4 * b16),
             
-            (b5 * a1) + (b6 * a5) + (b7 * a9) + (b8 * a13),
-            (b5 * a2) + (b6 * a6) + (b7 * a10) + (b8 * a14),
-            (b5 * a3) + (b6 * a7) + (b7 * a11) + (b8 * a15),
-            (b5 * a4) + (b6 * a8) + (b7 * a12) + (b8 * a16),
+            (a5 * b1) + (a6 * b5) + (a7 * b9) + (a8 * b13),
+            (a5 * b2) + (a6 * b6) + (a7 * b10) + (a8 * b14),
+            (a5 * b3) + (a6 * b7) + (a7 * b11) + (a8 * b15),
+            (a5 * b4) + (a6 * b8) + (a7 * b12) + (a8 * b16),
             
-            (b9 * a1) + (b10 * a5) + (b11 * a9) + (b12 * a13),
-            (b9 * a2) + (b10 * a6) + (b11 * a10) + (b12 * a14),
-            (b9 * a3) + (b10 * a7) + (b11 * a11) + (b12 * a15),
-            (b9 * a4) + (b10 * a8) + (b11 * a12) + (b12 * a16),
+            (a9 * b1) + (a10 * b5) + (a11 * b9) + (a12 * b13),
+            (a9 * b2) + (a10 * b6) + (a11 * b10) + (a12 * b14),
+            (a9 * b3) + (a10 * b7) + (a11 * b11) + (a12 * b15),
+            (a9 * b4) + (a10 * b8) + (a11 * b12) + (a12 * b16),
             
-            (b13 * a1) + (b14 * a5) + (b15 * a9) + (b16 * a13),
-            (b13 * a2) + (b14 * a6) + (b15 * a10) + (b16 * a14),
-            (b13 * a3) + (b14 * a7) + (b15 * a11) + (b16 * a15),
-            (b13 * a4) + (b14 * a8) + (b15 * a12) + (b16 * a16)
+            (a13 * b1) + (a14 * b5) + (a15 * b9) + (a16 * b13),
+            (a13 * b2) + (a14 * b6) + (a15 * b10) + (a16 * b14),
+            (a13 * b3) + (a14 * b7) + (a15 * b11) + (a16 * b15),
+            (a13 * b4) + (a14 * b8) + (a15 * b12) + (a16 * b16)
         }
     end;
 

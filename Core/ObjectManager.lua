@@ -89,7 +89,6 @@ LifeBoatAPI.ObjectManager = {
         end)
 
         LB.events.onObjectLoad:register(function (l, context, objectID)
-            server.announce("object loaded", tostring(objectID))
             local object = self.objectsByID[objectID] or self.npcsByID[objectID] or self.firesByID[objectID]
             if object then
                 if object.onLoaded.hasListeners then
@@ -111,7 +110,6 @@ LifeBoatAPI.ObjectManager = {
 
                 for i=1, #object.childZones do
                     LB.collision:stopTracking(object.childZones[i])
-                    server.announce("obj unloaded", "removing childZones")
                 end
             end 
         end)

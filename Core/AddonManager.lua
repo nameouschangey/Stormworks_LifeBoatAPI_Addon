@@ -166,11 +166,13 @@ LifeBoatAPI.AddonLocation = {
             local component = withParent[i]
             local parentID = tonumber(component.tags["parentID"])
 
-            if parentID then
-                local parent = self.componentsByID[parentID]
-                if parent then
-                    parent.children[#parent.children+1] = component
-                end
+            ---@type LifeBoatAPI.AddonComponent
+            local parent = self.componentsByID[parentID]
+            if parent then
+                local parentTransformInverse = LifeBoatAPI.Matrix.invert(parent.rawdata.transform)
+                parent.children[#parent.children+1] = component
+                -- handle relative transform
+                component.rawdata.transform = LifeBoatAPI.Matrix.multiplyMatrix(component.rawdata.transform, parentTransformInverse)
             end
         end
 
@@ -356,6 +358,7 @@ LifeBoatAPI.AddonComponent = {
                 local child = self.children[i]
 
                 ---@cast entity LifeBoatAPI.Vehicle|LifeBoatAPI.Object
+                -- do we really want to multiply that? do we not want to find the difference between
                 child:spawn(LifeBoatAPI.Matrix.multiplyMatrix(child.rawdata.transform, matrix), entity)
             end
 
