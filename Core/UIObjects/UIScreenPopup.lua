@@ -28,7 +28,8 @@ LifeBoatAPI.UIScreenPopup = {
             -- methods
             despawn = LifeBoatAPI.lb_dispose,
             show = cls.show,
-            onDispose = cls.onDispose
+            onDispose = cls.onDispose,
+            edit = cls.edit
         }
 
         if self.savedata.steamID == "all" then
@@ -68,6 +69,31 @@ LifeBoatAPI.UIScreenPopup = {
     show = function(self, peerID)
         local save = self.savedata
         server.setPopupScreen(peerID, save.id, nil, true, save.text, save.screenX, save.screenY)
+    end;
+
+
+    ---Override the existing values and re-show, leave values nil to leave them unchanged
+    ---@param self LifeBoatAPI.UIPopup
+    ---@param text string|nil
+    ---@param screenX number|nil
+    ---@param screenY number|nil
+    edit = function(self, text, screenX, screenY)
+        local save = self.savedata
+        save.text = text or save.text
+        save.screenX = screenX or save.screenX
+        save.screenY = screenY or save.screenY
+
+        -- reshow
+        server.removePopup(-1, self.id)
+
+        if self.savedata.steamID == "all" then
+            self:show(-1)
+        else
+            local player = LB.players.playersBySteamID[save.steamID]
+            if player then
+                self:show(player.id)
+            end
+        end
     end;
 
     ---@param self LifeBoatAPI.UIElement

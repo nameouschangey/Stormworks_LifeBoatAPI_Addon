@@ -245,6 +245,8 @@ LifeBoatAPI.Matrix = {
     end;
 
     ---Fast multiply function for simple rotation-translation matrices
+    ---Order of operation is, "apply A's transform" then "apply B's transform second"
+    -- For example, A: "Move forward 10m", B:"Rotate 90* clockwise" => "you're now 10m to the RIGHT of where you started"
     ---@param a LifeBoatAPI.Matrix
     ---@param b LifeBoatAPI.Matrix
     ---@return LifeBoatAPI.Matrix

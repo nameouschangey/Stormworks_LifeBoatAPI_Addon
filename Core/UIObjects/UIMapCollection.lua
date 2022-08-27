@@ -25,15 +25,6 @@ LifeBoatAPI.UIMapCollection = {
             show = cls.show,
             onDispose = cls.onDispose
         }
-
-        if self.savedata.steamID == "all" then
-            self:show(-1)
-        else
-            local player = LB.players.playersBySteamID[savedata.steamID]
-            if player then
-                self:show(player.id)
-            end
-        end
         
         return self
     end;

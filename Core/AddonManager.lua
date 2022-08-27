@@ -302,7 +302,7 @@ LifeBoatAPI.AddonComponent = {
     ---@param position LifeBoatAPI.Matrix
     ---@return LifeBoatAPI.GameObject|nil
     spawnRelativeToPosition = function(self, position)
-        return self:spawn(LifeBoatAPI.Matrix.multiplyMatrix(position, self.rawdata.transform))
+        return self:spawn(LifeBoatAPI.Matrix.multiplyMatrix(self.rawdata.transform, position))
     end;
 
     ---@param self LifeBoatAPI.AddonComponent
@@ -314,7 +314,7 @@ LifeBoatAPI.AddonComponent = {
 
     ---@param self LifeBoatAPI.AddonComponent
     ---@param matrix LifeBoatAPI.Matrix (optional) if not provided, uses the preset matrix from the editor
-    ---@param parent LifeBoatAPI.GameObject|nil
+    ---@param parent LifeBoatAPI.Vehicle|LifeBoatAPI.Object|nil
     ---@return LifeBoatAPI.GameObject|nil
     spawn = function(self, matrix, parent)
         
@@ -353,9 +353,10 @@ LifeBoatAPI.AddonComponent = {
 
             -- spawn children, at relative positions
             for i=1, #self.children do
-                -- is this how we want to do it? (yes)
                 local child = self.children[i]
-                child:spawn(LifeBoatAPI.Matrix.multiplyMatrix(matrix, child.rawdata.transform), entity)
+
+                ---@cast entity LifeBoatAPI.Vehicle|LifeBoatAPI.Object
+                child:spawn(LifeBoatAPI.Matrix.multiplyMatrix(child.rawdata.transform, matrix), entity)
             end
 
             -- vehicle & object want intialized after children created/added

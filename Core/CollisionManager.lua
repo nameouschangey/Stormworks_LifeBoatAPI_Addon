@@ -221,9 +221,9 @@ LifeBoatAPI.CollisionPair = {
         local object = self.object
         local zone = self.zone
         
-        -- if nothings listening for the collision, don't bother calculating it - come back in 10 seconds
+        -- if nothings listening for the collision, don't bother calculating it - come back in 2 seconds
         if not object.onCollision.hasListeners and not zone.onCollision.hasListeners then
-            self.tickFrequency = 3000
+            self.tickFrequency = 120
             return
         end
 

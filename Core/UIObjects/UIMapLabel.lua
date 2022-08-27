@@ -54,8 +54,6 @@ LifeBoatAPI.UIMapLabel = {
             LB.ui:trackEntity(obj)
         end
 
-        obj:show(player and player.id or -1)
-
         return obj
     end;
 

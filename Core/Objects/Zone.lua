@@ -96,8 +96,15 @@ LifeBoatAPI.Zone = {
     ---@param cls LifeBoatAPI.Zone
     ---@param component LifeBoatAPI.AddonComponent
     ---@param transform LifeBoatAPI.Matrix
+    ---@param parent LifeBoatAPI.Vehicle|LifeBoatAPI.Object|nil
     fromAddonSpawn = function(cls, component, transform, parent)
         local zoneID = LifeBoatAPI.Zone._generateZoneID()
+
+        -- if parented, we need to turn our global transform, into a relative transform
+        if parent then
+            transform = LifeBoatAPI.Matrix.multiplyMatrix(transform, LifeBoatAPI.Matrix.invert(parent.transform))
+        end
+
         local obj = cls:fromSavedata({
             id = zoneID,
             type = "zone",
@@ -123,10 +130,17 @@ LifeBoatAPI.Zone = {
     end;
 
     ---@param cls LifeBoatAPI.Zone
+    ---@param parent LifeBoatAPI.Vehicle|LifeBoatAPI.Object
     ---@param isTemporary boolean|nil if true, doesn't track between addon reloads (can simplify mission creation in some specific cases)
     ---@return LifeBoatAPI.Zone
     newSphere = function(cls, collisionLayer, transform, radius, parent, onInitScript, isTemporary)
         local zoneID = LifeBoatAPI.Zone._generateZoneID()
+
+        -- if parented, we need to turn our global transform, into a relative transform
+        if parent then
+            transform = LifeBoatAPI.Matrix.multiplyMatrix(transform, LifeBoatAPI.Matrix.invert(parent.transform))
+        end
+
         local obj = cls:fromSavedata({
             id = zoneID,
             type = "zone",
@@ -147,10 +161,17 @@ LifeBoatAPI.Zone = {
     end;
 
     ---@param cls LifeBoatAPI.Zone
+    ---@param parent LifeBoatAPI.Vehicle|LifeBoatAPI.Object
     ---@param isTemporary boolean|nil if true, doesn't track between addon reloads (can simplify mission creation in some specific cases)
     ---@return LifeBoatAPI.Zone
     newZone = function(cls, collisionLayer, transform, sizeX, sizeY, sizeZ, parent, onInitScript, isTemporary)
         local zoneID = LifeBoatAPI.Zone._generateZoneID()
+
+        -- if parented, we need to turn our global transform, into a relative transform
+        if parent then
+            transform = LifeBoatAPI.Matrix.multiplyMatrix(transform, LifeBoatAPI.Matrix.invert(parent.transform))
+        end
+
         local obj = cls:fromSavedata({
             id = zoneID,
             type = "zone",
@@ -184,7 +205,7 @@ LifeBoatAPI.Zone = {
 
             -- parent must have updated since we last spoke to it
             if self.nextUpdateTick ~= parent.nextUpdateTick then
-                self.transform = LifeBoatAPI.Matrix.multiplyMatrix(parent.transform, self.savedata.transform)
+                self.transform = LifeBoatAPI.Matrix.multiplyMatrix(self.savedata.transform, parent.transform)
                 self.nextUpdateTick = parent.nextUpdateTick
             end
         end

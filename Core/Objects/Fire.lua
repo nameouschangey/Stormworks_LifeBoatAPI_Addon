@@ -71,12 +71,18 @@ LifeBoatAPI.Fire = {
     ---@param component LifeBoatAPI.AddonComponent
     ---@return LifeBoatAPI.Fire
     fromAddonSpawn = function(cls, component, spawnData, parent)
+        -- if parented, we need to turn our global transform, into a relative transform
+        local transform = spawnData.transform;
+        if parent then
+            transform = LifeBoatAPI.Matrix.multiplyMatrix(transform, LifeBoatAPI.Matrix.invert(parent.transform))
+        end
+
         local obj = cls:fromSavedata({
             id = spawnData.id,
             type = "fire",
             tags = component.tags,
             name = component.rawdata.display_name,
-            transform = spawnData.transform,
+            transform = transform,
             parentID = parent and parent.id,
             parentType = parent and parent.savedata.type,
             onInitScript = component.tags["onInitScript"]
@@ -98,7 +104,7 @@ LifeBoatAPI.Fire = {
 
             -- parent must have updated since we last spoke to it
             if self.nextUpdateTick ~= parent.nextUpdateTick then
-                self.transform = LifeBoatAPI.Matrix.multiplyMatrix(parent.transform, self.savedata.transform)
+                self.transform = LifeBoatAPI.Matrix.multiplyMatrix(self.savedata.transform, parent.transform)
                 self.nextUpdateTick = parent.nextUpdateTick
             end
         end

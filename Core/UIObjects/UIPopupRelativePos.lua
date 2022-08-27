@@ -44,6 +44,10 @@ LifeBoatAPI.UIPopup = {
             end
         end
 
+        LB.ticks:register(function (listener, context, deltaGameTicks)
+            
+        end)
+
         return self
     end;
 
@@ -78,7 +82,8 @@ LifeBoatAPI.UIPopup = {
     ---@param y number|nil
     ---@param z number|nil
     ---@param renderDistance number|nil
-    edit = function(self, text, x,y,z, renderDistance)
+    ---@param forceUpdate boolean if true, forcibly refreshes immediately - otherwise waits for the next tick where the position changed anyway
+    edit = function(self, text, centerOffset, translation, renderDistance, forceUpdate)
         local save = self.savedata
         save.text = text or save.text
         save.x = x or save.x
@@ -86,15 +91,17 @@ LifeBoatAPI.UIPopup = {
         save.z = z or save.z
         save.renderDistance = renderDistance or save.renderDistance
 
-        -- reshow
-        server.removePopup(-1, self.id)
+        if forceUpdate then
+            -- reshow
+            server.removePopup(-1, self.id)
 
-        if self.savedata.steamID == "all" then
-            self:show(-1)
-        else
-            local player = LB.players.playersBySteamID[save.steamID]
-            if player then
-                self:show(player.id)
+            if self.savedata.steamID == "all" then
+                self:show(-1)
+            else
+                local player = LB.players.playersBySteamID[save.steamID]
+                if player then
+                    self:show(player.id)
+                end
             end
         end
     end;
