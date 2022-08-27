@@ -82,7 +82,9 @@ LifeBoatAPI.Vehicle = {
             script(self)
         end
         
-        LB.collision:trackEntity(self)
+        if server.getVehicleSimulating(self.id) then
+            LB.collision:trackEntity(self)
+        end
     end;
 
     ---@param cls LifeBoatAPI.Vehicle
@@ -139,6 +141,14 @@ LifeBoatAPI.Vehicle = {
         else
             return self.onLoaded:await()
         end
+    end;
+
+    ---@param self LifeBoatAPI.Object
+    ---@return boolean
+    isLoaded = function(self)
+        -- objects can be despawned without callback, we can check that here
+        local isLoaded, isSpawned = server.getVehicleSimulating(self.id)
+        return isLoaded
     end;
 
     ---@param self LifeBoatAPI.Vehicle

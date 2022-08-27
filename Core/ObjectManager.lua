@@ -71,6 +71,10 @@ LifeBoatAPI.ObjectManager = {
                     vehicle.onLoaded:trigger(vehicle)
                 end
                 LB.collision:trackEntity(vehicle)
+
+                for i=1, #vehicle.childZones do
+                    LB.collision:trackEntity(vehicle.childZones[i])
+                end
             end
         end)
 
@@ -78,6 +82,10 @@ LifeBoatAPI.ObjectManager = {
             local vehicle = self.vehiclesByID[vehicleID]  
             if vehicle then
                 LB.collision:stopTracking(vehicle)
+
+                for i=1, #vehicle.childZones do
+                    LB.collision:stopTracking(vehicle.childZones[i])
+                end
             end 
         end)
 
@@ -86,6 +94,10 @@ LifeBoatAPI.ObjectManager = {
             if object then
                 if object.onLoaded.hasListeners then
                     object.onLoaded:trigger(object)
+
+                    for i=1, #object.childZones do
+                        LB.collision:trackEntity(object.childZones[i])
+                    end
                 end
                 LB.collision:trackEntity(object)
             end
@@ -95,6 +107,10 @@ LifeBoatAPI.ObjectManager = {
             local object = self.objectsByID[objectID] or self.npcsByID[objectID] or self.firesByID[objectID]
             if object then
                 LB.collision:stopTracking(object)
+
+                for i=1, #object.childZones do
+                    LB.collision:stopTracking(object.childZones[i])
+                end
             end 
         end)
         

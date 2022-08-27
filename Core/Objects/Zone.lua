@@ -85,8 +85,10 @@ LifeBoatAPI.Zone = {
             script(self)    
         end
         
-        LB.collision:trackEntity(self)
-
+        if (not parent) or parent:isLoaded() then
+            LB.collision:trackEntity(self)
+        end
+        
         return self
     end;
 

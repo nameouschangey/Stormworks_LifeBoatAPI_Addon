@@ -60,8 +60,10 @@ LifeBoatAPI.Object = {
         if script then
             script(self)
         end
-
-        LB.collision:trackEntity(self)
+        
+        if server.getObjectSimulating(self.id) then
+            LB.collision:trackEntity(self)
+        end
     end;
 
     ---@param cls LifeBoatAPI.Object
