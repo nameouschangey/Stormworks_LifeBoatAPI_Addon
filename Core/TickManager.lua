@@ -64,7 +64,7 @@ LifeBoatAPI.TickManager = {
         end
 
         local tickable;
-        local nextTick = self.ticks + firstTickDelay
+        
         if contextIsTickable then
             tickable = context
             tickable.onExecute = func
@@ -79,18 +79,30 @@ LifeBoatAPI.TickManager = {
             }
         end
 
-        -- safe during iteration, as the loop is fixed length
-        -- as such, new tickables will *never* be evaluated during the tick they are added (hence setting nextTick to ticks+1)
+        -- allow tickables to be run instantly in the tick they're registered, unlikely to be used
+        local nextTick = self.ticks + firstTickDelay;
+
+        if firstTickDelay == 0 then
+            tickable:onExecute(tickable.context, 0)
+
+            if tickable.tickFrequency > 0 then
+                nextTick = self.ticks + tickable.tickFrequency
+            else
+                if tickable.disposables or tickable.onDispose then
+                    LifeBoatAPI.lb_dispose(tickable)
+                else
+                    tickable.isDisposed = true
+                end
+                return tickable
+            end
+        end
+
+        -- set the next tick, without spreading it - we can do that on subsequent ticks
         local nextTickTickables = self.tickables[nextTick]
         if not nextTickTickables then
             self.tickables[nextTick] = {tickable}
         else
             nextTickTickables[#nextTickTickables+1] = tickable
-        end
-
-        -- allow tickables to be run instantly in the tick they're registered, unlikely to be used
-        if firstTickDelay == 0 then
-            tickable:onExecute(tickable.context, 0)
         end
 
         return tickable

@@ -41,7 +41,6 @@ LifeBoatAPI.UIManager = {
 
         -- kill all temporaryIDs that shouldn't exist anymore
         -- prevents UI duplicates between reload_scripts
-        server.announce("removing ui", tostring(#self.savedata.temporaryUIIDs))
         for i=1, #self.savedata.temporaryUIIDs do
             local uiID = self.savedata.temporaryUIIDs[i]
             server.removePopup(-1, uiID)

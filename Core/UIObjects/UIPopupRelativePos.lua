@@ -27,6 +27,7 @@ LifeBoatAPI.UIPopupRelativePos = {
             savedata = savedata,
             id = savedata.id,
             parent = parent,
+            nextUpdateTick = 0,
 
             -- methods
             despawn = LifeBoatAPI.lb_dispose,
@@ -89,10 +90,9 @@ LifeBoatAPI.UIPopupRelativePos = {
         if not self.tickable then
             -- begin following the given parent 
             self.tickable = LB.ticks:register(function (listener, ctx, deltaGameTicks)
-                
+                listener.timesRun = (listener.timesRun and listener.timesRun + 1) or 1
                 local save = self.savedata
-                server.removePopup(-1, self.id)
-
+                
                 local peerID;
                 if save.steamID == "all" then
                     peerID = -1
@@ -101,25 +101,28 @@ LifeBoatAPI.UIPopupRelativePos = {
                     if player then
                        peerID = player.id
                     else
-                        server.announce("DISPOSED", "pop")
                         -- singular player we're displaying to, has gone 
                         listener.isDisposed = true
                         self.tickable = nil
+                        server.removePopup(-1, self.id)
                         return
                     end
                 end
 
                 -- calculate new position
-                if self.parent.nextUpdateTick >= LB.ticks.ticks then
-                    self.parent:getTransform()
+                local currentTick = LB.ticks.ticks
+                if self.nextUpdateTick <= currentTick then
+                    if self.parent.nextUpdateTick <= LB.ticks.ticks then
+                        self.parent:getTransform()
+                    end
+
+                    local transform = save.centerOffset and LifeBoatAPI.Matrix.multiplyMatrix(save.centerOffset, self.parent.transform) or self.parent.transform
+                    local offset = save.offset and LifeBoatAPI.Matrix.multiplyMatrix(transform, save.offset) or transform
+                    local x,y,z = offset[13], offset[14], offset[15]
+                    server.setPopup(peerID, save.id, nil, true, save.text, x, y, z, save.renderDistance, nil, nil)
+
+                    self.nextUpdateTick = self.parent.nextUpdateTick
                 end
-
-                local transform = save.centerOffset and LifeBoatAPI.Matrix.multiplyMatrix(save.centerOffset, self.parent.transform) or self.parent.transform
-                local offset = save.offset and LifeBoatAPI.Matrix.multiplyMatrix(transform, save.offset) or transform
-                local x,y,z = offset[13], offset[14], offset[15]
-                server.announce("updated", "pop: " .. tostring(x) .. "," .. tostring(y) .. ", " .. tostring(z))
-
-                server.setPopup(peerID, save.id, nil, true, save.text, x, y, z, save.renderDistance, nil, nil)
 
             end, self, 30, 0)
         end
@@ -137,11 +140,11 @@ LifeBoatAPI.UIPopupRelativePos = {
         save.offset = offset or save.offset;
         save.centerOffset = centerOffset or save.centerOffset;
         save.renderDistance = renderDistance or save.renderDistance;
+        self.nextUpdateTick = 0
     end;
 
     ---@param self LifeBoatAPI.UIPopupRelativePos
     onDispose = function(self)
-        server.announce("DISPOSED", "DISPOSED onDispose ")
         self.tickable.isDisposed = true
         server.removePopup(-1, self.id)
         LB.ui:stopTracking(self)

@@ -97,8 +97,6 @@ LifeBoatAPI.UIPopup = {
         save.renderDistance = renderDistance or save.renderDistance
 
         -- reshow
-        server.removePopup(-1, self.id)
-
         if self.savedata.steamID == "all" then
             self:show(-1)
         else

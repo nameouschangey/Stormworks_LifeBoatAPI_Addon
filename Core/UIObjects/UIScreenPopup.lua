@@ -83,8 +83,6 @@ LifeBoatAPI.UIScreenPopup = {
         save.screenY = screenY or save.screenY
 
         -- reshow
-        server.removePopup(-1, self.id)
-
         if self.savedata.steamID == "all" then
             self:show(-1)
         else
