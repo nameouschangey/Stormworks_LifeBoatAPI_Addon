@@ -20,8 +20,8 @@ LifeBoatAPI.UIPopup = {
 
             -- methods
             despawn = LifeBoatAPI.lb_dispose,
-            setVisible = cls.setVisible,
-            onDispose = cls.onDispose
+            onDispose = cls.onDispose,
+            show = cls.show
         }
 
         if savedata.parentID then
@@ -30,6 +30,16 @@ LifeBoatAPI.UIPopup = {
                 parent:attach(self)
             else
                 LifeBoatAPI.lb_dispose(self)
+                return self
+            end
+        end
+
+        if self.savedata.steamID == "all" then
+            self:show(-1)
+        else
+            local player = LB.players.playersBySteamID[savedata.steamID]
+            if player then
+                self:show(player.id)
             end
         end
 
@@ -50,7 +60,7 @@ LifeBoatAPI.UIPopup = {
             text = text,
             renderDistance = renderDistance,
             parentID = parent and parent.id,
-            parentType = parent and parent.type,
+            parentType = parent and parent.savedata.type,
         })
 
         if not isTemporary then
