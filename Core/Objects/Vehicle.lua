@@ -63,7 +63,8 @@ LifeBoatAPI.Vehicle = {
             attach = LifeBoatAPI.lb_attachDisposable,
             despawn = LifeBoatAPI.GameObject.despawn,
             onDispose = cls.onDispose,
-            init = cls.init
+            init = cls.init,
+            setCollisionLayer = LifeBoatAPI.GameObject.setCollisionLayer
         }
         server.announce("vehicle", "from savedata")
         return self
@@ -99,8 +100,7 @@ LifeBoatAPI.Vehicle = {
             dynamicType = component.rawdata.dynamic_object_type,
             name = component.rawdata.display_name,
             transform = spawnData.transform,
-            isStatic = component.tags["isStatic"],
-            collisionLayer = not component.tags["isStatic"] and component.tags["collisionLayer"] or nil,
+            collisionLayer = component.tags["collisionLayer"],
             onInitScript = component.tags["onInitScript"]
         })
 
@@ -110,18 +110,16 @@ LifeBoatAPI.Vehicle = {
     end;
 
     ---@param vehicleID number
-    ---@param isStatic boolean if true, will not collide and will not move
     ---@param collisionLayer string|nil (ignored if isStatic) leave nil if this shouldn't perform collision checks
     ---@return LifeBoatAPI.Vehicle
-    fromUntrackedSpawn = function(cls, vehicleID, ownerPeerID, spawnCost, isStatic, collisionLayer, onInitScript)
+    fromUntrackedSpawn = function(cls, vehicleID, ownerPeerID, spawnCost, collisionLayer, onInitScript)
         local obj = cls:fromSavedata({
             id = vehicleID,
             type = "vehicle",
             isAddonSpawn = false,
             ownerSteamID = LB.players.playersByPeerID[ownerPeerID].steamID,
             spawnCost = spawnCost,
-            isStatic = isStatic,
-            collisionLayer = isStatic and nil or collisionLayer,
+            collisionLayer = collisionLayer,
             onInitScript = onInitScript
         })
         
@@ -150,6 +148,8 @@ LifeBoatAPI.Vehicle = {
         local isLoaded, isSpawned = server.getVehicleSimulating(self.id)
         return isLoaded
     end;
+
+
 
     ---@param self LifeBoatAPI.Vehicle
     ---@return LifeBoatAPI.Matrix

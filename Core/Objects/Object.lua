@@ -44,7 +44,8 @@ LifeBoatAPI.Object = {
             despawn = LifeBoatAPI.GameObject.despawn,
             onDispose = cls.onDispose,
             isLoaded = cls.isLoaded,
-            init = cls.init
+            init = cls.init,
+            setCollisionLayer = LifeBoatAPI.GameObject.setCollisionLayer
         }
 
         return self

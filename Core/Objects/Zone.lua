@@ -55,6 +55,7 @@ LifeBoatAPI.Zone = {
             attach = LifeBoatAPI.lb_attachDisposable,
             despawn = LifeBoatAPI.GameObject.despawn,
             onDispose = cls.onDispose,
+            setCollisionLayer = LifeBoatAPI.GameObject.setCollisionLayer
         }
 
         if savedata.collisionType == "box" then
@@ -110,7 +111,6 @@ LifeBoatAPI.Zone = {
             sizeX = component.tags["sizeX"] and tonumber(component.tags["sizeX"]) or 0,
             sizeY = component.tags["sizeY"] and tonumber(component.tags["sizeY"]) or 0,
             sizeZ = component.tags["sizeZ"] and tonumber(component.tags["sizeZ"]) or 0,
-            overrideIsBig = component.tags["overrideIsBig"],
 
             parentID = parent and parent.id,
             parentType = parent and parent.savedata.type,

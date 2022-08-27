@@ -33,4 +33,16 @@
 ---@field onCollision EventTypes.LBOnCollisionStart_GameObject
 LifeBoatAPI.GameObject = {
     despawn = LifeBoatAPI.lb_dispose;
+
+    --- Sets the collision layer this object acts on, or nil to remove it from colliding
+    --- Note that this change is persisted except for "Players, and, is not particularly performant - so avoid calling it too often
+    ---@param self LifeBoatAPI.GameObject
+    ---@param layerName string 
+    setCollisionLayer = function(self, layerName)
+        if layerName ~= self.savedata.collisionLayer then
+            self.savedata.collisionLayer = layerName
+            LB.collision:stopTracking(self)
+            LB.collision:trackEntity(self)
+        end
+    end;
 }
