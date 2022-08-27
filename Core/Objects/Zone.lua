@@ -86,6 +86,7 @@ LifeBoatAPI.Zone = {
         end
         
         if (not parent) or parent:isLoaded() then
+            server.announce("player not loaded", "not loaded")
             LB.collision:trackEntity(self)
         end
         

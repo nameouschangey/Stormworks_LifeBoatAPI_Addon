@@ -142,55 +142,56 @@ LifeBoatAPI.CollisionManager = {
             return
         end
 
-        if entity.savedata.type == "zone" then
-            ---@cast entity LifeBoatAPI.Zone
-            local zone = entity
-            for i=1, #layer.objects do
-                local object = layer.objects[i]
-                local collisionPair = zone.collisionPairs[object]
-                if collisionPair and not collisionPair.isDisposed then
-                    if collisionPair.collision then
-                        LifeBoatAPI.lb_dispose(collisionPair.collision)
+        if entity.collisionPairs then
+            if entity.savedata.type == "zone" then
+                ---@cast entity LifeBoatAPI.Zone
+                local zone = entity
+                for i=1, #layer.objects do
+                    local object = layer.objects[i]
+                    local collisionPair = zone.collisionPairs[object]
+                    if collisionPair and not collisionPair.isDisposed then
+                        if collisionPair.collision then
+                            LifeBoatAPI.lb_dispose(collisionPair.collision)
+                        end
+
+                        object.collisionPairs[zone] = nil -- remove from the other
                     end
-
-                    object.collisionPairs[zone] = nil -- remove from the other
+                    collisionPair.isDisposed = true -- safe, because the collisionPair is entirely within internal implementation
                 end
-                collisionPair.isDisposed = true -- safe, because the collisionPair is entirely within internal implementation
-            end
 
-            -- remove from zones list
-            for i=1, #layer.zones do
-                if layer.zones[i] == zone then
-                    table.remove(layer.zones, i)
-                    break;
-                end
-            end
-            layer.entityLookup[zone] = nil
-        else
-            local object = entity
-            for i=1, #layer.zones do
-                local zone = layer.zones[i]
-                local collisionPair = object.collisionPairs[zone]
-                if collisionPair and not collisionPair.isDisposed then
-                    if collisionPair.collision then
-                        LifeBoatAPI.lb_dispose(collisionPair.collision)
+                -- remove from zones list
+                for i=1, #layer.zones do
+                    if layer.zones[i] == zone then
+                        table.remove(layer.zones, i)
+                        break;
                     end
-
-                    zone.collisionPairs[object] = nil -- remove from the other
                 end
-                collisionPair.isDisposed = true -- safe, because the collisionPair is entirely within internal implementation
-            end
+            else
+                local object = entity
+                for i=1, #layer.zones do
+                    local zone = layer.zones[i]
+                    local collisionPair = object.collisionPairs[zone]
+                    if collisionPair and not collisionPair.isDisposed then
+                        if collisionPair.collision then
+                            LifeBoatAPI.lb_dispose(collisionPair.collision)
+                        end
 
-            -- remove from objects list
-            for i=1, #layer.objects do
-                if layer.objects[i] == object then
-                    table.remove(layer.objects, i)
-                    break;
+                        zone.collisionPairs[object] = nil -- remove from the other
+                    end
+                    collisionPair.isDisposed = true -- safe, because the collisionPair is entirely within internal implementation
+                end
+
+                -- remove from objects list
+                for i=1, #layer.objects do
+                    if layer.objects[i] == object then
+                        table.remove(layer.objects, i)
+                        break;
+                    end
                 end
             end
-            layer.entityLookup[object] = nil
         end
 
+        layer.entityLookup[entity] = nil
         entity.collisionPairs = {}
     end;
 }
@@ -221,6 +222,7 @@ LifeBoatAPI.CollisionPair = {
         local object = self.object
         local zone = self.zone
         
+        server.announce("checking collision", "zone, obj")
         -- if nothings listening for the collision, don't bother calculating it - come back in 2 seconds
         if not object.onCollision.hasListeners and not zone.onCollision.hasListeners then
             self.tickFrequency = 120

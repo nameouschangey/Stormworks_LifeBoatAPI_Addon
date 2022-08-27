@@ -70,11 +70,10 @@ LifeBoatAPI.ObjectManager = {
                 if vehicle.onLoaded.hasListeners then
                     vehicle.onLoaded:trigger(vehicle)
                 end
-                LB.collision:trackEntity(vehicle)
-
                 for i=1, #vehicle.childZones do
                     LB.collision:trackEntity(vehicle.childZones[i])
                 end
+                LB.collision:trackEntity(vehicle)
             end
         end)
 
@@ -90,26 +89,29 @@ LifeBoatAPI.ObjectManager = {
         end)
 
         LB.events.onObjectLoad:register(function (l, context, objectID)
+            server.announce("object loaded", tostring(objectID))
             local object = self.objectsByID[objectID] or self.npcsByID[objectID] or self.firesByID[objectID]
             if object then
                 if object.onLoaded.hasListeners then
                     object.onLoaded:trigger(object)
+                end
 
-                    for i=1, #object.childZones do
-                        LB.collision:trackEntity(object.childZones[i])
-                    end
+                for i=1, #object.childZones do
+                    LB.collision:trackEntity(object.childZones[i])
                 end
                 LB.collision:trackEntity(object)
             end
         end)
 
         LB.events.onObjectUnload:register(function (l, context, objectID)
+            
             local object = self.objectsByID[objectID] or self.npcsByID[objectID] or self.firesByID[objectID]
             if object then
                 LB.collision:stopTracking(object)
 
                 for i=1, #object.childZones do
                     LB.collision:stopTracking(object.childZones[i])
+                    server.announce("obj unloaded", "removing childZones")
                 end
             end 
         end)

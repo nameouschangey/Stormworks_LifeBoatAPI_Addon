@@ -17,8 +17,8 @@
 ---@field type string
 ---@field transform LifeBoatAPI.Matrix
 ---@field collisionLayer string|nil nil means "not collidable"
----@field parentID number
----@field parentType string
+---@field parentID number|nil
+---@field parentType string|nil
 ---@field onInitScript string name of the script to execute on initialization
 
 ---@class LifeBoatAPI.GameObject : LifeBoatAPI.IDisposable
