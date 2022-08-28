@@ -7,7 +7,8 @@
 
 ---@class LifeBoatAPI.Coroutine : LifeBoatAPI.ITickable, LifeBoatAPI.IDisposable
 ---@field yield number (or nil) move onto the next stage
----@field terminate number terminate permanently, should only be used for non-recoverable failure conditions
+---@field next number (nil)
+---@field dispose number terminate permanently, should only be used for non-recoverable failure conditions
 ---@field loop number repeat current stage again
 ---@field await number await the given coroutine/awaitable
 ---@field stages LifeBoatAPI.ICoroutineStage[]
@@ -27,9 +28,9 @@ LifeBoatAPI.Coroutine = {
 	start = function (cls, tickFrequency, beginUntriggered, firstTickDelay)
 		local self = {
 			-- "constants"
-			dispose = -1; -- end coroutine "now" as a failure, does not allow it to be resurrected
-			loop = -2; -- repeat current stage
-			await = -3; -- await a single event finishing
+			dispose = -9999; -- end coroutine "now" as a failure, does not allow it to be resurrected
+			loop = -9998; -- repeat current stage
+			await = -9997; -- await a single event finishing
 
 			-- fields
 			firstTickDelay = firstTickDelay,
@@ -128,18 +129,18 @@ LifeBoatAPI.Coroutine = {
 			local yieldType, result = stage.onExecute(self, deltaTicks, self.lastResult)
 			
 			-- "terminated"
-			if yieldType == -1 then
+			if yieldType == self.dispose then
 				shouldDispose = true;
 				self.lastResult = result
 
 			-- "loop"
-			elseif yieldType == -2 then
+			elseif yieldType == self.loop then
 				-- don't change the stage
 				self.lastResult = result
 				stage.isImmediate = false -- looping cannot be done in immediate mode
 				
 			-- "await"
-			elseif yieldType == -3 then
+			elseif yieldType == self.await then
 				local coroutine = result
                 
 				if not coroutine.isDisposed or not coroutine.isTriggered then
@@ -154,9 +155,10 @@ LifeBoatAPI.Coroutine = {
 					self.current = self.current + 1
 				end
 
-			-- "yield/next" (any nonsense argument or nil, assume the best)
+			-- relative offset if given any other number
+			-- nil is +1
 			else
-				self.current = self.current + 1
+				self.current = self.current + (yieldType or 1)
 				self.lastResult = result
 			end
 
