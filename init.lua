@@ -15,6 +15,7 @@ require("LifeBoatAPI.Util.Disposable")
 require("LifeBoatAPI.Util.Utils")
 
 require("LifeBoatAPI.Missions.Mission")
+require("LifeBoatAPI.Missions.Dialog")
 
 require("LifeBoatAPI.Maths.Colliders")
 require("LifeBoatAPI.Maths.Matrix")

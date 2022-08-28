@@ -1,5 +1,5 @@
 
----@alias LifeBoatAPI.ITickableFunc fun(listener:LifeBoatAPI.ITickable, context:any, deltaGameTicks:number)
+---@alias LifeBoatAPI.ITickableFunc fun(listener:LifeBoatAPI.ITickable, context:any, deltaTicks:number)
 
 ---@class LifeBoatAPI.ITickable : LifeBoatAPI.IDisposable
 ---@field tickFrequency number

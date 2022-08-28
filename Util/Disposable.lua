@@ -6,9 +6,9 @@
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
 ---@class LifeBoatAPI.IDisposable
----@field isDisposed boolean
----@field disposables LifeBoatAPI.IDisposable[]
----@field onDispose function
+---@field isDisposed boolean|nil
+---@field disposables LifeBoatAPI.IDisposable[]|nil
+---@field onDispose fun(self: LifeBoatAPI.IDiposable)|nil
 ---@field attach fun(self:LifeBoatAPI.IDisposable, child:LifeBoatAPI.IDisposable)
 
 -- natural events, tick handlers etc. should watch for isDisposed when they fire

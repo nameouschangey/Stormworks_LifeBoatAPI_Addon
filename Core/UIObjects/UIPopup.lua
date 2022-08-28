@@ -110,12 +110,17 @@ LifeBoatAPI.UIPopup = {
     ---@param self LifeBoatAPI.UIPopup
     ---@param peerID number
     show = function(self, peerID)
+        if self.isDisposed then
+            -- prevent accidentally re-showing a dialog that will then never be re-disposed/destroyed
+            return 
+        end
+
         local save = self.savedata
 
         if save.parentID then
-            server.setPopup(peerID, save.id, nil, true, save.text, save.x, save.y, save.z, save.renderDistance, save.parentType == "vehicle" and save.parentID or nil, save.parentType ~= "vehicle" and save.parentID or nil)
+            server.setPopup(peerID, save.id, nil, save.text ~= "", save.text, save.x, save.y, save.z, save.renderDistance, save.parentType == "vehicle" and save.parentID or nil, save.parentType ~= "vehicle" and save.parentID or nil)
         else
-            server.setPopup(peerID, save.id, nil, true, save.text, save.x, save.y, save.z, save.renderDistance, nil, nil)
+            server.setPopup(peerID, save.id, nil, save.text ~= "", save.text, save.x, save.y, save.z, save.renderDistance, nil, nil)
         end
     end;
 

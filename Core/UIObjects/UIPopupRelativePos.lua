@@ -118,7 +118,7 @@ LifeBoatAPI.UIPopupRelativePos = {
                     local transform = save.centerOffset and LifeBoatAPI.Matrix.multiplyMatrix(save.centerOffset, self.parent.transform) or self.parent.transform
                     local offset = save.offset and LifeBoatAPI.Matrix.multiplyMatrix(transform, save.offset) or transform
                     local x,y,z = offset[13], offset[14], offset[15]
-                    server.setPopup(peerID, save.id, nil, true, save.text, x, y, z, save.renderDistance, nil, nil)
+                    server.setPopup(peerID, save.id, nil, save.text ~= "", save.text, x, y, z, save.renderDistance, nil, nil)
 
                     self.nextUpdateTick = self.parent.nextUpdateTick
                 end
