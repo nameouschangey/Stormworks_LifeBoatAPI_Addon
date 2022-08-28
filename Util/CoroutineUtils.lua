@@ -14,14 +14,18 @@ LifeBoatAPI.CoroutineUtils = {
     --- Useful for UI popups, where you want it to be destroyed after e.g. 10 seconds
     ---@param disposable LifeBoatAPI.IDisposable
     ---@param numTicks number number of ticks to delay before disposing of this object
+    ---@return LifeBoatAPI.Coroutine
     disposeAfterDelay = function(disposable, numTicks)
-        LB.ticks:register(function (listener, context, deltaGameTicks) -- no need to dispose of this listener as it will only run once before disposing of itself
+        local cr = LifeBoatAPI.Coroutine:start(nil, true)
+        LB.ticks:register(function (listener, context, deltaGameTicks) 
             if disposable.onDispose or disposable.disposables then
                 LifeBoatAPI.lb_dispose(disposable)
             else
                 disposable.isDisposed = true
             end
+            cr:trigger()
         end, nil, -1, numTicks)
+        return cr
     end;
 
     ---creates a delay that triggers after the given number of ticks have passed

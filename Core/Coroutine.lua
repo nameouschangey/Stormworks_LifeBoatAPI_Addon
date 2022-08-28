@@ -14,6 +14,7 @@
 ---@field current number
 ---@field isTickRegistered boolean
 ---@field tickFrequency number
+---@field firstTickDelay number|nil number of ticks to wait for the first activation
 ---@field lastResult any|nil 
 ---@field listeners table
 ---@field status number running status: 0: not yet triggered, 1:triggered and running, 2: result(Success) - awaiting next actions
@@ -21,8 +22,9 @@ LifeBoatAPI.Coroutine = {
 	---@param cls LifeBoatAPI.Coroutine
 	---@param tickFrequency number|nil how often to run the coroutine
 	---@param beginUntriggered boolean|nil whether the coroutine should start already triggered/running, or await a specific signal before starting
+	---@param firstTickDelay number|nil
 	---@return LifeBoatAPI.Coroutine
-	start = function (cls, tickFrequency, beginUntriggered)
+	start = function (cls, tickFrequency, beginUntriggered, firstTickDelay)
 		local self = {
 			-- "constants"
 			dispose = -1; -- end coroutine "now" as a failure, does not allow it to be resurrected
@@ -30,6 +32,7 @@ LifeBoatAPI.Coroutine = {
 			await = -3; -- await a single event finishing
 
 			-- fields
+			firstTickDelay = firstTickDelay,
 			tickFrequency = tickFrequency or LifeBoatAPI.TickFrequency.HIGH;
 			lastTick = LB.ticks.gameTicks;
 			current = 1;
@@ -65,7 +68,7 @@ LifeBoatAPI.Coroutine = {
 			-- register with tick
 			if not self.isTickRegistered then
 				self.isTickRegistered = true
-				LB.ticks:register(self.trigger, nil, self.tickFrequency, nil, true)
+				LB.ticks:register(self.trigger, self, self.tickFrequency, self.firstTickDelay, true)
 				self.isPaused = self.status ~= 1
 			end
 
@@ -169,7 +172,7 @@ LifeBoatAPI.Coroutine = {
 			for i=1, #self.listeners do
 				local listener = self.listeners[i]
 				if not listener.isDisposed then
-					self.lastResult = listener.lastResult
+					listener.lastResult = self.lastResult
 					listener:trigger()
 				end
 			end
