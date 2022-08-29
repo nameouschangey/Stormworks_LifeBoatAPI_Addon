@@ -40,7 +40,8 @@ LifeBoatAPI.MissionManager = {
         for missionID, missionSave in pairs(self.savedata.missionsByID) do
             if self.missionTypes[missionSave.type] then
                 local missionType = self.missionTypes[missionSave.type]
-                LifeBoatAPI.MissionInstance:fromSavedata(missionType, missionSave)
+                local instance = LifeBoatAPI.MissionInstance:fromSavedata(missionType, missionSave)
+                instance:runCurrent()
             else
                 self.savedata.missionsByID[missionID] = nil -- remove no longer supported mission type
             end
@@ -61,11 +62,12 @@ LifeBoatAPI.MissionManager = {
 
     ---@param self LifeBoatAPI.MissionManager
     ---@param missionInstance LifeBoatAPI.MissionInstance
-    trackInstance = function(self, missionInstance)
+    trackInstance = function(self, missionInstance, isTemporary)
         if missionInstance.isDisposed or self.missionsByID[missionInstance.id] then
             return
         end
 
+        -- add to live lists
         self.missionsByID[missionInstance.id] = missionInstance
         local missionsByType = self.missionsByType[missionInstance.savedata.type]
         if not missionsByType then
@@ -74,7 +76,10 @@ LifeBoatAPI.MissionManager = {
             missionsByType[#missionsByType+1] = missionInstance
         end
 
-        self.savedata.missionsByID[missionInstance.id] = missionInstance
+        -- persist if not temporary
+        if not isTemporary then
+            self.savedata.missionsByID[missionInstance.id] = missionInstance
+        end
     end;
 
     ---@param self LifeBoatAPI.MissionManager
@@ -134,6 +139,7 @@ LifeBoatAPI.MissionInstance = {
             onDispose = cls.onDispose;
             next = cls.next;
             terminate = LifeBoatAPI.lb_dispose;
+            runCurrent = cls.runCurrent;
         }
 
         return self
@@ -150,9 +156,7 @@ LifeBoatAPI.MissionInstance = {
             current = 0, -- first thing we do with a new mission is call next()
         })
         
-        if not self.isDisposed and not isTemporary then
-            LB.missions:trackInstance(self)
-        end
+        LB.missions:trackInstance(self, isTemporary)
 
         self:next(nil, params)
 
@@ -215,15 +219,13 @@ LifeBoatAPI.MissionInstance = {
 ---@field type string
 LifeBoatAPI.Mission = {
     ---@return Mission
-    new = function(cls, uniqueMissionTypeName, skipGlobalRegistration)
+    new = function(cls, uniqueMissionTypeName)
         local self = {
             type = uniqueMissionTypeName,
             stages = {}
         }
 
-        if not skipGlobalRegistration then
-            LB.missions:registerMissionType(self)
-        end
+        LB.missions:registerMissionType(self)
 
         return self
     end;
