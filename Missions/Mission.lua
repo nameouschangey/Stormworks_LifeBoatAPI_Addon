@@ -10,6 +10,8 @@
 ---@class EventTypes.LBOnMissionComplete : LifeBoatAPI.Event
 ---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, mission:LifeBoatAPI.Mission), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
+---@alias LifeBoatAPI.MissionExecutionFunction fun(mission:LifeBoatAPI.MissionInstance, stage:LifeBoatAPI.MissionStageInstance, params:table)
+
 ---@class LifeBoatAPI.MissionManager
 ---@field missionTypes table<string, LifeBoatAPI.Mission>
 ---@field missionsByID table<number, LifeBoatAPI.MissionInstance>
@@ -105,7 +107,7 @@ LifeBoatAPI.MissionManager = {
 
 -- like a Coroutine that's less, co-routiney?
 ---@class LifeBoatAPI.MissionStage
----@field onExecute fun(mission:LifeBoatAPI.MissionInstance, stage:LifeBoatAPI.MissionStageInstance, params:table)
+---@field onExecute LifeBoatAPI.MissionExecutionFunction
 ---@field id string|nil
 
 ---on dispose, we kill it? right?
@@ -218,11 +220,21 @@ LifeBoatAPI.MissionInstance = {
 ---@field stageIndexesByName table<string, number>
 ---@field type string
 LifeBoatAPI.Mission = {
-    ---@return Mission
+
+    ---@param cls LifeBoatAPI.Mission
+    ---@param uniqueMissionTypeName string
+    ---@return LifeBoatAPI.Mission
     new = function(cls, uniqueMissionTypeName)
         local self = {
             type = uniqueMissionTypeName,
-            stages = {}
+            stages = {},
+            stageIndexesByName = {},
+
+            addStage = cls.addStage,
+            addNamedStage = cls.addNamedStage,
+            start = cls.start,
+            startUnique = cls.startUnique,
+
         }
 
         LB.missions:registerMissionType(self)
@@ -230,10 +242,15 @@ LifeBoatAPI.Mission = {
         return self
     end;
 
+    ---@param self LifeBoatAPI.Mission
+    ---@param fun LifeBoatAPI.MissionExecutionFunction
     addStage = function(self, fun)
         self.stages[#self.stages+1] = {onExecute = fun}
     end;
 
+    ---@param self LifeBoatAPI.Mission
+    ---@param name string
+    ---@param fun LifeBoatAPI.MissionExecutionFunction
     addNamedStage = function(self, name, fun)
         self.stages[#self.stages+1] = {id=name, onExecute = fun}
     end;

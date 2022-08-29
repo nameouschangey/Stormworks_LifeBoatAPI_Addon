@@ -6,15 +6,15 @@
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
 
----@class DialogChoice
+---@class LifeBoatAPI.DialogChoice
 ---@field phrase string
 ---@field next string
----@field customHandler fun(self:DialogChoice, player: LifeBoatAPI.Player, message: string) : boolean
+---@field customHandler fun(self:LifeBoatAPI.DialogChoice, player: LifeBoatAPI.Player, message: string) : boolean
 
----@class DialogLine
+---@class LifeBoatAPI.DialogLine
 ---@field text string
 ---@field id string|nil
----@field choices DialogChoice[]|nil
+---@field choices LifeBoatAPI.DialogChoice[]|nil
 ---@field textWithChoices string
 ---@field showChoices boolean|nil
 ---@field result table|nil
@@ -22,20 +22,20 @@
 ---@field next string|nil
 ---@field terminate boolean|nil
 
----@class Dialog
+---@class LifeBoatAPI.Dialog
 ---@field defaultTimeout number
 ---@field tickFrequency number
----@field lines DialogLine[]
+---@field lines LifeBoatAPI.DialogLine[]
 ---@field lineIndexesByID table<string, number>
 ---@field hasChoices boolean (internal)
 ---@field isProcessed boolean (internal)
-Dialog = {
+LifeBoatAPI.Dialog = {
 
-    ---@param cls Dialog
-    ---@param lines DialogLine[]|nil
+    ---@param cls LifeBoatAPI.Dialog
+    ---@param lines LifeBoatAPI.DialogLine[]|nil
     ---@param defaultTimeout number|nil
     ---@param tickFrequency number|nil
-    ---@return Dialog
+    ---@return LifeBoatAPI.Dialog
     new = function(cls, lines, defaultTimeout, tickFrequency)
         local self = {
             defaultTimeout = defaultTimeout or 120,
@@ -61,8 +61,8 @@ Dialog = {
     end;
 
     --- can just directly add to self.lines
-    ---@param self Dialog
-    ---@param line DialogLine
+    ---@param self LifeBoatAPI.Dialog
+    ---@param line LifeBoatAPI.DialogLine
     addLine = function(self, line)
         self.lines[#self.lines+1] = line
 
@@ -86,27 +86,27 @@ Dialog = {
         end 
     end;
 
-    ---@param self Dialog
+    ---@param self LifeBoatAPI.Dialog
     ---@param popupOrDrawFunc LifeBoatAPI.UIPopup|LifeBoatAPI.UIPopupRelativePos|fun(player, line)
     ---@param player LifeBoatAPI.Player
-    ---@return DialogInstance
+    ---@return LifeBoatAPI.DialogInstance
     start = function(self, popupOrDrawFunc, player)
-        return DialogInstance:new(self, popupOrDrawFunc, player)
+        return LifeBoatAPI.DialogInstance:new(self, popupOrDrawFunc, player)
     end;
 }
 
 
 
----@class DialogInstance : LifeBoatAPI.IDisposable
+---@class LifeBoatAPI.DialogInstance : LifeBoatAPI.IDisposable
 ---@field results table
----@field dialog Dialog
+---@field dialog LifeBoatAPI.Dialog
 ---@field player LifeBoatAPI.Player
----@field onDispose fun(self: DialogInstance) can be overridden if wanted, otherwise nil
----@field drawText fun(player: LifeBoatAPI.Player, line: DialogLine)
-DialogInstance = {
+---@field onDispose fun(self: LifeBoatAPI.DialogInstance) can be overridden if wanted, otherwise nil
+---@field drawText fun(player: LifeBoatAPI.Player, line: LifeBoatAPI.DialogLine)
+LifeBoatAPI.DialogInstance = {
 
-    ---@param cls DialogInstance
-    ---@param dialog Dialog
+    ---@param cls LifeBoatAPI.DialogInstance
+    ---@param dialog LifeBoatAPI.Dialog
     ---@param player LifeBoatAPI.Player
     new = function(cls, dialog, popupOrDrawFunc, player)
 
@@ -180,7 +180,7 @@ DialogInstance = {
         return self
     end;
 
-    ---@param self DialogInstance
+    ---@param self LifeBoatAPI.DialogInstance
     ---@param nextLineName string|nil
     gotoNextLine = function(self, nextLineName)
         -- add result from current line
