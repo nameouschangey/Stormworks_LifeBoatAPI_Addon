@@ -97,10 +97,8 @@ LifeBoatAPI.Zone = {
     ---@param transform LifeBoatAPI.Matrix
     ---@param parent LifeBoatAPI.Vehicle|LifeBoatAPI.Object|nil
     fromAddonSpawn = function(cls, component, transform, parent)
-        local zoneID = LifeBoatAPI.Zone._generateZoneID()
-
         local obj = cls:fromSavedata({
-            id = zoneID,
+            id = LifeBoatAPI.Zone._generateZoneID(),
             type = "zone",
             isAddonSpawn = true,
             name = component.rawdata.display_name,
@@ -128,11 +126,9 @@ LifeBoatAPI.Zone = {
     ---@param isTemporary boolean|nil if true, doesn't track between addon reloads (can simplify mission creation in some specific cases)
     ---@return LifeBoatAPI.Zone
     newSphere = function(cls, collisionLayer, transform, radius, parent, onInitScript, isTemporary)
-        local zoneID = LifeBoatAPI.Zone._generateZoneID()
-
         -- if parented, we need to turn our global transform, into a relative transform
         local obj = cls:fromSavedata({
-            id = zoneID,
+            id = LifeBoatAPI.Zone._generateZoneID(),
             type = "zone",
             collisionType = "sphere",
             transform = transform,
@@ -155,12 +151,8 @@ LifeBoatAPI.Zone = {
     ---@param isTemporary boolean|nil if true, doesn't track between addon reloads (can simplify mission creation in some specific cases)
     ---@return LifeBoatAPI.Zone
     newZone = function(cls, collisionLayer, transform, sizeX, sizeY, sizeZ, parent, onInitScript, isTemporary)
-        local zoneID = LifeBoatAPI.Zone._generateZoneID()
-
-        -- if parented, we need to turn our global transform, into a relative transform
-
         local obj = cls:fromSavedata({
-            id = zoneID,
+            id = LifeBoatAPI.Zone._generateZoneID(),
             type = "zone",
             collisionType = "box",
             transform = transform,

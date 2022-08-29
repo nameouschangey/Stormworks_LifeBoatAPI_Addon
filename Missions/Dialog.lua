@@ -5,9 +5,6 @@
 --- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
----@class DialogRun : LifeBoatAPI.IDisposable
----@field results table
----@field onDispose fun(self: DialogRun)
 
 ---@class DialogChoice
 ---@field phrase string
@@ -18,6 +15,7 @@
 ---@field text string
 ---@field id string|nil
 ---@field choices DialogChoice[]|nil
+---@field textWithChoices string
 ---@field showChoices boolean|nil
 ---@field result table|nil
 ---@field timeout number|nil
@@ -29,6 +27,8 @@
 ---@field tickFrequency number
 ---@field lines DialogLine[]
 ---@field lineIndexesByID table<string, number>
+---@field hasChoices boolean (internal)
+---@field isProcessed boolean (internal)
 Dialog = {
 
     ---@param cls Dialog
@@ -40,124 +40,131 @@ Dialog = {
         local self = {
             defaultTimeout = defaultTimeout or 120,
             tickFrequency = tickFrequency,
-            lines = lines or {},
+            lines = {},
             lineIndexesByID = {},
+            isProcessed = false,
+            hasChoices = true,
 
             ---methods
-            start = cls.start
+            start = cls.start,
+            addLine = cls.addLine,
         }
+
+        -- add initial lines
+        if lines then
+            for i=1, #lines do
+                self:addLine(lines[i])
+            end
+        end
+
         return self
+    end;
+
+    --- can just directly add to self.lines
+    ---@param self Dialog
+    ---@param line DialogLine
+    addLine = function(self, line)
+        self.lines[#self.lines+1] = line
+
+        if line.choices then
+            self.hasChoices = true
+
+            local textParts = {line.text, "\n\n"}
+            for i=1, #line.choices do -- cheaper than string.format
+                textParts[#textParts+1] = "["
+                textParts[#textParts+1] = line.choices[i].phrase
+                textParts[#textParts+1] = "] "
+            end
+
+            line.textWithChoices = table.concat(textParts)
+        else
+            line.textWithChoices = line.text
+        end
+
+        if line.id then
+            self.lineIndexesByID[line.id] = #self.lines
+        end 
     end;
 
     ---@param self Dialog
     ---@param popupOrDrawFunc LifeBoatAPI.UIPopup|LifeBoatAPI.UIPopupRelativePos|fun(player, line)
     ---@param player LifeBoatAPI.Player
-    ---@return DialogRun
+    ---@return DialogInstance
     start = function(self, popupOrDrawFunc, player)
-        ---@cast popupOrDrawFunc fun(player : LifeBoatAPI.Player, line:DialogLine)
-        local drawText = popupOrDrawFunc
-        if type(popupOrDrawFunc) == "table" then
-            ---@cast popupOrDrawFunc LifeBoatAPI.UIPopup|LifeBoatAPI.UIPopupRelativePos
-            local popup = popupOrDrawFunc
+        return DialogInstance:new(self, popupOrDrawFunc, player)
+    end;
+}
 
-            ---@param line DialogLine
-            drawText = function(player, line)
-                
-                if line.showChoices and line.choices then
-                    local textParts = {line.text, "\n\n"}
-                    for i=1, #line.choices do
-                        textParts[#textParts+1] = "["
-                        textParts[#textParts+1] = line.choices[i].phrase
-                        textParts[#textParts+1] = "] "
-                    end
 
-                    popup:edit(table.concat(textParts))
-                else
-                    popup:edit(line.text)
-                end
-            end
-        end
 
-        -- process the tree to get the list of indexesById and find if there's choices
-        local hasChoices = false
-        for i=1, #self.lines do
-            local line = self.lines[i]
-            if line.choices then
-                hasChoices = true
-            end
-            if line.id then
-                self.lineIndexesByID[line.id] = i
-            end
-        end
-        
+---@class DialogInstance : LifeBoatAPI.IDisposable
+---@field results table
+---@field dialog Dialog
+---@field player LifeBoatAPI.Player
+---@field onDispose fun(self: DialogInstance) can be overridden if wanted, otherwise nil
+---@field drawText fun(player: LifeBoatAPI.Player, line: DialogLine)
+DialogInstance = {
+
+    ---@param cls DialogInstance
+    ---@param dialog Dialog
+    ---@param player LifeBoatAPI.Player
+    new = function(cls, dialog, popupOrDrawFunc, player)
+
         -- begin the dialog
-        local disposable = {
+        local self = {
             disposables = {},
-            attach = LifeBoatAPI.lb_attachDisposable,
-            results = {}
+            results = {},
+            dialog = dialog,
+            player = player,
+            lineIndex = 1,
+            line = dialog.lines[1],
+
+            -- methods
+            attach = LifeBoatAPI.lb_attachDisposable;
+            gotoNextLine = cls.gotoNextLine;
         }
 
-        -- draw the first text
-        local resultContainer = disposable.results -- container for the results that come out during this
-        local lineIndex = 1
-        local line = self.lines[lineIndex]
-        local lineTimeout = (not line.choices and (line.timeout or self.defaultTimeout)) or nil
-        if lineTimeout then
-            lineTimeout = LB.ticks.ticks + lineTimeout
+        -- create the draw function to use
+        ---@cast popupOrDrawFunc fun(player : LifeBoatAPI.Player, line:DialogLine)
+        self.drawText = popupOrDrawFunc
+        if type(popupOrDrawFunc) == "table" then
+            ---@cast popupOrDrawFunc LifeBoatAPI.UIPopup|LifeBoatAPI.UIPopupRelativePos
+            self.drawText = function(player, line)
+                popupOrDrawFunc:edit(line.textWithChoices)
+            end
         end
 
-        drawText(player, line)
+        -- initial line timeout
+        self.lineTimeout = (not self.line.choices and (self.line.timeout or self.dialog.defaultTimeout)) or nil
+        if self.lineTimeout then
+            self.lineTimeout = LB.ticks.ticks + self.lineTimeout
+        end
+        self.drawText(player, self.line)
 
-        -- helper func
-        local gotoNextLine = function(nextLineName)
-            if line.result then
-                for k,v in pairs(line.result) do
-                    resultContainer[k] = v
-                end
-            end
 
-            nextLineName = nextLineName or line.next
-            lineIndex = (nextLineName and self.lineIndexesByID[nextLineName]) or (lineIndex + 1)
-            local nextLine = self.lines[lineIndex]
-
-            -- current line said to terminate, or next line doesn't exist
-            if line.terminate ~= nil or not nextLine then
-                drawText(player, {text=""})
-                LifeBoatAPI.lb_dispose(disposable)
-            else
-                -- move to the next line
-                line = nextLine
-                lineTimeout = (not line.choices and (line.timeout or self.defaultTimeout)) or nil
-                if lineTimeout then
-                    lineTimeout = LB.ticks.ticks + lineTimeout
-                end
-
-                drawText(player, line)
-            end
-        end;
-        
         -- run the main thread for the dialog
-        disposable.disposables[#disposable.disposables+1] = LB.ticks:register(function (listener, context, deltaTicks)
-            if lineTimeout then
-                if lineTimeout < LB.ticks.ticks then
-                    gotoNextLine()
+        self.disposables[#self.disposables+1] = LB.ticks:register(function (listener, context, deltaTicks)
+            if self.lineTimeout then
+                if self.lineTimeout < LB.ticks.ticks then
+                    self:gotoNextLine()
                 end
             end
         end, nil, self.tickFrequency or 30)
 
         -- setup listener for player replies, if we've got choices to make in this dialogue tree
-        if hasChoices then
-            disposable.disposables[#disposable.disposables+1] = player.onChat:register(function (l, context, player, message)
+        if dialog.hasChoices then
+            self.disposables[#self.disposables+1] = player.onChat:register(function (l, context, player, message)
+                local line = self.line
                 if line.choices then
                     for i=1, #line.choices do
                         local choice = line.choices[i]
                         if choice.customHandler then
                             if choice:customHandler(player, message) then
-                                gotoNextLine(choice.next)
+                                self:gotoNextLine(choice.next)
                                 return;
                             end
                         elseif message:find(choice.phrase, 0, true) then
-                            gotoNextLine(choice.next)
+                            self:gotoNextLine(choice.next)
                             return
                         end
                     end
@@ -165,6 +172,42 @@ Dialog = {
             end)
         end
 
-        return disposable
+        --- if the player disconnects during the chat, we kill the dialog
+        self.disposables[#self.disposables+1] = player.onDespawn:register(function (l, context, object)
+            LifeBoatAPI.lb_dispose(self)
+        end)
+
+        return self
+    end;
+
+    ---@param self DialogInstance
+    ---@param nextLineName string|nil
+    gotoNextLine = function(self, nextLineName)
+        -- add result from current line
+        if self.line.result then
+            for k,v in pairs(self.line.result) do
+                self.results[k] = v
+            end
+        end
+
+        -- find the next line
+        nextLineName = nextLineName or self.line.next
+        self.lineIndex = (nextLineName and self.dialog.lineIndexesByID[nextLineName]) or (self.lineIndex + 1)
+        local nextLine = self.dialog.lines[self.lineIndex]
+
+        -- current line said to terminate, or next line doesn't exist
+        if self.line.terminate ~= nil or not nextLine then
+            self.drawText(self.player, {text=""})
+            LifeBoatAPI.lb_dispose(self)
+        else
+            -- move to the next line
+            self.line = nextLine
+            self.lineTimeout = (not self.line.choices and (self.line.timeout or self.dialog.defaultTimeout)) or nil
+            if self.lineTimeout then
+                self.lineTimeout = LB.ticks.ticks + self.lineTimeout
+            end
+
+            self.drawText(self.player, self.line)
+        end
     end;
 }

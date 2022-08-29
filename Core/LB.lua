@@ -11,6 +11,7 @@
 ---@field addons LifeBoatAPI.AddonManager
 ---@field objects LifeBoatAPI.ObjectManager
 ---@field ui LifeBoatAPI.UIManager
+---@field missions LifeBoatAPI.MissionManager
 ---@field savedata table
 LifeBoatAPI.LB = {
 
@@ -29,6 +30,7 @@ LifeBoatAPI.LB = {
         self.addons = LifeBoatAPI.AddonManager:new();
         self.objects = LifeBoatAPI.ObjectManager:new();
         self.ui = LifeBoatAPI.UIManager:new();
+        self.missions = LifeBoatAPI.MissionManager:new()
         return self
     end;
 
@@ -42,6 +44,11 @@ LifeBoatAPI.LB = {
         self.players:init()
         self.objects:init()
         self.ui:init()
+        self.missions:init()
+
+        if self.events.onCreate.hasListeners then
+            self.events.onCreate:trigger()
+        end
     end;
 }
 

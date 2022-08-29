@@ -8,8 +8,8 @@
 ---@class EventTypes.OnTick : LifeBoatAPI.ENVCallbackEvent
 ---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, gameTicks:number), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
----@class EventTypes.OnCreate : LifeBoatAPI.ENVCallbackEvent
----@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, isWorldCreate:boolean), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@class EventTypes.OnCreate : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class EventTypes.OnDestroy : LifeBoatAPI.ENVCallbackEvent
 ---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
@@ -151,7 +151,7 @@
 ---@field trackPlayerMap boolean whether to track via player object API
 LifeBoatAPI.EventManager = {
 	callbacksList = {
-		"onCreate", "onDestroy",
+	    "onDestroy",
 		"onCustomCommand", "onChatMessage",
 		"onPlayerJoin", "onPlayerSit", "onPlayerUnsit", "onPlayerRespawn", "onPlayerLeave", "onPlayerDie",
 		"onCharacterSit", "onCharacterUnsit", 

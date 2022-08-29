@@ -8,143 +8,249 @@
 ---@section Mission
 
 ---@class EventTypes.LBOnMissionComplete : LifeBoatAPI.Event
----@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, mission:LifeBoatAPI.Mission, isFirstComplete:boolean), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, mission:LifeBoatAPI.Mission), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
-
----@class LifeBoatAPI.Mission
----@field cr LifeBoatAPI.Coroutine
+---@class LifeBoatAPI.MissionManager
+---@field missionTypes table<string, LifeBoatAPI.Mission>
+---@field missionsByID table<number, LifeBoatAPI.MissionInstance>
+---@field missionsByType table<string, LifeBoatAPI.MissionInstance[]>
 ---@field savedata table
----@field name string
----@field stages LifeBoatAPI.Mission[]
----@field onInit function
----@field onCleanup function|nil
----@field parentSaveData table
----@field parent LifeBoatAPI.Mission
----@field onComplete EventTypes.LBOnMissionComplete second param is "true" if it's the first time completion, or "false" if it's notifying completion after script-reload
----@field isInitialized boolean
----@field current number
-LifeBoatAPI.Mission = {
-    ---@param cls LifeBoatAPI.Mission
-    ---@param name string unique name for this mission part, used in g_savedata
-    ---@param onInit fun(self:LifeBoatAPI.Mission)
-    ---@param onCleanup fun(self:LifeBoatAPI.Mission)|nil
-    ---@param parentSaveData table|nil (default: g_savedata) Allows for non-global missions, provide any persistence table as the parent of this mission (e.g. player save-data for per-player missions etc.)
-    ---@param parent LifeBoatAPI.Mission|nil (default: nil) if you're setting this, you'll likely be better using mission:addStage() instead
-    ---@return LifeBoatAPI.Mission
-    new = function(cls, name, onInit, onCleanup, parentSaveData, parent)
-        local self = {
-            parentSaveData = parentSaveData;
-            parent = parent;
-            name = name; -- "BrothersInBeer:GatheringIngredients";
-            cr = LifeBoatAPI.Coroutine:start();
-            stages = {};
-            current = 1;
-            onComplete = LifeBoatAPI.Event:new();
-            isInitialized = false;
+LifeBoatAPI.MissionManager = {
 
-            --- methods
-            start = cls.start;
-            next = cls.next;
-            onInit = onInit;
-            onCleanup = onCleanup;
+    ---@param cls LifeBoatAPI.MissionManager
+    ---@return LifeBoatAPI.MissionManager
+    new = function(cls)
+        local self = {
+            savedata = {
+                missionsByID = {}
+            },
+            missionsByType = {},
+            missionsByID = {},
+            missionTypes = {}
         }
 
-        -- improve the onComplete await function, to take into account savedata/isComplete
-        self.onComplete.await = function(event)
-            local cr = LifeBoatAPI.Coroutine:start(nil, true)
-            if self.savedata and self.savedata.isComplete then
-                cr:trigger()
+        return self
+    end;
+
+    ---@param self LifeBoatAPI.MissionManager
+    init = function(self)
+        g_savedata.missionManager = g_savedata.missionManager or self.savedata
+        self.savedata = g_savedata.missionManager
+
+        for missionID, missionSave in pairs(self.savedata.missionsByID) do
+            if self.missionTypes[missionSave.type] then
+                local missionType = self.missionTypes[missionSave.type]
+                LifeBoatAPI.MissionInstance:fromSavedata(missionType, missionSave)
             else
-                self.onComplete:register(function(l)
-                    l.isDisposed = true
-                    cr:trigger()
-                end, nil, 1)
+                self.savedata.missionsByID[missionID] = nil -- remove no longer supported mission type
             end
-            return cr
+        end
+    end;
+
+    ---@param self LifeBoatAPI.MissionManager
+    ---@param id number
+    getMission = function(self, id)
+        return self.missionsByID[id]
+    end;
+
+    ---@param self LifeBoatAPI.MissionManager
+    ---@param mission LifeBoatAPI.Mission
+    registerMissionType = function(self, mission)
+        self.missionTypes[mission.type] = mission
+    end;
+
+    ---@param self LifeBoatAPI.MissionManager
+    ---@param missionInstance LifeBoatAPI.MissionInstance
+    trackInstance = function(self, missionInstance)
+        if missionInstance.isDisposed or self.missionsByID[missionInstance.id] then
+            return
+        end
+
+        self.missionsByID[missionInstance.id] = missionInstance
+        local missionsByType = self.missionsByType[missionInstance.savedata.type]
+        if not missionsByType then
+            self.missionsByType[missionInstance.savedata.type] = {missionInstance}
+        else
+            missionsByType[#missionsByType+1] = missionInstance
+        end
+
+        self.savedata.missionsByID[missionInstance.id] = missionInstance
+    end;
+
+    ---@param self LifeBoatAPI.MissionManager
+    ---@param missionInstance LifeBoatAPI.MissionInstance
+    stopTracking = function(self, missionInstance)
+        
+        self.missionsByID[missionInstance.id] = nil
+        self.savedata.missionsByID[missionInstance.id] = nil
+        local missionsOfType = self.missionsByType[missionInstance.savedata.type]
+        if missionsOfType then
+            for i=1, #missionsOfType do
+                local mission = missionsOfType[i]
+                if mission.id == missionInstance.id then
+                    table.remove(missionsOfType, i)
+                    break
+                end
+            end
+        end
+    end;
+}
+
+---@class LifeBoatAPI.MissionStageInstance : LifeBoatAPI.IDisposable
+
+-- like a Coroutine that's less, co-routiney?
+---@class LifeBoatAPI.MissionStage
+---@field onExecute fun(mission:LifeBoatAPI.MissionInstance, stage:LifeBoatAPI.MissionStageInstance, params:table)
+---@field id string|nil
+
+---on dispose, we kill it? right?
+---@class LifeBoatAPI.MissionInstance : LifeBoatAPI.IDisposable
+---@field savedata table
+---@field mission LifeBoatAPI.Mission
+---@field onComplete LifeBoatAPI.Event
+---@field terminate fun(self:LifeBoatAPI.MissionInstance)
+---@field currentStage LifeBoatAPI.MissionStageInstance
+---@field id number
+LifeBoatAPI.MissionInstance = {
+    _generateID = function()
+        g_savedata.lb_nextMissionID = g_savedata.lb_nextMissionID and (g_savedata.lb_nextMissionID + 1) or 0
+        return g_savedata.lb_nextMissionID
+    end;
+
+    ---@param cls LifeBoatAPI.MissionInstance
+    ---@param mission LifeBoatAPI.Mission
+    ---@param savedata table
+    fromSavedata = function(cls, mission, savedata)
+        local self = {
+            id = savedata.id,
+            savedata = savedata,
+            onComplete = LifeBoatAPI.Event;
+            mission = mission;
+            disposables = {};
+            currentStage = nil;
+
+            --methods 
+            attach = LifeBoatAPI.lb_attachDisposable;
+            onDispose = cls.onDispose;
+            next = cls.next;
+            terminate = LifeBoatAPI.lb_dispose;
+        }
+
+        return self
+    end;
+
+    ---@param cls LifeBoatAPI.MissionInstance
+    ---@param mission LifeBoatAPI.Mission
+    ---@param isTemporary boolean|nil
+    ---@param params table|nil
+    new = function(cls, mission, params, isTemporary)
+        local self = cls:fromSavedata(mission, {
+            id = LifeBoatAPI.MissionInstance._generateID(),
+            missionType = mission.type,
+            current = 0, -- first thing we do with a new mission is call next()
+        })
+        
+        if not self.isDisposed and not isTemporary then
+            LB.missions:trackInstance(self)
+        end
+
+        self:next(nil, params)
+
+        return self
+    end;
+
+    ---@param self LifeBoatAPI.MissionInstance
+    ---@param name string|nil (optional) name to skip to, otherwise goes to the next stage numerically
+    ---@param params table|nil (optional) params object to pass to the next stage, most useful for the initial spawn otherwise can pass just straight via savedata
+    next = function(self, name, params)
+        -- dispose of the current stage
+        if self.currentStage then
+            LifeBoatAPI.lb_dispose(self.currentStage)
+            self.currentStage = nil
+        end
+
+        self.savedata.lastResult = params
+
+        -- move to the next stage and run it
+        self.savedata.current = (name and self.mission.stageIndexesByName[name]) or (self.savedata.current + 1)
+        self:runCurrent()
+    end;
+
+    ---@param self LifeBoatAPI.MissionInstance
+    runCurrent = function(self)
+        local stageData = self.mission.stages[self.savedata.current]
+        if not stageData then
+            self:terminate()
+        else
+            self.currentStage = {
+                stageData = stageData,
+                disposables = {},
+                attach = LifeBoatAPI.lb_attachDisposable
+            }
+
+            stageData.onExecute(self, self.currentStage, self.savedata.lastResult) -- run the next stage
+        end
+    end;
+
+    ---@param self LifeBoatAPI.MissionInstance
+    onDispose = function (self)
+        if self.onComplete.hasListeners then
+            self.onComplete:trigger(self)
+        end
+
+        if self.currentStage then
+            LifeBoatAPI.lb_dispose(self.currentStage)
+        end
+
+        LB.missions:stopTracking(self)
+    end;
+}
+
+
+-- could have the registration here too?
+-- would mean that LB events onInit can be used from anywhere else - easier to connect things to
+---@class LifeBoatAPI.Mission
+---@field stages LifeBoatAPI.MissionStage[]
+---@field stageIndexesByName table<string, number>
+---@field type string
+LifeBoatAPI.Mission = {
+    ---@return Mission
+    new = function(cls, uniqueMissionTypeName, skipGlobalRegistration)
+        local self = {
+            type = uniqueMissionTypeName,
+            stages = {}
+        }
+
+        if not skipGlobalRegistration then
+            LB.missions:registerMissionType(self)
         end
 
         return self
     end;
 
-    ---@param self LifeBoatAPI.Mission
-    ---@param name string unique name for this mission part, used in g_savedata
-    ---@param onInitFunction fun(self:LifeBoatAPI.Mission)
-    ---@param onCleanupFunction fun(self:LifeBoatAPI.Mission)|nil
-    addStage = function(self, name, onInitFunction, onCleanupFunction)
-        local mission = LifeBoatAPI.Mission:new(name, onInitFunction, onCleanupFunction, nil, self)
-        self.stages[#self.stages+1] = mission
-        return mission
+    addStage = function(self, fun)
+        self.stages[#self.stages+1] = {onExecute = fun}
     end;
 
-    ---@param self LifeBoatAPI.Mission
-    ---@param nextStage number|nil stage to go to, or nil for the next one
-    next = function(self, nextStage)
-        nextStage = nextStage or (self.current + 1)
+    addNamedStage = function(self, name, fun)
+        self.stages[#self.stages+1] = {id=name, onExecute = fun}
+    end;
 
-        local stage = self.stages[self.current]
-        if not stage.savedata.isComplete then
-            stage:complete()
-        end
-
-        stage = self.stages[nextStage]
-
-        if stage then
-            stage:start()
+    ---Ensures this mission is unique, and gets the existing instance of it if one is there
+    startUnique = function(self, params)
+        -- find an existing version of this mission if it already exists
+        local missionsOfType = LB.missions.missionsByType[self.type]
+        if missionsOfType and #missionsOfType > 0 then
+            return missionsOfType[1]
         else
-            self:complete()
+            return self:start(params)
         end
     end;
 
     ---@param self LifeBoatAPI.Mission
-    start = function(self)
-        -- get savedata from parent, or global if not provided
-        if self.parent then
-            self.parent.savedata[self.name] = self.parent.savedata[self.name] or {
-                stage = 1
-            }
-            self.savedata = self.parent.savedata[self.name]
-
-        elseif self.parentSaveData then
-            self.parentSaveData[self.name] = self.parentSaveData[self.name] or {
-                stage = 1
-            }
-            self.savedata = self.parentSaveData[self.name]
-            
-        else
-            g_savedata.lb_missions = g_savedata.lb_missions or {}
-            g_savedata.lb_missions[self.name] = g_savedata.lb_missions[self.name] or {
-                stage = 1
-            }
-            self.savedata = g_savedata.lb_missions[self.name]
-        end
-
-        if self.savedata.isComplete then
-            self:complete()
-            return    
-        end
-
-        self:onInit()
-        self.isInitialized = true
-        self.stages[self.current]:start()
+    start = function(self, params, isTemporary)
+        return LifeBoatAPI.MissionInstance:new(self, isTemporary)
     end;
-
-    ---@param self LifeBoatAPI.Mission
-    complete = function(self)
-        if self.onComplete.hasListeners then
-            self.onComplete:trigger(self, not self.savedata.isComplete) -- triggers with "true" if it's the first time the mission has completed, false if it's just notifying that it *is* complete
-        end
-
-        self.savedata.isComplete = true
-
-        if self.isInitialized and self.onCleanup then
-            self:onCleanup()
-            self.isInitialized = false
-        end
-
-        if self.parent then
-            self.parent:next()
-        end
-    end
 }
 
 ---@endsection
