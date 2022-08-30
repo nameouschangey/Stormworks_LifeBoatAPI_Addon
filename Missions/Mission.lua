@@ -152,6 +152,7 @@ LifeBoatAPI.MissionInstance = {
     ---@param mission LifeBoatAPI.Mission
     ---@param parent LifeBoatAPI.MissionInstance|nil
     ---@param savedata table
+    ---@return LifeBoatAPI.MissionInstance
     fromSavedata = function(cls, mission, savedata, parent)
         local self = {
             id = savedata.id,
@@ -177,8 +178,10 @@ LifeBoatAPI.MissionInstance = {
         local childMission = mission.stages[self.savedata.current]
         if childMission then
             self.currentStage = LifeBoatAPI.MissionInstance:fromSavedata(childMission, self.savedata.currentChildSavedata, self)
-            local listener= self.currentStage.onComplete:register(function (l, ctx, ...)
-                self:next() -- when the child stage finishes, we move on
+            local listener= self.currentStage.onComplete:register(function (l, context, mission)
+                if self.currentStage ~= nil then
+                    self:next() -- when the child stage finishes, we move on
+                end
             end)
             self.disposables[#self.disposables+1] = listener
         end
@@ -212,8 +215,9 @@ LifeBoatAPI.MissionInstance = {
     next = function(self, name, params)
         -- dispose of the current stage
         if self.currentStage then
-            self.currentStage:terminate()
-            self.currentStage = nil
+            local stage = self.currentStage
+            self.currentStage = nil -- hack to prevent double-next from listener
+            stage:terminate()
         end
 
         self.savedata.lastResult = params
@@ -232,6 +236,13 @@ LifeBoatAPI.MissionInstance = {
             end
         else
             self.currentStage = LifeBoatAPI.MissionInstance:fromSavedata(stageData, self.savedata.currentChildSavedata, self)
+            local listener= self.currentStage.onComplete:register(function (l, context, mission)
+                if self.currentStage ~= nil then -- prevent duplicate-next from destroying child
+                    self:next() -- when the child stage finishes, we move on
+                end
+            end)
+            self.disposables[#self.disposables+1] = listener
+
             stageData.onExecute(self.currentStage, self.currentStage.savedata, self.savedata.lastResult) -- run the next stage
         end
     end;
