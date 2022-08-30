@@ -170,6 +170,9 @@ LifeBoatAPI.ObjectCollection = {
             savedata = savedata,
             objects = {},
             disposables = {},
+
+            despawn = LifeBoatAPI.lb_dispose,
+            attach = LifeBoatAPI.lb_attachDisposable,
         }
 
         for i=1, #savedata.objects do
