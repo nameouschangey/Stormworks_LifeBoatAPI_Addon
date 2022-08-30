@@ -5,12 +5,22 @@
 --- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
+--[[
+todo:
+we do actually want a Mission system that has nested stages
+this allows a "the thing that spawns it, checks if it exists, and adds it as disposable in the same place"
+    meaning that cleanup is far more reliable & we don't need to remember to explicitly despawn everything each time
+
+how should it work?
+    the same overall Mission -> instance thing
+    how does the instance track which children it has?
+    current -> child -> current -> etc?
+    and then next() moves along, and if there's nothing there, that stage completes and we check the parent?
+]]
 ---@section Mission
 
 ---@class EventTypes.LBOnMissionComplete : LifeBoatAPI.Event
 ---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, mission:LifeBoatAPI.Mission), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
-
----@alias LifeBoatAPI.MissionExecutionFunction fun(mission:LifeBoatAPI.MissionInstance, stage:LifeBoatAPI.MissionStageInstance, missionSave:table, stageSave:table, params:table)
 
 ---@class LifeBoatAPI.MissionManager
 ---@field missionTypes table<string, LifeBoatAPI.Mission>
@@ -58,8 +68,6 @@ LifeBoatAPI.MissionManager = {
                 else
                     missionsByTypeList[#missionsByTypeList+1] = instance
                 end
-
-                instance:runCurrent()
             else
                 self.savedata.missionsByID[missionID] = nil -- remove no longer supported mission type
             end
@@ -119,16 +127,11 @@ LifeBoatAPI.MissionManager = {
     end;
 }
 
----@class LifeBoatAPI.MissionStageInstance : LifeBoatAPI.IDisposable
 
--- like a Coroutine that's less, co-routiney?
----@class LifeBoatAPI.MissionStage
----@field onExecute LifeBoatAPI.MissionExecutionFunction
----@field id string|nil
+---@alias LifeBoatAPI.MissionExecutionFunction fun(stage:LifeBoatAPI.MissionInstance, savedata:table, params:table)
 
 ---@class EventTypes.LBOnMissionComplete : LifeBoatAPI.Event
 ---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, mission:LifeBoatAPI.MissionInstance), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
-
 
 ---on dispose, we kill it? right?
 ---@class LifeBoatAPI.MissionInstance : LifeBoatAPI.IDisposable
@@ -136,7 +139,8 @@ LifeBoatAPI.MissionManager = {
 ---@field mission LifeBoatAPI.Mission
 ---@field onComplete EventTypes.LBOnMissionComplete
 ---@field terminate fun(self:LifeBoatAPI.MissionInstance)
----@field currentStage LifeBoatAPI.MissionStageInstance
+---@field currentStage LifeBoatAPI.MissionInstance
+---@field parent LifeBoatAPI.MissionInstance
 ---@field id number
 LifeBoatAPI.MissionInstance = {
     _generateID = function()
@@ -146,14 +150,16 @@ LifeBoatAPI.MissionInstance = {
 
     ---@param cls LifeBoatAPI.MissionInstance
     ---@param mission LifeBoatAPI.Mission
+    ---@param parent LifeBoatAPI.MissionInstance|nil
     ---@param savedata table
-    fromSavedata = function(cls, mission, savedata)
+    fromSavedata = function(cls, mission, savedata, parent)
         local self = {
             id = savedata.id,
             savedata = savedata,
             mission = mission;
             disposables = {};
             currentStage = nil;
+            parent = parent;
 
             onComplete = LifeBoatAPI.Event:new();
 
@@ -162,8 +168,20 @@ LifeBoatAPI.MissionInstance = {
             onDispose = cls.onDispose;
             next = cls.next;
             terminate = LifeBoatAPI.lb_dispose;
-            runCurrent = cls.runCurrent;
         }
+
+        -- now run our initial function
+        self.mission.onExecute(self, self.savedata, self.savedata.lastResult)
+
+        -- instantiate the current child
+        local childMission = mission.stages[self.savedata.current]
+        if childMission then
+            self.currentStage = LifeBoatAPI.MissionInstance:fromSavedata(childMission, self.savedata.currentChildSavedata, self)
+            local listener= self.currentStage.onComplete:register(function (l, ctx, ...)
+                self:next() -- when the child stage finishes, we move on
+            end)
+            self.disposables[#self.disposables+1] = listener
+        end
 
         return self
     end;
@@ -172,17 +190,18 @@ LifeBoatAPI.MissionInstance = {
     ---@param mission LifeBoatAPI.Mission
     ---@param isTemporary boolean|nil
     ---@param params table|nil
-    new = function(cls, mission, params, isTemporary)
+    new = function(cls, mission, params, isTemporary, parent)
         local self = cls:fromSavedata(mission, {
             id = LifeBoatAPI.MissionInstance._generateID(),
             type = mission.type,
-            current = 0, -- first thing we do with a new mission is call next()
-            stageSave = {}
-        })
+            current = 1, -- first thing we do with a new mission is call next()
+            currentChildSavedata = {},
+            lastResult = params
+        }, parent)
         
-        LB.missions:trackInstance(self, isTemporary)
-
-        self:next(nil, params)
+        if not parent then
+            LB.missions:trackInstance(self, isTemporary)
+        end
 
         return self
     end;
@@ -193,33 +212,27 @@ LifeBoatAPI.MissionInstance = {
     next = function(self, name, params)
         -- dispose of the current stage
         if self.currentStage then
-            LifeBoatAPI.lb_dispose(self.currentStage)
+            self.currentStage:terminate()
             self.currentStage = nil
         end
 
         self.savedata.lastResult = params
+        self.savedata.currentChildSavedata = {}
 
-        self.savedata.stageSave = {}
-
-        -- move to the next stage and run it
+        -- move to the next stage and run it if it exists
         self.savedata.current = (name and self.mission.stageIndexesByName[name]) or (self.savedata.current + 1)
-        self:runCurrent()
-    end;
-
-    ---@param self LifeBoatAPI.MissionInstance
-    runCurrent = function(self)
+        
         local stageData = self.mission.stages[self.savedata.current]
         if not stageData then
-            self:terminate()
+            if self.parent then
+                -- parent side we also need to handle killing this one; perhaps we need to actually do 
+                self.parent:next(nil, params)
+            else
+                self:terminate()
+            end
         else
-            self.currentStage = {
-                savedata = self.savedata.stageSave,
-                stageData = stageData,
-                disposables = {},
-                attach = LifeBoatAPI.lb_attachDisposable
-            }
-
-            stageData.onExecute(self, self.currentStage, self.savedata, self.savedata.stageSave, self.savedata.lastResult) -- run the next stage
+            self.currentStage = LifeBoatAPI.MissionInstance:fromSavedata(stageData, self.savedata.currentChildSavedata, self)
+            stageData.onExecute(self.currentStage, self.currentStage.savedata, self.savedata.lastResult) -- run the next stage
         end
     end;
 
@@ -230,10 +243,12 @@ LifeBoatAPI.MissionInstance = {
         end
 
         if self.currentStage then
-            LifeBoatAPI.lb_dispose(self.currentStage)
+            self.currentStage:terminate()
         end
 
-        LB.missions:stopTracking(self)
+        if not self.parent then
+            LB.missions:stopTracking(self)
+        end
     end;
 }
 
@@ -241,20 +256,29 @@ LifeBoatAPI.MissionInstance = {
 -- could have the registration here too?
 -- would mean that LB events onInit can be used from anywhere else - easier to connect things to
 ---@class LifeBoatAPI.Mission
----@field stages LifeBoatAPI.MissionStage[]
+---@field stages LifeBoatAPI.Mission[]
 ---@field stageIndexesByName table<string, number>
 ---@field type string
+---@field parent LifeBoatAPI.Mission
+---@field onExecute LifeBoatAPI.MissionExecutionFunction
 LifeBoatAPI.Mission = {
 
     ---@param cls LifeBoatAPI.Mission
     ---@param uniqueMissionTypeName string
+    ---@param fun LifeBoatAPI.MissionExecutionFunction
+    ---@param parent LifeBoatAPI.Mission|nil
     ---@return LifeBoatAPI.Mission
-    new = function(cls, uniqueMissionTypeName)
+    new = function(cls, uniqueMissionTypeName, fun, parent)
         local self = {
             type = uniqueMissionTypeName,
+            parent = parent,
             stages = {},
             stageIndexesByName = {},
+            
+            -- working method
+            onExecute = fun;
 
+            -- methods
             addStage = cls.addStage,
             addNamedStage = cls.addNamedStage,
             start = cls.start,
@@ -269,15 +293,24 @@ LifeBoatAPI.Mission = {
 
     ---@param self LifeBoatAPI.Mission
     ---@param fun LifeBoatAPI.MissionExecutionFunction
+    ---@return LifeBoatAPI.Mission
     addStage = function(self, fun)
-        self.stages[#self.stages+1] = {onExecute = fun}
+        local child = LifeBoatAPI.Mission:new("", fun, self)
+        self.stages[#self.stages+1] = child
+        return child
     end;
 
     ---@param self LifeBoatAPI.Mission
     ---@param name string
     ---@param fun LifeBoatAPI.MissionExecutionFunction
+    ---@return LifeBoatAPI.Mission
     addNamedStage = function(self, name, fun)
-        self.stages[#self.stages+1] = {id=name, onExecute = fun}
+        local child = LifeBoatAPI.Mission:new(name, fun, self)
+
+        self.stages[#self.stages+1] = child
+        self.stageIndexesByName[name] = #self.stages
+        
+        return child
     end;
 
     ---Ensures this mission is unique, and gets the existing instance of it if one is there
