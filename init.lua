@@ -25,6 +25,8 @@ require("LifeBoatAPI.Core.Objects.Object")
 require("LifeBoatAPI.Core.Objects.Player")
 require("LifeBoatAPI.Core.Objects.Vehicle")
 require("LifeBoatAPI.Core.Objects.Zone")
+require("LifeBoatAPI.Core.Objects.ObjectCollection")
+
 
 require("LifeBoatAPI.Core.UIObjects.UIElement")
 require("LifeBoatAPI.Core.UIObjects.UIMapLabel")
