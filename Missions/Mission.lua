@@ -224,7 +224,11 @@ LifeBoatAPI.MissionInstance = {
         end
 
         self.savedata.lastResult = params
-        self.savedata.currentChildSavedata = {}
+        self.savedata.currentChildSavedata = {
+            current = 1, -- first thing we do with a new mission is call next()
+            currentChildSavedata = {},
+            lastResult = params
+        }
 
         -- move to the next stage and run it if it exists
         self.savedata.current = (name and self.mission.stageIndexesByName[name]) or (self.savedata.current + 1)
