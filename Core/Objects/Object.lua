@@ -73,7 +73,7 @@ LifeBoatAPI.Object = {
     fromAddonSpawn = function(cls, component, spawnData)
         local obj = cls:fromSavedata({
             id = spawnData.id,
-            type = "object",
+            type = component.rawdata.type == "character" and "npc" or "object",
             isAddonSpawn = true,
             tags = component.tags,
             dynamicType = component.rawdata.dynamic_object_type,
@@ -94,10 +94,10 @@ LifeBoatAPI.Object = {
     ---@param isStatic boolean
     ---@param collisionLayer string|nil leave nil if this shouldn't perform collision checks, e.g. static objects
     ---@return LifeBoatAPI.Object
-    fromUntrackedSpawn = function(cls, objectID, isStatic, collisionLayer, onInitScript)
+    fromUntrackedSpawn = function(cls, objectID, isNPC, isStatic, collisionLayer, onInitScript)
         local obj = cls:fromSavedata({
             id = objectID,
-            type = "object",
+            type = isNPC and "npc" or "object",
             isAddonSpawn = false,
             isStatic = isStatic,
             collisionLayer = collisionLayer,
@@ -130,11 +130,12 @@ LifeBoatAPI.Object = {
     ---@param self LifeBoatAPI.Object
     ---@return LifeBoatAPI.Coroutine
     awaitLoaded = function(self)
-        local isLoaded = server.getObjectSimulating(self.id)
+        local isLoaded = self:isLoaded()
         if isLoaded then
+            server.announce("obj", "loaded cr")
             return LifeBoatAPI.Coroutine:start()
-
         else
+            server.announce("obj", "not yet loaded")
             return self.onLoaded:await()
         end
     end;

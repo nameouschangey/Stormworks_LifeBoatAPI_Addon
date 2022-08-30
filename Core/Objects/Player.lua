@@ -68,6 +68,7 @@ LifeBoatAPI.Player = {
             nextUpdateTick = 0,
 
             --- events
+            onDespawn = LifeBoatAPI.Event:new();
             onTeleport = LifeBoatAPI.Event:new();
             onButtonPress = LifeBoatAPI.Event:new();
             onSeatedChange = LifeBoatAPI.Event:new();

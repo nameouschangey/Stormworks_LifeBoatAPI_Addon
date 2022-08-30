@@ -10,7 +10,7 @@
 ---@class EventTypes.LBOnMissionComplete : LifeBoatAPI.Event
 ---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, mission:LifeBoatAPI.Mission), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
----@alias LifeBoatAPI.MissionExecutionFunction fun(mission:LifeBoatAPI.MissionInstance, stage:LifeBoatAPI.MissionStageInstance, params:table)
+---@alias LifeBoatAPI.MissionExecutionFunction fun(mission:LifeBoatAPI.MissionInstance, stage:LifeBoatAPI.MissionStageInstance, savedata:table, params:table)
 
 ---@class LifeBoatAPI.MissionManager
 ---@field missionTypes table<string, LifeBoatAPI.Mission>
@@ -28,7 +28,14 @@ LifeBoatAPI.MissionManager = {
             },
             missionsByType = {},
             missionsByID = {},
-            missionTypes = {}
+            missionTypes = {},
+
+            --methods
+            init = cls.init,
+            registerMissionType = cls.registerMissionType,
+            getMission = cls.getMission,
+            trackInstance = cls.trackInstance,
+            stopTracking = cls.stopTracking,
         }
 
         return self
@@ -110,11 +117,15 @@ LifeBoatAPI.MissionManager = {
 ---@field onExecute LifeBoatAPI.MissionExecutionFunction
 ---@field id string|nil
 
+---@class EventTypes.LBOnMissionComplete : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, mission:LifeBoatAPI.MissionInstance), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+
+
 ---on dispose, we kill it? right?
 ---@class LifeBoatAPI.MissionInstance : LifeBoatAPI.IDisposable
 ---@field savedata table
 ---@field mission LifeBoatAPI.Mission
----@field onComplete LifeBoatAPI.Event
+---@field onComplete EventTypes.LBOnMissionComplete
 ---@field terminate fun(self:LifeBoatAPI.MissionInstance)
 ---@field currentStage LifeBoatAPI.MissionStageInstance
 ---@field id number
@@ -131,10 +142,11 @@ LifeBoatAPI.MissionInstance = {
         local self = {
             id = savedata.id,
             savedata = savedata,
-            onComplete = LifeBoatAPI.Event;
             mission = mission;
             disposables = {};
             currentStage = nil;
+
+            onComplete = LifeBoatAPI.Event:new();
 
             --methods 
             attach = LifeBoatAPI.lb_attachDisposable;
@@ -154,7 +166,7 @@ LifeBoatAPI.MissionInstance = {
     new = function(cls, mission, params, isTemporary)
         local self = cls:fromSavedata(mission, {
             id = LifeBoatAPI.MissionInstance._generateID(),
-            missionType = mission.type,
+            type = mission.type,
             current = 0, -- first thing we do with a new mission is call next()
         })
         
@@ -194,7 +206,7 @@ LifeBoatAPI.MissionInstance = {
                 attach = LifeBoatAPI.lb_attachDisposable
             }
 
-            stageData.onExecute(self, self.currentStage, self.savedata.lastResult) -- run the next stage
+            stageData.onExecute(self, self.currentStage, self.savedata, self.savedata.lastResult) -- run the next stage
         end
     end;
 

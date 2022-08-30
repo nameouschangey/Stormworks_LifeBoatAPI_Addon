@@ -168,9 +168,11 @@ LifeBoatAPI.EventManager = {
 	new = function(cls)
         local self = {
             callbacksList = cls.callbacksList,
+            onCreate = LifeBoatAPI.Event:new(),
+            
             --- methods
             init = cls.init,
-            _setupAdditionalEvents = cls._setupAdditionalEvents
+            _setupAdditionalEvents = cls._setupAdditionalEvents,
         }
         for i=1, #self.callbacksList do
             local callbackName = self.callbacksList[i]

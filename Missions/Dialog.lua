@@ -134,6 +134,12 @@ LifeBoatAPI.DialogInstance = {
             end
         end
 
+        player:attach(self)
+
+        if self.isDisposed then
+            return self
+        end
+
         -- initial line timeout
         self.lineTimeout = (not self.line.choices and (self.line.timeout or self.dialog.defaultTimeout)) or nil
         if self.lineTimeout then
@@ -171,11 +177,6 @@ LifeBoatAPI.DialogInstance = {
                 end
             end)
         end
-
-        --- if the player disconnects during the chat, we kill the dialog
-        self.disposables[#self.disposables+1] = player.onDespawn:register(function (l, context, object)
-            LifeBoatAPI.lb_dispose(self)
-        end)
 
         return self
     end;
