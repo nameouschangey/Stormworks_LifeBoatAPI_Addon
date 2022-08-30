@@ -41,7 +41,6 @@ LifeBoatAPI.UIPopupRelativePos = {
         if not parent then -- this specific UI type cannot exist without a valid parent 
             LifeBoatAPI.lb_dispose(self)
         else
-            parent.childZones[#parent.childZones+1] = self
             parent:attach(self)
         end
 

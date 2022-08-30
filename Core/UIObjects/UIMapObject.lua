@@ -35,7 +35,6 @@ LifeBoatAPI.UIMapObject = {
         if parentID and not parent then
             LifeBoatAPI.lb_dispose(self)
         elseif parent then
-            parent.childZones[#parent.childZones+1] = self
             parent:attach(self)
         end
 
