@@ -110,7 +110,13 @@ LifeBoatAPI.Vehicle = {
     ---@param vehicleID number
     ---@param collisionLayer string|nil (ignored if isStatic) leave nil if this shouldn't perform collision checks
     ---@return LifeBoatAPI.Vehicle
-    fromUntrackedSpawn = function(cls, vehicleID, ownerPeerID, spawnCost, collisionLayer, onInitScript)
+    fromUntrackedSpawn = function(cls, vehicleID, ownerPeerID, spawnCost, collisionLayer, onInitScript, isTemporary)
+        -- ensure no duplicates, from multiple-listeners
+        local existing = LB.objects:getVehicle(vehicleID)
+        if existing then
+            return existing
+        end
+
         local obj = cls:fromSavedata({
             id = vehicleID,
             type = "vehicle",

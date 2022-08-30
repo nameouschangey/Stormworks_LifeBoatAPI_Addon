@@ -177,6 +177,7 @@ LifeBoatAPI.MissionInstance = {
         -- instantiate the current child
         local childMission = mission.stages[self.savedata.current]
         if childMission then
+            self.savedata.currentChildSavedata = self.savedata.currentChildSavedata or {current = 1}
             self.currentStage = LifeBoatAPI.MissionInstance:fromSavedata(childMission, self.savedata.currentChildSavedata, self)
             if self.currentStage.isDisposed then
                 self:next()
@@ -201,7 +202,6 @@ LifeBoatAPI.MissionInstance = {
             id = LifeBoatAPI.MissionInstance._generateID(),
             type = mission.type,
             current = 1, -- first thing we do with a new mission is call next()
-            currentChildSavedata = {},
             lastResult = params
         }, parent)
         
@@ -226,7 +226,6 @@ LifeBoatAPI.MissionInstance = {
         self.savedata.lastResult = params
         self.savedata.currentChildSavedata = {
             current = 1, -- first thing we do with a new mission is call next()
-            currentChildSavedata = {},
             lastResult = params
         }
 
