@@ -15,10 +15,11 @@ LifeBoatAPI.DialogUtils = {
     ---@param onDialogStarted fun(dialog:LifeBoatAPI.DialogInstance)
     ---@param onDialogComplete LifeBoatAPI.DialogOnCompleteHandler 
     ---@param displayLocally boolean|nil
+    ---@param defaultResults table|nil
     ---@param popupRange number|nil
     ---@param useRelativePosPoup boolean|nil whether to use the more costly, "Relative" UIPopup that stays vertical, even if the object topples over
     ---@return LifeBoatAPI.IDisposable
-    newSimpleZoneDialog = function(zone, dialogModel, npc, heightOffset, goodbyeLine, onDialogStarted, onDialogComplete, popupRange, displayLocally, useRelativePosPoup)
+    newSimpleZoneDialog = function(zone, dialogModel, npc, heightOffset, goodbyeLine, onDialogStarted, onDialogComplete, defaultResults, popupRange, displayLocally, useRelativePosPoup)
         popupRange = popupRange or 100
         heightOffset = heightOffset or 1
 
@@ -45,7 +46,7 @@ LifeBoatAPI.DialogUtils = {
             end
             --collision:attach(popup)
     
-            local dialog = dialogModel:start(popup, player)
+            local dialog = dialogModel:start(popup, player, defaultResults)
             collision:attach(dialog)
     
             -- additional start points for the dialog, to make it more interesting
