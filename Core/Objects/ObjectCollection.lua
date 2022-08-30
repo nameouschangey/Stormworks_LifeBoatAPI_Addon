@@ -209,4 +209,6 @@ LifeBoatAPI.ObjectCollection = {
         self.disposables[#self.disposables+1] = entity
         self.savedata.objects[#self.savedata.objects+1] = {type=entity.savedata.type, id=entity.id}
     end;
+
+    despawn = function(self) end
 }
