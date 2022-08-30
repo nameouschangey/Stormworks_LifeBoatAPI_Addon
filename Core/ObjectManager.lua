@@ -12,6 +12,7 @@
 ---@field npcsByID table<number, LifeBoatAPI.Object>
 ---@field firesByID table<number, LifeBoatAPI.Fire>
 ---@field zonesByID table<number, LifeBoatAPI.Zone>
+---@field objectCollectionsByID table<number, LifeBoatAPI.ObjectCollection>
 ---@field onInitScripts table<string, fun(obj:LifeBoatAPI.GameObject)>
 LifeBoatAPI.ObjectManager = {
     ---@param cls LifeBoatAPI.ObjectManager
@@ -19,12 +20,13 @@ LifeBoatAPI.ObjectManager = {
         local self = {
             savedata = {
                 -- id : savedata
-                vehiclesByID = {},
-                objectsByID = {},
-                npcsByID = {},
-                zonesByID = {},
-                firesByID = {},
-                nextZoneID = 0
+                vehiclesByID = {};
+                objectsByID = {};
+                npcsByID = {};
+                zonesByID = {};
+                firesByID = {};
+                objectCollectionsByID = {};
+                nextZoneID = 0;
             };
 
             -- id: object
@@ -33,19 +35,20 @@ LifeBoatAPI.ObjectManager = {
             npcsByID = {};
             firesByID = {};
             zonesByID = {};
+            objectCollectionsByID = {};
             onInitScripts = {};
 
             --- methods
-            init = cls.init,
-            registerScript = cls.registerScript,
-            trackEntity = cls.trackEntity,
-            stopTracking = cls.stopTracking,
-            getByType = cls.getByType,
-            getVehicle = cls.getVehicle,
-            getZone = cls.getZone,
-            getNPC = cls.getNPC,
-            getObject = cls.getObject,
-            getFire = cls.getFire
+            init = cls.init;
+            registerScript = cls.registerScript;
+            trackEntity = cls.trackEntity;
+            stopTracking = cls.stopTracking;
+            getByType = cls.getByType;
+            getVehicle = cls.getVehicle;
+            getZone = cls.getZone;
+            getNPC = cls.getNPC;
+            getObject = cls.getObject;
+            getFire = cls.getFire;
         }
 
         return self
@@ -154,6 +157,13 @@ LifeBoatAPI.ObjectManager = {
             end
         end
 
+        -- load object collections last, so everything else exists first
+        for objectID, objectSaveData in pairs(self.savedata.objectCollectionsByID) do
+            if not self.objectCollectionsByID[objectID] then
+                self.objectCollectionsByID[objectID] = LifeBoatAPI.ObjectCollection:fromSavedata(objectSaveData)
+            end
+        end
+
         -- initialize all vehicles and objects, that might have had children
         for i=1, #initializables do
             initializables[i]:init()
@@ -191,11 +201,14 @@ LifeBoatAPI.ObjectManager = {
         elseif type == "object" then
             self.objectsByID[entity.id] = nil
             self.savedata.objectsByID[entity.id] = nil
+        elseif type == "object_collection" then
+            self.objectCollectionsByID[entity.id] = nil
+            self.savedata.objectCollectionsByID[entity.id] = nil 
         end
     end;
 
     ---@param self LifeBoatAPI.ObjectManager
-    ---@param entity LifeBoatAPI.Object|LifeBoatAPI.Animal|LifeBoatAPI.Fire|LifeBoatAPI.Vehicle|LifeBoatAPI.Zone
+    ---@param entity LifeBoatAPI.Object|LifeBoatAPI.Animal|LifeBoatAPI.Fire|LifeBoatAPI.Vehicle|LifeBoatAPI.Zone|LifeBoatAPI.ObjectCollection
     trackEntity = function(self, entity)
         -- already dead
         if entity.isDisposed then
@@ -228,13 +241,17 @@ LifeBoatAPI.ObjectManager = {
             ---@cast entity LifeBoatAPI.Object
             self.objectsByID[entity.id] = entity
             self.savedata.objectsByID[entity.id] = entity.savedata
+        elseif type == "object_collection" then
+            ---@cast entity LifeBoatAPI.ObjectCollection
+            self.objectCollectionsByID[entity.id] = entity
+            self.savedata.objectCollectionsByID[entity.id] = entity.savedata
         end
     end;
 
     ---@param self LifeBoatAPI.ObjectManager
     ---@param type string
     ---@param id number
-    ---@return LifeBoatAPI.Object|LifeBoatAPI.Animal|LifeBoatAPI.Fire|LifeBoatAPI.Vehicle|LifeBoatAPI.Zone
+    ---@return LifeBoatAPI.Object|LifeBoatAPI.Animal|LifeBoatAPI.Fire|LifeBoatAPI.Vehicle|LifeBoatAPI.Zone|LifeBoatAPI.ObjectCollection
     getByType = function(self, type, id)
         if type == "zone" then
             return self.zonesByID[id]
@@ -246,6 +263,8 @@ LifeBoatAPI.ObjectManager = {
             return self.firesByID[id]
         elseif type == "object" then
             return self.objectsByID[id]
+        elseif type == "object_collection" then
+            return self.objectCollectionsByID[id]
         end
         return nil
     end;
@@ -291,8 +310,15 @@ LifeBoatAPI.ObjectManager = {
 
     ---@param self LifeBoatAPI.ObjectManager
     ---@param objectID number
-    ---@return LifeBoatAPI.Fire|nil
+    ---@return LifeBoatAPI.Fire
     getFire = function(self, objectID)
         return self.firesByID[objectID]
+    end;
+
+    ---@param self LifeBoatAPI.ObjectManager
+    ---@param objectID number
+    ---@return LifeBoatAPI.ObjectCollection|nil
+    getObjectCollection = function(self, objectID)
+        return self.objectCollectionsByID[objectID]
     end;
 }

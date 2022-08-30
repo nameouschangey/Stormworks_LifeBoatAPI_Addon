@@ -194,34 +194,49 @@ LifeBoatAPI.AddonLocation = {
 
     ---Spawn the location exactly as it is in the editor
     ---@param self LifeBoatAPI.AddonLocation
-    ---@param closestToMatrix LifeBoatAPI.Matrix|nil (optional) default is 0,0,0. some tiles can be represented multiple times, such as ocean or small islands - this determines the search start for the closest one
-    ---@return LifeBoatAPI.GameObject[] spawned
-    spawnAll = function(self, closestToMatrix)
+    ---@param closestToMatrix LifeBoatAPI.Matrix|nil (optional) default s 0,0,0. some tiles can be represented multiple times, such as ocean or small islands - this determines the search start for the closest one
+    ---@param predicate nil|fun(component:LifeBoatAPI.AddonComponent):bool function that returns true, if the component should be spawned, or nil for all objects (not recommended)
+    ---@param collectionIsTemporary boolean|nil if true, will not persist this collection - used when just wanting to spawn a lot of things, and will manually track them all in future
+    ---@return LifeBoatAPI.ObjectCollection spawned
+    spawnMultiple = function(self, closestToMatrix, predicate, collectionIsTemporary)
         closestToMatrix = closestToMatrix or LifeBoatAPI.Matrix:newMatrix()
         local tileMatrix, success = server.getTileTransform(closestToMatrix, self.rawdata.tile, 50000)
 
+        local collection = LifeBoatAPI.ObjectCollection:new(collectionIsTemporary)
         if not success then
-            return {}
+            return collection
         end
 
-        local spawned = {}
         for i=1, #self.components do
             local component = self.components[i]
-            spawned[#spawned +1] = component:spawnRelativeToPosition(tileMatrix)
+            if not predicate or predicate(component) then
+                local spawned = component:spawnRelativeToPosition(tileMatrix)
+                if spawned then
+                    collection:addObject(spawned)
+                end
+            end
         end
-        return spawned
+        return collection
     end;
 
     ---@param self LifeBoatAPI.AddonLocation
     ---@param position LifeBoatAPI.Matrix
-    ---@return LifeBoatAPI.GameObject[]
-    spawnAllRelativeToPosition = function(self, position)
-        local spawned = {}
+    ---@param predicate nil|fun(component:LifeBoatAPI.AddonComponent):bool function that returns true, if the component should be spawned, or nil for all objects (not recommended)
+    ---@param collectionIsTemporary boolean|nil if true, will not persist this collection - used when just wanting to spawn a lot of things, and will manually track them all in future
+    ---@return LifeBoatAPI.ObjectCollection
+    spawnMultipleRelativeToPosition = function(self, position, predicate, collectionIsTemporary)
+        local collection = LifeBoatAPI.ObjectCollection:new(collectionIsTemporary)
+
         for i=1, #self.components do
             local component = self.components[i]
-            spawned[#spawned+1] = component:spawnRelativeToPosition(position)
+            if not predicate or predicate(component) then
+                local spawned = component:spawnRelativeToPosition(position)
+                if spawned then
+                    collection:addObject(spawned)
+                end
+            end
         end
-        return spawned
+        return collection
     end;
 }
 
