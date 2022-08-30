@@ -48,8 +48,7 @@ LifeBoatAPI.Event = {
 			cr.lastResult = {...}
 			cr:trigger()
 		end, nil, 1)
-		
-		server.announce("event", "awaiting")
+
 		return cr
 	end;
 

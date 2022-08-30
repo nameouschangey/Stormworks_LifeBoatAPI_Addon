@@ -132,10 +132,8 @@ LifeBoatAPI.Object = {
     awaitLoaded = function(self)
         local isLoaded = self:isLoaded()
         if isLoaded then
-            server.announce("obj", "loaded cr")
             return LifeBoatAPI.Coroutine:start()
         else
-            server.announce("obj", "not yet loaded")
             return self.onLoaded:await()
         end
     end;

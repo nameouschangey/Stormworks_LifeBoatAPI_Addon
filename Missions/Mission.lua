@@ -50,6 +50,15 @@ LifeBoatAPI.MissionManager = {
             if self.missionTypes[missionSave.type] then
                 local missionType = self.missionTypes[missionSave.type]
                 local instance = LifeBoatAPI.MissionInstance:fromSavedata(missionType, missionSave)
+
+                self.missionsByID[instance.id] = instance
+                local missionsByTypeList = self.missionsByType[missionSave.type]
+                if not missionsByTypeList then
+                    self.missionsByType[missionSave.type] = {instance}
+                else
+                    missionsByTypeList[#missionsByTypeList+1] = instance
+                end
+
                 instance:runCurrent()
             else
                 self.savedata.missionsByID[missionID] = nil -- remove no longer supported mission type
@@ -87,7 +96,7 @@ LifeBoatAPI.MissionManager = {
 
         -- persist if not temporary
         if not isTemporary then
-            self.savedata.missionsByID[missionInstance.id] = missionInstance
+            self.savedata.missionsByID[missionInstance.id] = missionInstance.savedata
         end
     end;
 
@@ -271,6 +280,7 @@ LifeBoatAPI.Mission = {
     startUnique = function(self, params)
         -- find an existing version of this mission if it already exists
         local missionsOfType = LB.missions.missionsByType[self.type]
+        
         if missionsOfType and #missionsOfType > 0 then
             return missionsOfType[1]
         else
@@ -280,7 +290,7 @@ LifeBoatAPI.Mission = {
 
     ---@param self LifeBoatAPI.Mission
     start = function(self, params, isTemporary)
-        return LifeBoatAPI.MissionInstance:new(self, isTemporary)
+        return LifeBoatAPI.MissionInstance:new(self, params, isTemporary)
     end;
 }
 

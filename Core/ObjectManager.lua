@@ -234,7 +234,7 @@ LifeBoatAPI.ObjectManager = {
     ---@param self LifeBoatAPI.ObjectManager
     ---@param type string
     ---@param id number
-    ---@return LifeBoatAPI.Object|LifeBoatAPI.Animal|LifeBoatAPI.Fire|LifeBoatAPI.Vehicle|LifeBoatAPI.Zone|nil
+    ---@return LifeBoatAPI.Object|LifeBoatAPI.Animal|LifeBoatAPI.Fire|LifeBoatAPI.Vehicle|LifeBoatAPI.Zone
     getByType = function(self, type, id)
         if type == "zone" then
             return self.zonesByID[id]
@@ -252,28 +252,28 @@ LifeBoatAPI.ObjectManager = {
 
     ---@param self LifeBoatAPI.ObjectManager
     ---@param vehicleID number
-    ---@return LifeBoatAPI.Vehicle|nil
+    ---@return LifeBoatAPI.Vehicle
     getVehicle = function(self, vehicleID)
         return self.vehiclesByID[vehicleID]
     end;
 
     ---@param self LifeBoatAPI.ObjectManager
     ---@param zoneID number
-    ---@return LifeBoatAPI.Zone|nil
+    ---@return LifeBoatAPI.Zone
     getZone = function(self, zoneID)
         return self.zonesByID[zoneID]
     end;
 
     ---@param self LifeBoatAPI.ObjectManager
     ---@param objectID number
-    ---@return LifeBoatAPI.Object|nil
+    ---@return LifeBoatAPI.Object
     getNPC = function(self, objectID)
         return self.npcsByID[objectID]
     end;
 
     ---@param self LifeBoatAPI.ObjectManager
     ---@param objectID number
-    ---@return LifeBoatAPI.Object|nil
+    ---@return LifeBoatAPI.Object
     getObject = function(self, objectID)
         ---@type LifeBoatAPI.Object
         local object = self.objectsByID[objectID]

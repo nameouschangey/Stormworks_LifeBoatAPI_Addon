@@ -10,6 +10,7 @@
 ---@field phrase string
 ---@field next string
 ---@field customHandler fun(self:LifeBoatAPI.DialogChoice, player: LifeBoatAPI.Player, message: string) : boolean
+---@field result table|nil same as the main result for the line, only triggered on that choice
 
 ---@class LifeBoatAPI.DialogLine
 ---@field text string
@@ -166,11 +167,11 @@ LifeBoatAPI.DialogInstance = {
                         local choice = line.choices[i]
                         if choice.customHandler then
                             if choice:customHandler(player, message) then
-                                self:gotoNextLine(choice.next)
+                                self:gotoNextLine(choice.next, choice.result)
                                 return;
                             end
                         elseif message:find(choice.phrase, 0, true) then
-                            self:gotoNextLine(choice.next)
+                            self:gotoNextLine(choice.next, choice.result)
                             return
                         end
                     end
@@ -182,11 +183,18 @@ LifeBoatAPI.DialogInstance = {
     end;
 
     ---@param self LifeBoatAPI.DialogInstance
+    ---@param choiceResults table|nil possible results from the specific choice selected
     ---@param nextLineName string|nil
-    gotoNextLine = function(self, nextLineName)
+    gotoNextLine = function(self, nextLineName, choiceResults)
         -- add result from current line
         if self.line.result then
             for k,v in pairs(self.line.result) do
+                self.results[k] = v
+            end
+        end
+
+        if choiceResults then
+            for k,v in pairs(choiceResults) do
                 self.results[k] = v
             end
         end
@@ -198,7 +206,8 @@ LifeBoatAPI.DialogInstance = {
 
         -- current line said to terminate, or next line doesn't exist
         if self.line.terminate ~= nil or not nextLine then
-            self.drawText(self.player, {text=""})
+            server.announce("ok", "no more messages")
+            self.drawText(self.player, {text="", textWithChoices=""})
             LifeBoatAPI.lb_dispose(self)
         else
             -- move to the next line
