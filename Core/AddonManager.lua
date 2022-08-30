@@ -133,8 +133,8 @@ LifeBoatAPI.AddonLocation = {
             objectsByName = {};
 
             --methods
-            spawnAll = cls.spawnAll;
-            spawnAllRelativeToPosition = cls.spawnAllRelativeToPosition;
+            spawnMultiple = cls.spawnMultiple;
+            spawnMultipleRelativeToPosition = cls.spawnMultipleRelativeToPosition;
             getPosition = cls.getPosition;
         }
 
