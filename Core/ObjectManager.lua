@@ -49,6 +49,7 @@ LifeBoatAPI.ObjectManager = {
             getNPC = cls.getNPC;
             getObject = cls.getObject;
             getFire = cls.getFire;
+            getObjectCollection = cls.getObjectCollection;
         }
 
         return self

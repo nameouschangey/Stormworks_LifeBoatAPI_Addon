@@ -68,6 +68,23 @@ end;
 
 ---Attaches the given disposable, to the given object; so when the object is disposed - the attached disposable is too
 ---@param self LifeBoatAPI.IDisposable
+---@vararg LifeBoatAPI.IDisposable 
+LifeBoatAPI.lb_attachMultiple = function(self, ...)
+    local children = {...}
+    for i=1, #children do
+        local child = children[i]
+        if not self.isDisposed then
+            self.disposables = self.disposables or {}
+            self.disposables[#self.disposables+1] = child
+        else
+            -- already disposed, so dispose the child immediately
+            LifeBoatAPI.lb_dispose(child)
+        end
+    end
+end;
+
+---Attaches the given disposable, to the given object; so when the object is disposed - the attached disposable is too
+---@param self LifeBoatAPI.IDisposable
 ---@param child LifeBoatAPI.IDisposable
 LifeBoatAPI.lb_attachDisposable = function(self, child)
     if not self.isDisposed then
