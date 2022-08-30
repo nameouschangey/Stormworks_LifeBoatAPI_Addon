@@ -128,7 +128,7 @@ LifeBoatAPI.MissionManager = {
 }
 
 
----@alias LifeBoatAPI.MissionExecutionFunction fun(stage:LifeBoatAPI.MissionInstance, savedata:table, params:table)
+---@alias LifeBoatAPI.MissionExecutionFunction fun(self:LifeBoatAPI.MissionInstance, savedata:table, params:table)
 
 ---@class EventTypes.LBOnMissionComplete : LifeBoatAPI.Event
 ---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:fun(l:LifeBoatAPI.IEventListener, context:any, mission:LifeBoatAPI.MissionInstance), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
