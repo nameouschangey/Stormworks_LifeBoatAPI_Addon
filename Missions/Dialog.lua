@@ -16,6 +16,7 @@
 ---@field text string
 ---@field id string|nil
 ---@field choices LifeBoatAPI.DialogChoice[]|nil
+---@field conditionals table key values that must exist in results table for this line to run
 ---@field textWithChoices string
 ---@field showChoices boolean|nil
 ---@field result table|nil
@@ -90,9 +91,10 @@ LifeBoatAPI.Dialog = {
     ---@param self LifeBoatAPI.Dialog
     ---@param popupOrDrawFunc LifeBoatAPI.UIPopup|LifeBoatAPI.UIPopupRelativePos|fun(player, line)
     ---@param player LifeBoatAPI.Player
+    ---@param resultsDefault table|nil
     ---@return LifeBoatAPI.DialogInstance
-    start = function(self, popupOrDrawFunc, player)
-        return LifeBoatAPI.DialogInstance:new(self, popupOrDrawFunc, player)
+    start = function(self, popupOrDrawFunc, player, resultsDefault)
+        return LifeBoatAPI.DialogInstance:new(self, popupOrDrawFunc, player, resultsDefault)
     end;
 }
 
@@ -112,12 +114,13 @@ LifeBoatAPI.DialogInstance = {
     ---@param cls LifeBoatAPI.DialogInstance
     ---@param dialog LifeBoatAPI.Dialog
     ---@param player LifeBoatAPI.Player
-    new = function(cls, dialog, popupOrDrawFunc, player)
+    ---@param resultsDefault tabel|nil
+    new = function(cls, dialog, popupOrDrawFunc, player, resultsDefault)
 
         -- begin the dialog
         local self = {
             disposables = {};
-            results = {};
+            results = resultsDefault or {};
             dialog = dialog;
             player = player;
             lineIndex = 1;
@@ -204,26 +207,44 @@ LifeBoatAPI.DialogInstance = {
             end
         end
 
-        -- find the next line
-        nextLineName = nextLineName or self.line.next
-        self.lineIndex = (nextLineName and self.dialog.lineIndexesByID[nextLineName]) or (self.lineIndex + 1)
-        local nextLine = self.dialog.lines[self.lineIndex]
+        local lineFoundOrTerminated = false;
+        while not lineFoundOrTerminated do
+            -- find the next line
+            nextLineName = nextLineName or self.line.next
+            self.lineIndex = (nextLineName and self.dialog.lineIndexesByID[nextLineName]) or (self.lineIndex + 1)
+            local nextLine = self.dialog.lines[self.lineIndex]
 
-        -- current line said to terminate, or next line doesn't exist
-        if self.line.terminate ~= nil or not nextLine then
-            -- terminate
-            self.drawText(self.player, {text="", textWithChoices=""}) -- hide popup
-            
-            LifeBoatAPI.lb_dispose(self)
-        else
-            -- move to the next line
-            self.line = nextLine
-            self.lineTimeout = (not self.line.choices and (self.line.timeout or self.dialog.defaultTimeout)) or nil
-            if self.lineTimeout then
-                self.lineTimeout = LB.ticks.ticks + self.lineTimeout
+            -- current line said to terminate, or next line doesn't exist
+            if self.line.terminate ~= nil or not nextLine then
+                -- terminate
+                self.drawText(self.player, {text="", textWithChoices=""}) -- hide popup
+                lineFoundOrTerminated = true -- terminated
+                LifeBoatAPI.lb_dispose(self)
+            else
+                -- move to the next line
+                self.line = nextLine
+                self.lineTimeout = (not self.line.choices and (self.line.timeout or self.dialog.defaultTimeout)) or nil
+                if self.lineTimeout then
+                    self.lineTimeout = LB.ticks.ticks + self.lineTimeout
+                end
+
+                -- check if this next line is conditionally allowed
+                local isValid = true
+                if self.line.conditionals then
+                    for k,v in pairs(self.line.conditionals) do
+                        if not self.results[k] == v then
+                            isValid = false
+                            break
+                        end
+                    end
+                end
+
+                if isValid then
+                    lineFoundOrTerminated = true
+                    self.drawText(self.player, self.line)
+                end
+                -- else: repeat the search till we find a valid line
             end
-
-            self.drawText(self.player, self.line)
         end
     end;
 
