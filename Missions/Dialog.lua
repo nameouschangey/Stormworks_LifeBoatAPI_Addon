@@ -96,7 +96,7 @@ LifeBoatAPI.Dialog = {
     end;
 }
 
----@alias LifeBoatAPI.DialogOnCompleteHandler fun(l:LifeBoatAPI.IEventListener, context:any, dialog:LifeBoatAPI.DialogInstance, wasInterupt:boolean, results:table, player: LifeBoatAPI.Player)
+---@alias LifeBoatAPI.DialogOnCompleteHandler fun(l:LifeBoatAPI.IEventListener, context:any, dialog:LifeBoatAPI.DialogInstance, results:table, player: LifeBoatAPI.Player)
 
 ---@class EventTypes.LBDialogOnComplete : LifeBoatAPI.Event
 ---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:LifeBoatAPI.DialogOnCompleteHandler, context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener

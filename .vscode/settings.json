@@ -47,10 +47,10 @@
     ],
     "Lua.runtime.pathStrict": true,
     "Lua.workspace.library": [
-        "c:/Workspaces/stormworks/projects/mission_test/addon/_build/libs/LifeBoatAPI/",
+        "c:/Workspaces/stormworks/projects/FarmerJacksPotatoLifter/addon/_build/libs/LifeBoatAPI/",
         "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.31/assets/lua/Common/",
         "c:/Users/Gordon/.vscode/extensions/nameouschangey.lifeboatapi-0.0.31/assets/lua/Addon/",
-        "c:/Workspaces/stormworks/projects/mission_test/addon/_build/libs/LifeBoatAPI/_build/libs/"
+        "c:/Workspaces/stormworks/projects/FarmerJacksPotatoLifter/addon/_build/libs/LifeBoatAPI/_build/libs/"
     ],
     "lifeboatapi.stormworks.libs.gitLibraries": []
 }
