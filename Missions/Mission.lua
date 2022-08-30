@@ -178,12 +178,15 @@ LifeBoatAPI.MissionInstance = {
         local childMission = mission.stages[self.savedata.current]
         if childMission then
             self.currentStage = LifeBoatAPI.MissionInstance:fromSavedata(childMission, self.savedata.currentChildSavedata, self)
-            local listener= self.currentStage.onComplete:register(function (l, context, mission)
-                if self.currentStage ~= nil then
-                    self:next() -- when the child stage finishes, we move on
-                end
-            end)
-            self.disposables[#self.disposables+1] = listener
+            if self.currentStage.isDisposed then
+                self:next()
+            else
+                self.disposables[#self.disposables+1] = self.currentStage.onComplete:register(function (l, context, mission)
+                    if self.currentStage ~= nil then -- prevent duplicate-next from destroying child
+                        self:next() -- when the child stage finishes, we move on
+                    end
+                end)
+            end
         end
 
         return self
@@ -236,14 +239,15 @@ LifeBoatAPI.MissionInstance = {
             end
         else
             self.currentStage = LifeBoatAPI.MissionInstance:fromSavedata(stageData, self.savedata.currentChildSavedata, self)
-            local listener= self.currentStage.onComplete:register(function (l, context, mission)
-                if self.currentStage ~= nil then -- prevent duplicate-next from destroying child
-                    self:next() -- when the child stage finishes, we move on
-                end
-            end)
-            self.disposables[#self.disposables+1] = listener
-
-            stageData.onExecute(self.currentStage, self.currentStage.savedata, self.savedata.lastResult) -- run the next stage
+            if self.currentStage.isDisposed then
+                self:next()
+            else
+                self.disposables[#self.disposables+1] = self.currentStage.onComplete:register(function (l, context, mission)
+                    if self.currentStage ~= nil then -- prevent duplicate-next from destroying child
+                        self:next() -- when the child stage finishes, we move on
+                    end
+                end)
+            end
         end
     end;
 
@@ -254,7 +258,9 @@ LifeBoatAPI.MissionInstance = {
         end
 
         if self.currentStage then
-            self.currentStage:terminate()
+            local stage = self.currentStage
+            self.currentStage = nil -- hack to prevent double-next from listener
+            stage:terminate()
         end
 
         if not self.parent then
