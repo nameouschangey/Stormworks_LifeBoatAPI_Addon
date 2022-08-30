@@ -14,9 +14,6 @@ require("LifeBoatAPI.Util.CoroutineUtils")
 require("LifeBoatAPI.Util.Disposable")
 require("LifeBoatAPI.Util.Utils")
 
-require("LifeBoatAPI.Missions.Mission")
-require("LifeBoatAPI.Missions.Dialog")
-
 require("LifeBoatAPI.Maths.Colliders")
 require("LifeBoatAPI.Maths.Matrix")
 require("LifeBoatAPI.Maths.RollingAverage")
@@ -46,6 +43,10 @@ require("LifeBoatAPI.Core.ObjectManager")
 require("LifeBoatAPI.Core.PlayerManager")
 require("LifeBoatAPI.Core.TickManager")
 require("LifeBoatAPI.Core.UIManager")
+
+require("LifeBoatAPI.Missions.Mission")
+require("LifeBoatAPI.Missions.Dialog")
+require("LifeBoatAPI.Missions.DialogUtils")
 
 -- instantiates live data
 require("LifeBoatAPI.Core.LB")

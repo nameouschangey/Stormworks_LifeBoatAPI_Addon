@@ -11,6 +11,18 @@
 ---@field onDispose fun(self: LifeBoatAPI.IDiposable)|nil
 ---@field attach fun(self:LifeBoatAPI.IDisposable, child:LifeBoatAPI.IDisposable)
 
+--- quick container for when a  basic disposable parent is needed
+---@class LifeBoatAPI.SimpleDisposable : LifeBoatAPI.IDisposable
+LifeBoatAPI.SimpleDisposable = {
+    new = function(cls)
+        return {
+            disposables = {},
+
+            attach = LifeBoatAPI.lb_attachDisposable
+        }
+    end;
+}
+
 -- natural events, tick handlers etc. should watch for isDisposed when they fire
 -- when this happens, remove anything that is disposed of
 -- larger objects that contain others, should self-dispose using this function - to ensure all children are disposed of correctly

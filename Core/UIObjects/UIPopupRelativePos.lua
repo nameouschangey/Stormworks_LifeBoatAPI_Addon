@@ -30,6 +30,7 @@ LifeBoatAPI.UIPopupRelativePos = {
             nextUpdateTick = 0,
 
             -- methods
+            redraw = cls.redraw,
             despawn = LifeBoatAPI.lb_dispose,
             onDispose = cls.onDispose,
             show = cls.show,
@@ -89,50 +90,51 @@ LifeBoatAPI.UIPopupRelativePos = {
         -- and we don't want to create a new tickable every time a player joins if it's (-1)
         if not self.tickable then
             -- begin following the given parent 
-            self.tickable = LB.ticks:register(function (listener, ctx, deltaGameTicks)
-                listener.timesRun = (listener.timesRun and listener.timesRun + 1) or 1
-                local save = self.savedata
-                
-                local peerID;
-                if save.steamID == "all" then
-                    peerID = -1
-                else
-                    local player = LB.players.playersBySteamID[save.steamID]
-                    if player then
-                       peerID = player.id
-                    else
-                        -- singular player we're displaying to, has gone 
-                        listener.isDisposed = true
-                        self.tickable = nil
-                        server.removePopup(-1, self.id)
-                        return
-                    end
-                end
+            self.tickable = LB.ticks:register(self.redraw, self, 30, 0)
+        end
+    end;
 
-                -- calculate new position
-                if self.nextUpdateTick ~= self.parent.nextUpdateTick then
-                    if self.parent.nextUpdateTick <= LB.ticks.ticks then
-                        self.parent:getTransform()
-                    end
+    redraw = function(listener, ctx, deltaGameTicks)
+        local self = ctx
+        local save = self.savedata
 
-                    local transform = save.centerOffset and LifeBoatAPI.Matrix.multiplyMatrix(save.centerOffset, self.parent.transform) or self.parent.transform
-                    local offset = save.offset and LifeBoatAPI.Matrix.multiplyMatrix(transform, save.offset) or transform
-                    local x,y,z = offset[13], offset[14], offset[15]
-                    server.setPopup(peerID, save.id, nil, save.text ~= "", save.text, x, y, z, save.renderDistance, nil, nil)
+        local peerID;
+        if save.steamID == "all" then
+            peerID = -1
+        else
+            local player = LB.players.playersBySteamID[save.steamID]
+            if player then
+               peerID = player.id
+            else
+                -- singular player we're displaying to, has gone 
+                listener.isDisposed = true
+                self.tickable = nil
+                server.removePopup(-1, self.id)
+                return
+            end
+        end
 
-                    self.nextUpdateTick = self.parent.nextUpdateTick
-                end
+        -- redraw, avoid function call cost
+        if self.nextUpdateTick ~= self.parent.nextUpdateTick then
+            if self.parent.nextUpdateTick <= LB.ticks.ticks then
+                self.parent:getTransform()
+            end
 
-            end, self, 30, 0)
+            local transform = save.centerOffset and LifeBoatAPI.Matrix.multiplyMatrix(save.centerOffset, self.parent.transform) or self.parent.transform
+            local offset = save.offset and LifeBoatAPI.Matrix.multiplyMatrix(transform, save.offset) or transform
+            local x,y,z = offset[13], offset[14], offset[15]
+            server.setPopup(peerID, save.id, nil, save.text ~= "", save.text, x, y, z, save.renderDistance, nil, nil)
+
+            self.nextUpdateTick = self.parent.nextUpdateTick
         end
     end;
 
     ---Override the existing values and re-show, provide "false" to mean "don't overwrite the existing value"
     ---@param self LifeBoatAPI.UIPopupRelativePos
-    ---@param text string|boolean
-    ---@param offset LifeBoatAPI.Matrix|boolean
-    ---@param centerOffset LifeBoatAPI.Matrix|boolean
-    ---@param renderDistance number|false
+    ---@param text string|nil
+    ---@param offset LifeBoatAPI.Matrix|nil
+    ---@param centerOffset LifeBoatAPI.Matrix|nil
+    ---@param renderDistance number|nil
     edit = function(self, text, offset, centerOffset, renderDistance)
         local save = self.savedata
         save.text = text or save.text
@@ -140,6 +142,8 @@ LifeBoatAPI.UIPopupRelativePos = {
         save.centerOffset = centerOffset or save.centerOffset;
         save.renderDistance = renderDistance or save.renderDistance;
         self.nextUpdateTick = 0
+
+        self.redraw(self.tickable, self, 0)
     end;
 
     ---@param self LifeBoatAPI.UIPopupRelativePos

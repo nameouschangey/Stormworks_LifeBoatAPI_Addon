@@ -1,5 +1,5 @@
 ---@class LifeBoatAPI.IEventListener : LifeBoatAPI.IDisposable
----@field onExecute function
+---@field onExecute fun(l:IEventListener, ctx:any, ...)
 ---@field executeCount number          number of times for this listener to be called, or -1 for indefinitely
 ---@field context any
 
@@ -24,7 +24,7 @@ LifeBoatAPI.Event = {
     end;
 
     ---@param self LifeBoatAPI.Event
-    ---@param func function
+    ---@param func fun(l:IEventListener, ctx:any, ...)
     ---@param timesToExecute number|nil
 	---@return LifeBoatAPI.IEventListener
     register = function (self, func, context, timesToExecute)

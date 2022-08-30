@@ -10,7 +10,7 @@
 ---@class EventTypes.LBOnMissionComplete : LifeBoatAPI.Event
 ---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, mission:LifeBoatAPI.Mission), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
----@alias LifeBoatAPI.MissionExecutionFunction fun(mission:LifeBoatAPI.MissionInstance, stage:LifeBoatAPI.MissionStageInstance, savedata:table, params:table)
+---@alias LifeBoatAPI.MissionExecutionFunction fun(mission:LifeBoatAPI.MissionInstance, stage:LifeBoatAPI.MissionStageInstance, missionSave:table, stageSave:table, params:table)
 
 ---@class LifeBoatAPI.MissionManager
 ---@field missionTypes table<string, LifeBoatAPI.Mission>
@@ -177,6 +177,7 @@ LifeBoatAPI.MissionInstance = {
             id = LifeBoatAPI.MissionInstance._generateID(),
             type = mission.type,
             current = 0, -- first thing we do with a new mission is call next()
+            stageSave = {}
         })
         
         LB.missions:trackInstance(self, isTemporary)
@@ -198,6 +199,8 @@ LifeBoatAPI.MissionInstance = {
 
         self.savedata.lastResult = params
 
+        self.savedata.stageSave = {}
+
         -- move to the next stage and run it
         self.savedata.current = (name and self.mission.stageIndexesByName[name]) or (self.savedata.current + 1)
         self:runCurrent()
@@ -210,12 +213,13 @@ LifeBoatAPI.MissionInstance = {
             self:terminate()
         else
             self.currentStage = {
+                savedata = self.savedata.stageSave,
                 stageData = stageData,
                 disposables = {},
                 attach = LifeBoatAPI.lb_attachDisposable
             }
 
-            stageData.onExecute(self, self.currentStage, self.savedata, self.savedata.lastResult) -- run the next stage
+            stageData.onExecute(self, self.currentStage, self.savedata, self.savedata.stageSave, self.savedata.lastResult) -- run the next stage
         end
     end;
 

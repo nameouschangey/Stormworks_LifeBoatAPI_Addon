@@ -96,13 +96,16 @@ LifeBoatAPI.Dialog = {
     end;
 }
 
+---@alias LifeBoatAPI.DialogOnCompleteHandler fun(l:LifeBoatAPI.IEventListener, context:any, dialog:LifeBoatAPI.DialogInstance, wasInterupt:boolean, results:table, player: LifeBoatAPI.Player)
 
+---@class EventTypes.LBDialogOnComplete : LifeBoatAPI.Event
+---@field register fun(self:LifeBoatAPI.ENVCallbackEvent, func:LifeBoatAPI.DialogOnCompleteHandler, context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class LifeBoatAPI.DialogInstance : LifeBoatAPI.IDisposable
 ---@field results table
 ---@field dialog LifeBoatAPI.Dialog
 ---@field player LifeBoatAPI.Player
----@field onDispose fun(self: LifeBoatAPI.DialogInstance) can be overridden if wanted, otherwise nil
+---@field onComplete EventTypes.LBDialogOnComplete
 ---@field drawText fun(player: LifeBoatAPI.Player, line: LifeBoatAPI.DialogLine)
 LifeBoatAPI.DialogInstance = {
 
@@ -113,16 +116,18 @@ LifeBoatAPI.DialogInstance = {
 
         -- begin the dialog
         local self = {
-            disposables = {},
-            results = {},
-            dialog = dialog,
-            player = player,
-            lineIndex = 1,
-            line = dialog.lines[1],
+            disposables = {};
+            results = {};
+            dialog = dialog;
+            player = player;
+            lineIndex = 1;
+            line = dialog.lines[1];
+            onComplete = LifeBoatAPI.Event:new();
 
             -- methods
             attach = LifeBoatAPI.lb_attachDisposable;
             gotoNextLine = cls.gotoNextLine;
+            onDispose = cls.onDispose;
         }
 
         -- create the draw function to use
@@ -206,8 +211,9 @@ LifeBoatAPI.DialogInstance = {
 
         -- current line said to terminate, or next line doesn't exist
         if self.line.terminate ~= nil or not nextLine then
-            server.announce("ok", "no more messages")
-            self.drawText(self.player, {text="", textWithChoices=""})
+            -- terminate
+            self.drawText(self.player, {text="", textWithChoices=""}) -- hide popup
+            
             LifeBoatAPI.lb_dispose(self)
         else
             -- move to the next line
@@ -218,6 +224,12 @@ LifeBoatAPI.DialogInstance = {
             end
 
             self.drawText(self.player, self.line)
+        end
+    end;
+
+    onDispose = function(self)
+        if self.onComplete.hasListeners then
+            self.onComplete:trigger(self, self.results, self.player)
         end
     end;
 }
