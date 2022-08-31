@@ -20,7 +20,7 @@ how should it work?
 ---@section Mission
 
 ---@class EventTypes.LBOnMissionComplete : LifeBoatAPI.Event
----@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, mission:LifeBoatAPI.Mission), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
+---@field register fun(self:LifeBoatAPI.Event, func:fun(l:LifeBoatAPI.IEventListener, context:any, mission:LifeBoatAPI.MissionInstance), context:any, timesToExecute:number|nil) : LifeBoatAPI.IEventListener
 
 ---@class LifeBoatAPI.MissionManager
 ---@field missionTypes table<string, LifeBoatAPI.Mission>
@@ -174,6 +174,10 @@ LifeBoatAPI.MissionInstance = {
         -- now run our initial function
         self.mission.onExecute(self, self.savedata, self.savedata.lastResult)
 
+        if self.isDisposed then
+            return self
+        end
+        
         -- instantiate the current child
         local childMission = mission.stages[self.savedata.current]
         if childMission then
@@ -334,6 +338,8 @@ LifeBoatAPI.Mission = {
     end;
 
     ---Ensures this mission is unique, and gets the existing instance of it if one is there
+    ---@param self LifeBoatAPI.Mission
+    ---@return LifeBoatAPI.MissionInstance
     startUnique = function(self, params)
         -- find an existing version of this mission if it already exists
         local missionsOfType = LB.missions.missionsByType[self.type]
@@ -341,11 +347,14 @@ LifeBoatAPI.Mission = {
         if missionsOfType and #missionsOfType > 0 then
             return missionsOfType[1]
         else
-            return self:start(params)
+            local instance = self:start(params)
+            return instance
         end
     end;
 
     ---@param self LifeBoatAPI.Mission
+    ---@param isTemporary boolean|nil
+    ---@return LifeBoatAPI.MissionInstance
     start = function(self, params, isTemporary)
         return LifeBoatAPI.MissionInstance:new(self, params, isTemporary)
     end;
