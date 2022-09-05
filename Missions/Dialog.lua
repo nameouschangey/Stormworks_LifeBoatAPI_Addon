@@ -241,7 +241,7 @@ LifeBoatAPI.DialogInstance = {
 
                 if not skipToNext then
                     -- specifying negative timeouts will mean we instantly skip over the line; but *next* will be respected; unlike missing conditionals above
-                    if self.lineTimeout >= LB.ticks.ticks then
+                    if not self.lineTimeout or (self.lineTimeout >= LB.ticks.ticks) then
                         self.drawText(self.player, self.line)
                         break
                     end
