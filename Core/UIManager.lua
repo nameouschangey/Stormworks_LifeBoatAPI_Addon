@@ -11,7 +11,9 @@
 ---@field uiBySteamID table<string, LifeBoatAPI.UIElement[]>
 LifeBoatAPI.UIManager = {
     ---@param cls LifeBoatAPI.UIManager
-    new = function(cls)
+    ---@param playerManager LifeBoatAPI.PlayerManager
+    ---@return LifeBoatAPI.UIManager
+    new = function(cls, playerManager)
         local self = {
             savedata = {
                 uiByID = {}, -- id : savedata
@@ -31,6 +33,9 @@ LifeBoatAPI.UIManager = {
             _onPlayerJoin = cls._onPlayerJoin
         }
 
+        -- register for new players connecting
+        playerManager.onPlayerConnected:register(self._onPlayerJoin, self)
+        
         return self
     end;
 
@@ -77,23 +82,33 @@ LifeBoatAPI.UIManager = {
             end
         end
 
-        -- register for new players connecting
-        LB.players.onPlayerConnected:register(self._onPlayerJoin, self)
+
     end;
 
+    ---@param self LifeBoatAPI.UIManager
+    ---@param player LifeBoatAPI.Player
     _onPlayerJoin = function(l, self, player)
+        
         -- when the player joins, give them all the UI they are entitled to
         -- this will generally be used for when you want popups to display for all players
         local uiForAll = self.uiBySteamID["all"]
-        for i=1, #uiForAll do
-            local ui = uiForAll[i]
-            ui:show(player.id)
+        log("finding UI", "for player (steamID)", player.steamID, " there are ", uiForAll and #uiForAll or "nil", " elements to show to all")
+        if uiForAll then
+            for i=1, #uiForAll do
+                local ui = uiForAll[i]
+                ui:show(player.id)
+                log("showing player UI", "UI with ID: " .. tostring(ui.id))
+            end
         end
 
-        local uiBySteamID = self.uiBySteamID[player.steamID] or {}
-        for i=1, #uiBySteamID do
-            local ui = uiBySteamID[i]
-            ui:show(player.id)
+       
+        local uiBySteamID = self.uiBySteamID[player.steamID]
+        log("finding ui", "there are ", uiBySteamID and #uiBySteamID or "nil", " elements specific to the player")
+        if uiBySteamID then
+            for i=1, #uiBySteamID do
+                local ui = uiBySteamID[i]
+                ui:show(player.id)
+            end
         end
     end;
 
@@ -105,6 +120,8 @@ LifeBoatAPI.UIManager = {
             return 
         end
 
+        log("new ui element tracking with id: ", uiElement.id, uiElement.savedata.type, "and showing to", uiElement.savedata.steamID)
+        
         -- temporary elements are stored separately, so we can safely remove them next reload
         if uiElement.savedata.isTemporary then
             self.savedata.temporaryUIIDs[#self.savedata.temporaryUIIDs+1] = uiElement.id
@@ -113,15 +130,34 @@ LifeBoatAPI.UIManager = {
         end
 
         self.uiByID[uiElement.id] = uiElement
-        self.uiBySteamID[uiElement.savedata.steamID] = uiElement
+
+        -- add to list by steamID
+        local uiBySteamID = self.uiBySteamID[uiElement.savedata.steamID]
+        if not uiBySteamID then
+            self.uiBySteamID[uiElement.savedata.steamID] = {uiElement}
+        else
+            uiBySteamID[#uiBySteamID+1] = uiElement
+        end
+
+        local allElements = self.uiBySteamID.all
+        log("there are now", allElements and #allElements or "nil", "elements for all")
     end;
 
     ---@param self LifeBoatAPI.UIManager
     ---@param uiElement LifeBoatAPI.UIElement
     stopTracking = function(self, uiElement)
+        log("stopping tracking ui element", uiElement.id, "steamID", uiElement.savedata.steamID) -- if this is all, it'll delete everything lmao
         self.savedata.uiByID[uiElement.id] = nil
         self.uiByID[uiElement.id] = nil
-        self.uiBySteamID[uiElement.savedata.steamID] = nil
+
+        local bySteamID = self.uiBySteamID[uiElement.savedata.steamID]
+        for i=#bySteamID, 1, -1 do
+            if bySteamID[i] == uiElement then
+                table.remove(bySteamID, i)
+            end
+        end
+
+        log("there are now", #bySteamID, " elements with the steamID ", uiElement.savedata.steamID)
     end;
 
     ---@param self LifeBoatAPI.UIManager

@@ -16,7 +16,9 @@
 ---@field onInitScripts table<string, fun(obj:LifeBoatAPI.GameObject)>
 LifeBoatAPI.ObjectManager = {
     ---@param cls LifeBoatAPI.ObjectManager
-    new = function(cls)
+    ---@param eventsManager LifeBoatAPI.EventManager
+    ---@return LifeBoatAPI.ObjectManager
+    new = function(cls, eventsManager)
         local self = {
             savedata = {
                 -- id : savedata
@@ -52,23 +54,14 @@ LifeBoatAPI.ObjectManager = {
             getObjectCollection = cls.getObjectCollection;
         }
 
-        return self
-    end;
-
-    ---@param self LifeBoatAPI.ObjectManager
-    init = function(self)
-        -- create our save data
-        self.savedata = g_savedata.objectManager or self.savedata
-        g_savedata.objectManager = self.savedata
-
-        LB.events.onVehicleDespawn:register(function (l, context, vehicleID, peerID)
+        eventsManager.onVehicleDespawn:register(function (l, context, vehicleID, peerID)
             local vehicle = self.vehiclesByID[vehicleID]  
             if vehicle then
                 vehicle:despawn() -- ensure correct disposal sequence, and object removed from LB.objects     
             end
         end)
 
-        LB.events.onVehicleLoad:register(function (l, context, vehicleID)
+        eventsManager.onVehicleLoad:register(function (l, context, vehicleID)
             local vehicle = self.vehiclesByID[vehicleID]
             if vehicle then
                 if vehicle.onLoaded.hasListeners then
@@ -81,7 +74,7 @@ LifeBoatAPI.ObjectManager = {
             end
         end)
 
-        LB.events.onVehicleUnload:register(function(l, context, vehicleID, peerID)
+        eventsManager.onVehicleUnload:register(function(l, context, vehicleID, peerID)
             local vehicle = self.vehiclesByID[vehicleID]  
             if vehicle then
                 LB.collision:stopTracking(vehicle)
@@ -92,7 +85,7 @@ LifeBoatAPI.ObjectManager = {
             end 
         end)
 
-        LB.events.onObjectLoad:register(function (l, context, objectID)
+        eventsManager.onObjectLoad:register(function (l, context, objectID)
             local object = self.objectsByID[objectID] or self.npcsByID[objectID] or self.firesByID[objectID]
             if object then
                 if object.onLoaded.hasListeners then
@@ -106,7 +99,7 @@ LifeBoatAPI.ObjectManager = {
             end
         end)
 
-        LB.events.onObjectUnload:register(function (l, context, objectID)
+        eventsManager.onObjectUnload:register(function (l, context, objectID)
             
             local object = self.objectsByID[objectID] or self.npcsByID[objectID] or self.firesByID[objectID]
             if object then
@@ -117,7 +110,16 @@ LifeBoatAPI.ObjectManager = {
                 end
             end 
         end)
-        
+
+        return self
+    end;
+
+    ---@param self LifeBoatAPI.ObjectManager
+    init = function(self)
+        -- create our save data
+        self.savedata = g_savedata.objectManager or self.savedata
+        g_savedata.objectManager = self.savedata
+
         local initializables = {}
         -- initialize things that we already know exist from the savedata
         for vehicleID, vehicleSaveData in pairs(self.savedata.vehiclesByID) do

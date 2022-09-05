@@ -18,8 +18,9 @@
 LifeBoatAPI.PlayerManager = {
 
     ---@param cls LifeBoatAPI.PlayerManager
+    ---@param eventManager LifeBoatAPI.EventManager
     ---@return LifeBoatAPI.PlayerManager
-    new = function(cls)
+    new = function(cls, eventManager)
         local self = {
             savedata = {
                 playersBySteamID = {};
@@ -40,6 +41,9 @@ LifeBoatAPI.PlayerManager = {
             getPlayerByPeerID = cls.getPlayerByPeerID
         }
 
+        eventManager.onPlayerJoin:register(self._onPlayerJoin, self)
+        eventManager.onPlayerLeave:register(self._onPlayerLeave, self)
+
         return self
     end;
 
@@ -48,16 +52,15 @@ LifeBoatAPI.PlayerManager = {
         g_savedata.playerManager = g_savedata.playerManager or self.savedata
         self.savedata = g_savedata.playerManager
 
-        LB.events.onPlayerJoin:register(self._onPlayerJoin, self)
-        LB.events.onPlayerLeave:register(self._onPlayerLeave, self)
-
         -- handle already-joined players
+        log("loading existing players (init)")
         local swPlayers = server.getPlayers()
         for i=1, #swPlayers do
             local swPlayer = swPlayers[i]
 
             self._onPlayerJoin(nil, self, swPlayer.steam_id, swPlayer.name, swPlayer.id, swPlayer.admin, swPlayer.auth)
         end
+        log("finished loading players")
     end;
 
     ---@param self LifeBoatAPI.PlayerManager
@@ -92,19 +95,22 @@ LifeBoatAPI.PlayerManager = {
         end
         local savedata = self.savedata.playersBySteamID[steamID] or {}
 
+        -- make sure there's no double-connects happening, disconnect any existing players
+        local existing = self.playersByPeerID[peerId]
+        if existing then
+            LB.players._onPlayerLeave(nil, self, existing.steamID, existing.displayName, existing.id, existing.isAdmin, existing.isAuth)
+        end
+
+        -- add new player
+        log("player on", "player joined, awaiting load, peerID: " .. tostring(peerId))
         local player = LifeBoatAPI.Player:new(peerId, steamID, isAdmin, isAuth, name, savedata)
 
         self.playersByPeerID[player.id] = player
         self.playersBySteamID[player.steamID] = player
         self.players[#self.players+1] = player
-
-        -- make sure there's no double-connects happening, disconnect any existing players
-        local existing = self.playersByPeerID[player.id]
-        if existing then
-            LB.players._onPlayerLeave(nil, self, existing.steamID, existing.displayName, existing.id, existing.isAdmin, existing.isAuth)
-        end
-
+ 
         player:awaitLoaded():andImmediately(function (cr, deltaTicks, lastResult)
+            log("player on", "player LOADED", player, "last result", lastResult)
             if isFirstTimeJoining and self.onPlayerFirstTimeConnected.hasListeners then
                 self.onPlayerFirstTimeConnected:trigger(player)
             end
@@ -113,11 +119,11 @@ LifeBoatAPI.PlayerManager = {
                 self.onPlayerConnected:trigger(player)
             end
         end)
-
     end;
 
     ---@param self LifeBoatAPI.PlayerManager
     _onPlayerLeave = function (l, self, steamID, name, peerId, isAdmin, isAuth)
+        log("player leaving", "peerID: " .. tostring(peerId))
         steamID = tostring(steamID)
 
         local player = self.playersByPeerID[peerId]

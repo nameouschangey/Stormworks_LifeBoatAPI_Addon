@@ -111,10 +111,13 @@ LifeBoatAPI.UIPopup = {
     show = function(self, peerID)
         if self.isDisposed then
             -- prevent accidentally re-showing a dialog that will then never be re-disposed/destroyed
+            log("cant reshow UI, already disposed", self.id)
             return 
         end
 
         local save = self.savedata
+
+        log("showing popup", self.id, "to player", peerID, "with text", save.text)
 
         if save.parentID then
             server.setPopup(peerID, save.id, nil, save.text ~= "", save.text, save.x, save.y, save.z, save.renderDistance, save.parentType == "vehicle" and save.parentID or nil, save.parentType ~= "vehicle" and save.parentID or nil)

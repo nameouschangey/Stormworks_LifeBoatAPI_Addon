@@ -8,11 +8,13 @@
 LifeBoatAPI = LifeBoatAPI or {}
 
 -- type data only
+require("LifeBoatAPI.Util.Utils")
+
 require("LifeBoatAPI.Util.Bitwise")
 require("LifeBoatAPI.Util.Constants")
 require("LifeBoatAPI.Util.CoroutineUtils")
 require("LifeBoatAPI.Util.Disposable")
-require("LifeBoatAPI.Util.Utils")
+
 
 require("LifeBoatAPI.Maths.Colliders")
 require("LifeBoatAPI.Maths.Matrix")

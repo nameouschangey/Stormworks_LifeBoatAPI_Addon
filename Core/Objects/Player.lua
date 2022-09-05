@@ -91,7 +91,8 @@ LifeBoatAPI.Player = {
 
         -- by default all players are collision enabled
         LB.collision:trackEntity(self)
-        
+        log("player collision enabled", tostring(self))
+
         return self
     end;
 
@@ -99,32 +100,36 @@ LifeBoatAPI.Player = {
     ---@param timeout number|nil time to keep checking for in ticks, before giving up - nil to continue indefinitely
     ---@return LifeBoatAPI.Coroutine
     awaitLoaded = function(self, timeout)
+        log("awaiting player loading", "timeout: " .. tostring(timeout))
         -- check if it's already loaded
         local timePassed = 0
         
-        return LifeBoatAPI.Coroutine:start()
-        :andImmediately(function (cr, deltaTicks, lastResult)
+        local cr = LifeBoatAPI.Coroutine:start()
+        :andThen(function (cr, deltaTicks, lastResult)
             -- keep checking if the player has loaded, until the timeout
-            timeout = (timeout or math.maxinteger) + deltaTicks
+            timePassed = timePassed + deltaTicks
+
+            if self.isDisposed then
+                log("ok", "player disposed while awaiting player")
+                return cr.dispose, nil, "Player disconnected"
+            end
 
             local characterID, success = server.getPlayerCharacterID(self.id)
             if success then
                 local loadedState, success = server.getObjectSimulating(characterID)
                 if success and loadedState then
+                    log("ok", "player loaded")
                     return cr.yield, characterID
                 end
-            end
-
-            if self.isDisposed then
-                return cr.yield, nil, "Player disconnected"
-            end
-
-            if timeout and timePassed > timeout then
-                return cr.yield, nil, "Timeout reached before loading"
+            elseif timeout and timePassed > timeout then
+                log("ok", "timeout reached while awaiting player")
+                return cr.dispose, nil, "Timeout reached before loading"
             end
 
             return cr.loop
         end)
+
+        return cr
     end;
 
     ---@param self LifeBoatAPI.Player
@@ -141,5 +146,6 @@ LifeBoatAPI.Player = {
 
     onDispose = function(self)
         LB.collision:stopTracking(self)
+        log("player collision disabled", tostring(self))
     end;
 }

@@ -9,6 +9,22 @@
 --- Does nothing, just makes readbility a bit easier/easier to check if something *is* the empty function if it's always this one
 LifeBoatAPI.lb_empty = function()end
 
+log = function (...)
+    local args = {...}
+    for i=1, #args do
+        args[i] = tostring(args[i])
+    end
+
+    if #args == 0 then
+        return
+    elseif #args == 1 then
+        args[2] = args[1]
+        args[1] = "info"
+    end
+
+    server.announce(args[1], table.concat(args, ", ", 2))
+    debug.log("[LB] " .. table.concat(args, ", "))
+end
 
 --- Converts the given value t, to a string, regardless of what type of value it is 
 --- Doesn't handle self-referential tables (e.g. a = {}; a.b=a)
