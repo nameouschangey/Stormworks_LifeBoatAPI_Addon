@@ -20,12 +20,13 @@
 ---@field textWithChoices string
 ---@field showChoices boolean|nil
 ---@field result table|nil
----@field timeout number|nil
+---@field speed number|nil
 ---@field next string|nil
 ---@field terminate boolean|nil
 
 ---@class LifeBoatAPI.Dialog
----@field defaultTimeout number
+---@field speakerName string
+---@field defaultSpeed number
 ---@field tickFrequency number
 ---@field lines LifeBoatAPI.DialogLine[]
 ---@field lineIndexesByID table<string, number>
@@ -35,12 +36,12 @@ LifeBoatAPI.Dialog = {
 
     ---@param cls LifeBoatAPI.Dialog
     ---@param lines LifeBoatAPI.DialogLine[]|nil
-    ---@param defaultTimeout number|nil
+    ---@param defaultSpeed number|nil
     ---@param tickFrequency number|nil
     ---@return LifeBoatAPI.Dialog
-    new = function(cls, lines, defaultTimeout, tickFrequency)
+    new = function(cls, lines, defaultSpeed, tickFrequency)
         local self = {
-            defaultTimeout = defaultTimeout or 120,
+            defaultSpeed = defaultSpeed or 1,
             tickFrequency = tickFrequency,
             lines = {},
             lineIndexesByID = {},
@@ -150,9 +151,11 @@ LifeBoatAPI.DialogInstance = {
         end
 
         -- initial line timeout
-        self.lineTimeout = (not self.line.choices and (self.line.timeout or self.dialog.defaultTimeout)) or nil
-        if self.lineTimeout then
-            self.lineTimeout = LB.ticks.ticks + self.lineTimeout
+        local lineSpeed = (self.line.speed or (not self.line.choices and self.dialog.defaultSpeed)) or nil
+        if lineSpeed then
+            self.lineTimeout = LB.ticks.ticks + (LifeBoatAPI.DialogConfig.speed * lineSpeed)
+        else
+            self.lineTimeout = nil
         end
         self:gotoNextLine()
 
@@ -169,16 +172,17 @@ LifeBoatAPI.DialogInstance = {
         -- setup listener for player replies, if we've got choices to make in this dialogue tree
         if dialog.hasChoices then
             self.disposables[#self.disposables+1] = player.onChat:register(function (l, context, player, message)
+                local messageAsLower = message and message:lower() or ""
                 local line = self.line
                 if line.choices then
                     for i=1, #line.choices do
                         local choice = line.choices[i]
                         if choice.customHandler then
-                            if choice:customHandler(player, message) then
+                            if choice:customHandler(player, messageAsLower) then
                                 self:gotoNextLine(choice.next, choice.result)
                                 return;
                             end
-                        elseif message:find(choice.phrase, 0, true) then
+                        elseif messageAsLower:find(choice.phrase, 0, true) then
                             self:gotoNextLine(choice.next, choice.result)
                             return
                         end
@@ -225,9 +229,11 @@ LifeBoatAPI.DialogInstance = {
             else
                 -- move to the next line
                 self.line = nextLine
-                self.lineTimeout = self.line.timeout or (not self.line.choices and self.dialog.defaultTimeout) or nil -- if specified, otherwise default unless it's a choice
-                if self.lineTimeout then
-                    self.lineTimeout = LB.ticks.ticks + self.lineTimeout
+                local lineSpeed = self.line.speed or (not self.line.choices and self.dialog.defaultSpeed) or nil -- if specified, otherwise default unless it's a choice
+                if lineSpeed then
+                    self.lineTimeout = LB.ticks.ticks + (lineSpeed * LifeBoatAPI.DialogConfig.speed)
+                else
+                    self.lineTimeout = nil
                 end
 
                 -- check if this next line is conditionally allowed

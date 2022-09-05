@@ -5,8 +5,110 @@
 --- Developed using LifeBoatAPI - Stormworks Lua plugin for VSCode - https://code.visualstudio.com/download (search "Stormworks Lua with LifeboatAPI" extension)
 --- If you have any issues, please report them here: https://github.com/nameouschangey/STORMWORKS_VSCodeExtension/issues - by Nameous Changey
 
+LifeBoatAPI.DialogConfig = {
+    Speed_Fast = 60,
+    Speed_Default = 120,
+    Speed_Slow = 240,
+    showInChat = false,
+    speed = 120,
+    
+    init = function(self)
+        g_savedata.dialogConfig = g_savedata.dialogConfig or {
+            showInChat = false,
+            speedName = "default",
+            speed = LifeBoatAPI.DialogConfig.Speed_Default
+        }
+        LifeBoatAPI.DialogConfig = g_savedata.dialogConfig
+        LifeBoatAPI.DialogConfig.init = nil
+        self = LifeBoatAPI.DialogConfig
+
+        LB.events.onCustomCommand:register(function (l, context, fullMessage, peerID, isAdmin, isAuth, command, ...)
+            --[[ allow players to set the dialog speed (global), solving this per-player is far too much performance cost for the benefit]]
+            if command == "?lb_dialog_speed" then
+                local args = {...}
+                if args > 0 then
+                    if not isAdmin then
+                        server.announce(LB.addons.this.name, "command requires admin")
+                        return
+                    end
+
+                    local asLower = args[1]:lower()
+                    local asNumber = tonumber(args[1])
+                    if asLower == "fast" then
+                        self.speed = self.Speed_Fast
+                    elseif asLower == "default" then
+                        self.speed = self.Speed_Default
+                    elseif asLower == "slow" then
+                        self.speed = self.Speed_Slow
+                    elseif asNumber then
+                        self.speed = asNumber
+                    else
+                        server.announce(LB.addons.this.name, "bad argument, dialog speed unchanged ["..self.speedName.."], (try: default, fast, slow, or a number)", peerID)
+                        return
+                    end
+                    server.announce(LB.addons.this.name, "dialog speed changed to: " .. self.speedName, peerID)
+                    return
+                else
+                    server.announce(LB.addons.this.name, "dialog speed currently: " .. self.speedName, peerID)
+                    return
+                end
+            -- [[ allow players to have dialog show in chat, this may increase accessibility options, such as screen/text readers ]]
+            elseif command == "?lb_dialog_in_chat" then
+               local args = {...}
+               if args > 0 then
+                   if not isAdmin then
+                       server.announce(LB.addons.this.name, "command requires admin")
+                       return
+                   end
+
+                   local asLower = args[1]:lower()
+                   if asLower == "true" then
+                       self.showInChat = true
+                   elseif asLower == "false" then
+                       self.showInChat = false
+                   else
+                       server.announce(LB.addons.this.name, "bad argument, (try: true or false)", peerID)
+                       return
+                   end
+                   server.announce(LB.addons.this.name, "dialog is now " .. not self.showInChat and "no longer" or "" .. " shown in chat", peerID)
+                   return
+               else
+                   server.announce(LB.addons.this.name, "dialog is currently " .. not self.showInChat and "not" or "" .. " shown in chat", peerID)
+                   return
+               end
+            end
+        end)
+    end;
+}
+
 ---@class LifeBoatAPI.DialogUtils
 LifeBoatAPI.DialogUtils = {
+    getDefaultDrawFunction = function(popup, dialogModel, displayLocally, npc)
+        local popupRadius2 = popup.savedata.renderDistance * popup.savedata.renderDistance 
+        return function(player, line)
+            if LifeBoatAPI.DialogConfig.showInChat then
+                if displayLocally then
+                    -- if local, can assume the player must be able to see it from where they are
+                    server.announce(dialogModel.name, line.textWithChoices, player.id)
+                else
+                    -- if not "local" then we only want to display within the same radius the popup shows
+                    local players = LB.players.players
+                    for i=1, #players do
+                        local player = players[i]
+                        local playerPos = player.transform
+                        local npcPos = npc.transform
+
+                        local dx,dy,dz = playerPos[13]-npcPos[13], playerPos[14]-npcPos[14], playerPos[15]-npcPos[15]
+                        if (dx*dx + dy*dy + dz*dz) > popupRadius2 then
+                            server.announce(dialogModel.name, line.textWithChoices, player.id)
+                        end
+                    end
+                end
+            end
+            popup:edit(line.textWithChoices)
+        end
+    end;
+
     ---@param zone LifeBoatAPI.Zone
     ---@param dialogModel LifeBoatAPI.Dialog
     ---@param npc LifeBoatAPI.Object|LifeBoatAPI.Vehicle
@@ -45,7 +147,8 @@ LifeBoatAPI.DialogUtils = {
                 popup = LifeBoatAPI.UIPopup:new(displayLocally and player or nil, "", 0, heightOffset, 0, popupRange, npc, true)
             end
     
-            local dialog = dialogModel:start(popup, player, defaultResults)
+            -- optional "show in chat" dialog behaviour
+            local dialog = dialogModel:start(LifeBoatAPI.DialogUtils.getDefaultDrawFunction(popup, dialogModel, displayLocally, zone), player, defaultResults)
             collision:attach(dialog)
     
             -- additional start points for the dialog, to make it more interesting
