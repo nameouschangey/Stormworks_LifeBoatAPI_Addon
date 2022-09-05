@@ -105,7 +105,7 @@ LifeBoatAPI.Player = {
         return LifeBoatAPI.Coroutine:start()
         :andImmediately(function (cr, deltaTicks, lastResult)
             -- keep checking if the player has loaded, until the timeout
-            timeout = timeout + deltaTicks
+            timeout = (timeout or math.maxinteger) + deltaTicks
 
             local characterID, success = server.getPlayerCharacterID(self.id)
             if success then

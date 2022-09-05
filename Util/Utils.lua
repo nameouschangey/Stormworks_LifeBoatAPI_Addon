@@ -15,20 +15,42 @@ LifeBoatAPI.lb_empty = function()end
 ---@param t any
 ---@param indent nil|number
 ---@return string
-LifeBoatAPI.lb_tostring = function(t, indent)
+LifeBoatAPI.lb_tostring = function(t, maxdepth, indent, seen)
+    seen = seen or {}
+    indent = (indent or 0) + 1
+    maxdepth = maxdepth or math.maxinteger
+
     local typeof = type(t)
     if typeof == "table" then
-        indent = (indent or 0)+1
-        local s = {}
-        for k,v in pairs(t) do
-            if type(k) ~= "number" then
-                s[#s+1] = string.rep(" ", indent*2) .. "[" .. tostring(k) .. "] = " .. LifeBoatAPI.lb_tostring(v, indent)
+        local existing = seen[t]
+        if existing then
+            return "<REF-"..tostring(t)..">"
+        elseif indent > (maxdepth+1) then
+            return "<"..tostring(t)..">"
+        else
+            seen[t] = true
+
+            local s = {}
+            for k,v in pairs(t) do
+                local kType = type(k)
+                if kType == "string" then
+                    s[#s+1] = string.rep("_", indent*2) .. "" .. tostring(k) .. " = " .. LifeBoatAPI.lb_tostring(v, maxdepth, indent, seen)
+                elseif kType ~= "number" then
+                    s[#s+1] = string.rep("_", indent*2) .. "[" .. tostring(k) .. "] = " .. LifeBoatAPI.lb_tostring(v, maxdepth, indent, seen)
+                end
+                -- don't print numbers, do numericals below
             end
+
+            for i=1,#t do
+                s[#s+1] = string.rep("_", indent*2) .. LifeBoatAPI.lb_tostring(t[i], maxdepth, indent, seen)
+            end
+            if #s > 0 then
+                return "{<"..tostring(t)..">\n" .. table.concat(s, ",\n") .. "\n" .. string.rep("_", (indent-1)*2) .. "}"
+            else
+                return "{<"..tostring(t)..">}"
+            end
+            
         end
-        for i=1,#t do
-            s[#s+1] = string.rep(" ", indent*2) .. LifeBoatAPI.lb_tostring(t[i])
-        end
-        return "{\n" .. table.concat(s, ",\n") .. "\n" .. string.rep(" ", (indent-1)*2) .. "}"
     else
         return tostring(t)
     end

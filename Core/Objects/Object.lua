@@ -130,8 +130,7 @@ LifeBoatAPI.Object = {
     ---@param self LifeBoatAPI.Object
     ---@return LifeBoatAPI.Coroutine
     awaitLoaded = function(self)
-        local isLoaded = self:isLoaded()
-        if isLoaded then
+        if self:isLoaded() then
             return LifeBoatAPI.Coroutine:start()
         else
             return self.onLoaded:await()
@@ -142,12 +141,12 @@ LifeBoatAPI.Object = {
     ---@return boolean
     isLoaded = function(self)
         -- objects can be despawned without callback, we can check that here
-        local isLoaded, isSpawned = server.getObjectSimulating(self.id)
+        local isSimulating, isSpawned = server.getObjectSimulating(self.id)
         if not isSpawned then
             self:despawn()
             return false
         end
-        return isLoaded
+        return isSimulating
     end;
 
     ---@param self LifeBoatAPI.Object
