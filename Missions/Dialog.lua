@@ -71,7 +71,7 @@ LifeBoatAPI.Dialog = {
         if line.choices then
             self.hasChoices = true
 
-            local textParts = {line.text, "\n\n"}
+            local textParts = {line.text or "", "\n\n"}
             for i=1, #line.choices do -- cheaper than string.format
                 textParts[#textParts+1] = "["
                 textParts[#textParts+1] = line.choices[i].phrase
@@ -80,7 +80,7 @@ LifeBoatAPI.Dialog = {
 
             line.textWithChoices = table.concat(textParts)
         else
-            line.textWithChoices = line.text
+            line.textWithChoices = line.text or ""
         end
 
         if line.id then
@@ -207,13 +207,13 @@ LifeBoatAPI.DialogInstance = {
             end
         end
 
-        local skipNext = false;
+        local skipToNext = false;
         while true do
             -- find the next line
             nextLineName = nextLineName or self.line.next
-            self.lineIndex = (skipNext and self.lineIndex + 1) or (nextLineName and self.dialog.lineIndexesByID[nextLineName]) or (self.lineIndex + 1)
+            self.lineIndex = (skipToNext and self.lineIndex + 1) or (nextLineName and self.dialog.lineIndexesByID[nextLineName]) or (self.lineIndex + 1)
             local nextLine = self.dialog.lines[self.lineIndex]
-            skipNext = false
+            skipToNext = false
 
             -- current line said to terminate, or next line doesn't exist
             if self.line.terminate ~= nil or not nextLine then
@@ -224,26 +224,27 @@ LifeBoatAPI.DialogInstance = {
             else
                 -- move to the next line
                 self.line = nextLine
-                self.lineTimeout = (not self.line.choices and (self.line.timeout or self.dialog.defaultTimeout)) or nil
+                self.lineTimeout = self.line.timeout or (not self.line.choices and self.dialog.defaultTimeout) or nil -- if specified, otherwise default unless it's a choice
                 if self.lineTimeout then
                     self.lineTimeout = LB.ticks.ticks + self.lineTimeout
                 end
 
                 -- check if this next line is conditionally allowed
-                local isValid = true
-                if self.line.conditionals then
+                if self.line.conditionals and not skipToNext then
                     for k,v in pairs(self.line.conditionals) do
                         if self.results[k] ~= v then
-                            isValid = false
-                            skipNext = true
+                            skipToNext = true
                             break
                         end
                     end
                 end
 
-                if isValid then
-                    self.drawText(self.player, self.line)
-                    break
+                if not skipToNext then
+                    -- specifying negative timeouts will mean we instantly skip over the line; but *next* will be respected; unlike missing conditionals above
+                    if self.lineTimeout >= LB.ticks.ticks then
+                        self.drawText(self.player, self.line)
+                        break
+                    end
                 end
                 -- else: repeat the search till we find a valid line
             end

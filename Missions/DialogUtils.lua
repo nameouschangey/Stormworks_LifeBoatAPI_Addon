@@ -19,7 +19,7 @@ LifeBoatAPI.DialogUtils = {
     ---@param popupRange number|nil
     ---@param useRelativePosPoup boolean|nil whether to use the more costly, "Relative" UIPopup that stays vertical, even if the object topples over
     ---@return LifeBoatAPI.IDisposable
-    newSimpleZoneDialog = function(zone, dialogModel, npc, heightOffset, goodbyeLine, onDialogStarted, onDialogComplete, defaultResults, popupRange, displayLocally, useRelativePosPoup)
+    newSimpleZoneDialog = function(zone, dialogModel, npc, heightOffset, goodbyeLine, defaultResults, popupRange, displayLocally, useRelativePosPoup, onDialogStarted, onDialogComplete)
         popupRange = popupRange or 100
         heightOffset = heightOffset or 1
 

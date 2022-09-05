@@ -194,7 +194,7 @@ LifeBoatAPI.Constants = {
         defend = 19
     };
 
-    NotifiationTypes = {
+    NotificationTypes = {
         new_mission = 0,
         new_mission_critical = 1,
         failed_mission = 2,
