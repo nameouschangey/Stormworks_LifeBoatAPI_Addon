@@ -192,8 +192,8 @@ LifeBoatAPI.DialogInstance = {
 
     ---@param self LifeBoatAPI.DialogInstance
     ---@param choiceResults table|nil possible results from the specific choice selected
-    ---@param nextLineName string|nil
-    gotoNextLine = function(self, nextLineName, choiceResults)
+    ---@param nextLineNameParam string|nil
+    gotoNextLine = function(self, nextLineNameParam, choiceResults)
         -- add result from current line
         if self.line.result then
             for k,v in pairs(self.line.result) do
@@ -210,7 +210,8 @@ LifeBoatAPI.DialogInstance = {
         local skipToNext = false;
         while true do
             -- find the next line
-            nextLineName = nextLineName or self.line.next
+            local nextLineName = nextLineNameParam or self.line.next
+            log("next line name", nextLineName, "skip to next", skipToNext)
             self.lineIndex = (skipToNext and self.lineIndex + 1) or (nextLineName and self.dialog.lineIndexesByID[nextLineName]) or (self.lineIndex + 1)
             local nextLine = self.dialog.lines[self.lineIndex]
             skipToNext = false
@@ -230,9 +231,12 @@ LifeBoatAPI.DialogInstance = {
                 end
 
                 -- check if this next line is conditionally allowed
-                if self.line.conditionals and not skipToNext then
+                if self.line.conditionals then
+                    log("conditionals found")
                     for k,v in pairs(self.line.conditionals) do
+                        log("key", k, "value", v, "matching result", self.results[k])
                         if self.results[k] ~= v then
+                            log("skipping to subsequent")
                             skipToNext = true
                             break
                         end
@@ -244,6 +248,8 @@ LifeBoatAPI.DialogInstance = {
                     if not self.lineTimeout or (self.lineTimeout >= LB.ticks.ticks) then
                         self.drawText(self.player, self.line)
                         break
+                    else
+                        log("skipping to actual next")
                     end
                 end
                 -- else: repeat the search till we find a valid line
