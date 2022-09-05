@@ -13,6 +13,7 @@
 ---@field parent LifeBoatAPI.GameObject
 LifeBoatAPI.UIPopupRelativePos = {
 
+    ---@param cls LifeBoatAPI.UIPopupRelativePos
     ---@return LifeBoatAPI.UIPopupRelativePos
     fromSavedata = function(cls, savedata)
 
@@ -59,6 +60,7 @@ LifeBoatAPI.UIPopupRelativePos = {
         return self
     end;
 
+    ---@param cls LifeBoatAPI.UIPopupRelativePos
     ---@param isTemporary boolean|nil if true, this will not persist between reload_scripts
     ---@param player LifeBoatAPI.Player|nil nil displays to all players
     ---@param parent LifeBoatAPI.GameObject

@@ -34,17 +34,16 @@ LifeBoatAPI.DialogUtils = {
                 return
             end
 
-            if popup then
+            if popup and not popup.isDisposed then
                 -- we're already displaying this to another player
                 return;
             end
             
             if useRelativePosPoup then
-            popup = LifeBoatAPI.UIPopupRelativePos:new(displayLocally and player or nil, "", LifeBoatAPI.Matrix:newMatrix(0, heightOffset, 0), nil, popupRange, npc, true)
+                popup = LifeBoatAPI.UIPopupRelativePos:new(displayLocally and player or nil, "", LifeBoatAPI.Matrix:newMatrix(0, heightOffset, 0), nil, popupRange, npc, true)
             else
                 popup = LifeBoatAPI.UIPopup:new(displayLocally and player or nil, "", 0, heightOffset, 0, popupRange, npc, true)
             end
-            --collision:attach(popup)
     
             local dialog = dialogModel:start(popup, player, defaultResults)
             collision:attach(dialog)
@@ -66,6 +65,7 @@ LifeBoatAPI.DialogUtils = {
                     LifeBoatAPI.lb_dispose(popup)
                 end
                 popup = nil
+                
             end)
         end)
 

@@ -94,6 +94,12 @@ LifeBoatAPI.PlayerManager = {
 
         local player = LifeBoatAPI.Player:new(peerId, steamID, isAdmin, isAuth, name, savedata)
 
+        -- make sure there's no double-connects happening, disconnect any existing players
+        local existing = self.playersByPeerID[player.id]
+        if existing then
+            LB.players._onPlayerLeave(nil, self, existing.steamID, existing.displayName, existing.id, existing.isAdmin, existing.isAuth)
+        end
+
         self.playersByPeerID[player.id] = player
         self.playersBySteamID[player.steamID] = player
         self.players[#self.players+1] = player
